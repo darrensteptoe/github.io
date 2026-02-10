@@ -7,70 +7,72 @@
   <meta name="description" content="When Good Intentions Fail — coming soon." />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Page-specific layout only -->
   <style>
+    /* Page-only layout tuning */
     .book-hero{
-      display: grid;
+      display:grid;
       grid-template-columns: 1.25fr 0.75fr;
-      gap: 24px;
-      align-items: start;
+      gap: var(--s4);
+      align-items:start;
+      margin-bottom: var(--s5);
     }
+
     .cover-wrap{
-      display: grid;
-      gap: 12px;
-      justify-items: end;
+      display:grid;
+      gap: var(--s2);
+      justify-items:end;
     }
+
     .cover-placeholder{
       width: min(280px, 100%);
       aspect-ratio: 2 / 3;
-      border-radius: 20px;
-      border: 1px solid rgba(21,21,21,.12);
+      border-radius: var(--radius);
+      border: 1px solid var(--faint);
       background:
-        linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,.35)),
-        repeating-linear-gradient(135deg, rgba(31,77,58,.10) 0 14px, rgba(31,77,58,.04) 14px 28px);
-      display: grid;
-      place-items: center;
-      position: relative;
-    }
-    .cover-placeholder::after{
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.6), transparent 60%);
-      pointer-events: none;
-    }
-    .cover-label{
+        linear-gradient(to bottom, rgba(255,255,255,.7), rgba(255,255,255,.4)),
+        repeating-linear-gradient(
+          135deg,
+          rgba(31,77,58,.10) 0 14px,
+          rgba(31,77,58,.04) 14px 28px
+        );
+      display:grid;
+      place-items:center;
       font-weight: 900;
       letter-spacing: .08em;
       text-transform: uppercase;
       font-size: 12px;
-      color: rgba(21,21,21,.68);
-      text-align: center;
-      padding: 0 14px;
+      color: var(--muted);
+      text-align:center;
+      padding: var(--s3);
     }
+
     .reading{
-      padding: 28px;
-      border-radius: 20px;
-      border: 1px solid rgba(21,21,21,.12);
-      background: rgba(255,255,255,.65);
+      padding: var(--s4);
+      border-radius: var(--radius);
+      border: 1px solid var(--faint);
+      background: var(--panel-soft);
     }
-    .reading .chapter-kicker{
-      margin: 0 0 14px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      font-size: 12px;
-      color: rgba(21,21,21,.68);
-    }
+
     .reading p{
-      margin: 0 0 12px;
-      color: rgba(21,21,21,.78);
+      margin: 0 0 var(--s2);
     }
-    .reading p:last-child{ margin-bottom: 0; }
+
+    .reading p:last-child{
+      margin-bottom: 0;
+    }
+
+    .toc-grid{
+      display:grid;
+      gap: var(--s3);
+    }
 
     @media (max-width: 860px){
-      .book-hero{ grid-template-columns: 1fr; }
-      .cover-wrap{ justify-items: start; }
+      .book-hero{
+        grid-template-columns: 1fr;
+      }
+      .cover-wrap{
+        justify-items:start;
+      }
     }
   </style>
 </head>
@@ -96,7 +98,7 @@
     <section class="section">
       <div class="container">
 
-        <!-- TITLE + COVER -->
+        <!-- HERO -->
         <div class="book-hero">
           <div class="section-head">
             <p class="kicker">Coming soon</p>
@@ -105,64 +107,56 @@
           </div>
 
           <div class="cover-wrap">
-            <div class="cover-placeholder" aria-hidden="true">
-              <div class="cover-label">Cover preview</div>
+            <div class="cover-placeholder">
+              Cover preview
             </div>
           </div>
         </div>
 
+        <!-- CONTENT -->
         <div class="stack">
 
-          <!-- WHAT THIS IS -->
           <article class="item">
             <h3>What this book is</h3>
             <p>
-              This book examines a recurring pattern inside values-driven institutions:
-              when structure remains incomplete, responsibility does not disappear.
-              It migrates — into ambiguity, into flexibility, and eventually into individuals
-              who absorb risk without authority.
+              This book examines a recurring pattern in values-driven institutions:
+              when structure remains unfinished, responsibility does not disappear.
+              It relocates — into ambiguity, into informal expectations, and eventually
+              into the people most willing to carry it.
             </p>
             <p>
-              It is written for people who keep things working without being able to name
-              why the work feels heavier than it should.
+              It is written for people asked to translate unclear direction, absorb risk
+              without authority, and sustain systems whose language remains aspirational
+              while their design stays unresolved.
             </p>
           </article>
 
-          <!-- EXCERPT -->
           <article class="item">
-            <h3>Excerpt</h3>
-
+            <h3>Preview</h3>
             <div class="reading">
-              <p class="chapter-kicker">Chapter 1 — Values Are Not Structure</p>
-
               <p>
                 Most institutions begin with language. Mission statements. Values decks.
-                Guiding principles. These words tend to arrive early, before systems have
-                hardened and before anyone knows how the work will feel once it is underway.
+                Guiding principles. These words appear early, before systems harden and
+                before anyone knows how the work will feel once it is underway.
               </p>
-
               <p>
-                Language matters. It draws people in. It establishes tone. It creates a sense
-                of shared purpose before anything concrete exists to test it.
+                That language matters. It attracts people who care. It establishes tone.
+                It creates alignment before anything concrete exists to test it.
               </p>
-
               <p>
-                But language can only do so much.
+                But language cannot carry weight.
               </p>
-
               <p>
-                At some point, values have to become structure. They have to show up as roles,
-                authority, process, and protection. When that translation does not happen,
-                values begin doing work they were never designed to do.
+                At some point, values must become structure — roles, authority, process,
+                and protection. When that translation never fully occurs, values begin
+                doing work they were never designed to do.
               </p>
             </div>
           </article>
 
-          <!-- TOC -->
           <article class="item">
-            <h3>Contents</h3>
-
-            <div class="grid">
+            <h3>Structure</h3>
+            <div class="toc-grid">
               <div class="panel">
                 <div class="panel-label">Part I</div>
                 <div class="panel-meta">
@@ -175,27 +169,26 @@
                 <div class="panel-label">Part II</div>
                 <div class="panel-meta">
                   Collaboration Without Authority · Urgency Changes What Values Mean ·
-                  Drift Feels Like Stability
+                  When Good Intentions Meet Incentives · Drift Feels Like Stability
                 </div>
               </div>
 
-              <div class="panel wide">
+              <div class="panel">
                 <div class="panel-label">Part III</div>
                 <div class="panel-meta">
-                  The Cost of Being Reliable · Exhaustion as a Signal ·
-                  Recognition Without Rescue · How Burden Finds a Carrier
+                  Moral Language as Management · The Cost of Being Reliable ·
+                  Exhaustion as a Signal · How Burden Finds a Carrier
                 </div>
               </div>
             </div>
           </article>
 
-          <!-- RELEASE -->
           <article class="item">
             <h3>Release</h3>
             <p>
-              The book will be released later this year.
+              The book is currently unpublished.
+              Notifications will be sent when it is released.
             </p>
-
             <div class="item-actions">
               <a
                 class="btn small"
@@ -208,13 +201,11 @@
             </div>
           </article>
 
-          <!-- AUTHOR -->
           <article class="item">
             <h3>Author</h3>
             <p>
               Darren Steptoe works across film, writing, and independent projects,
-              often focused on how institutions shape outcomes and where invisible
-              structure becomes invisible cost.
+              with a focus on how institutional design shapes outcomes and transfers cost.
             </p>
           </article>
 
