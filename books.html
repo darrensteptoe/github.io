@@ -6,6 +6,90 @@
   <title>Books — Darren Steptoe</title>
   <meta name="description" content="Preview: When Good Intentions Fail — How Institutions Quietly Transfer Burden. Coming soon." />
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Page-specific layout only (so you don't have to touch styles.css) -->
+  <style>
+    .book-hero{
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .cover-wrap{
+      display: grid;
+      gap: 12px;
+      justify-items: end;
+    }
+    .cover-placeholder{
+      width: min(280px, 100%);
+      aspect-ratio: 2 / 3;
+      border-radius: 20px;
+      border: 1px solid rgba(21,21,21,.12);
+      background:
+        linear-gradient( to bottom, rgba(255,255,255,.65), rgba(255,255,255,.35) ),
+        repeating-linear-gradient( 135deg, rgba(31,77,58,.10) 0 14px, rgba(31,77,58,.04) 14px 28px );
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    .cover-placeholder::after{
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(255,255,255,.6), transparent 60%);
+      pointer-events: none;
+    }
+    .cover-label{
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: rgba(21,21,21,.68);
+      text-align: center;
+      padding: 0 14px;
+    }
+    .cover-micro{
+      font-size: 13px;
+      color: rgba(21,21,21,.55);
+      text-align: right;
+      max-width: 280px;
+    }
+    /* Make the excerpt box read like a “reading room” */
+    .reading{
+      padding: 28px;
+      border-radius: 20px;
+      border: 1px solid rgba(21,21,21,.12);
+      background: rgba(255,255,255,.65);
+    }
+    .reading .chapter-kicker{
+      margin: 0 0 14px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(21,21,21,.68);
+      font-size: 12px;
+    }
+    .reading p{
+      margin: 0 0 12px;
+      color: rgba(21,21,21,.78);
+    }
+    .reading p:last-child{
+      margin-bottom: 0;
+    }
+    /* Responsive */
+    @media (max-width: 860px){
+      .book-hero{
+        grid-template-columns: 1fr;
+      }
+      .cover-wrap{
+        justify-items: start;
+      }
+      .cover-micro{
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -29,13 +113,28 @@
     <!-- HERO -->
     <section class="section">
       <div class="container">
-        <div class="section-head">
-          <p class="kicker">Coming soon</p>
-          <h1 class="page-title">When Good Intentions Fail</h1>
-          <p class="section-note">How Institutions Quietly Transfer Burden</p>
+        <div class="book-hero">
+          <div class="section-head">
+            <p class="kicker">Coming soon</p>
+            <h1 class="page-title">When Good Intentions Fail</h1>
+            <p class="section-note">How Institutions Quietly Transfer Burden</p>
+          </div>
+
+          <div class="cover-wrap" aria-label="Book cover preview">
+            <div class="cover-placeholder" role="img" aria-label="Book cover placeholder">
+              <div class="cover-label">
+                Cover preview<br />
+                (placeholder)
+              </div>
+            </div>
+            <div class="cover-micro">
+              This will become the final cover image once the book is published.
+            </div>
+          </div>
         </div>
 
         <div class="stack">
+          <!-- WHAT THIS IS -->
           <article class="item">
             <h3>What this book is</h3>
             <p>
@@ -49,37 +148,34 @@
               while the language stays inspiring and the design stays the same.
             </p>
             <p class="micro">
-              From the manuscript: values can guide decisions, but they can’t carry them. :contentReference[oaicite:5]{index=5}
+              A preview lives below. The full release date and purchase link will be posted here.
             </p>
           </article>
 
+          <!-- PREVIEW EXCERPT -->
           <article class="item">
             <h3>Preview excerpt</h3>
-            <p class="section-note">
-              A short excerpt from Chapter 1, “Values Are Not Structure.”
-            </p>
+            <p class="section-note">A short excerpt from Chapter 1, “Values Are Not Structure.”</p>
 
-            <div class="embed-placeholder" style="padding: 28px;">
-              <p style="margin:0 0 14px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; color: rgba(21,21,21,.68);">
-                Chapter 1 — Values Are Not Structure
-              </p>
+            <div class="reading" aria-label="Book excerpt">
+              <p class="chapter-kicker">Chapter 1 — Values Are Not Structure</p>
 
-              <p style="margin:0 0 12px;">
+              <p>
                 Most institutions begin with language. Mission statements. Values decks. Guiding principles.
                 These words tend to show up early, before systems have hardened, before anyone really knows
                 how the work will feel once it’s underway.
               </p>
 
-              <p style="margin:0 0 12px;">
+              <p>
                 That language matters. It draws in people who care. It sets a tone. It creates a sense of shared
                 purpose before anything concrete exists to test it.
               </p>
 
-              <p style="margin:0 0 12px;">
+              <p>
                 But language can only do so much.
               </p>
 
-              <p style="margin:0;">
+              <p>
                 At some point, values have to become structure. They have to show up as roles, as authority,
                 as process, as protection. When that translation never quite happens, values start doing work
                 they were never designed to do.
@@ -87,10 +183,11 @@
             </div>
 
             <p class="micro">
-              Excerpt source: Chapter 1 opening pages. :contentReference[oaicite:6]{index=6}
+              Note: this is a short excerpt only. Longer preview sections can be added later.
             </p>
           </article>
 
+          <!-- TOC PREVIEW -->
           <article class="item">
             <h3>Table of contents (preview)</h3>
             <p class="section-note">A snapshot of the structure — short chapters, one idea at a time.</p>
@@ -119,7 +216,7 @@
               <div class="panel wide">
                 <div>
                   <div class="panel-label">Part III</div>
-                  <div class="panel-meta">Naming the pattern, and what clarity actually offers</div>
+                  <div class="panel-meta">Naming the pattern, and what clarity offers</div>
                 </div>
                 <div class="panel-meta" style="margin-top: 14px;">
                   When Naming the Pattern Becomes Risky · Moral Language as Management · The Cost of Being Reliable ·
@@ -128,44 +225,40 @@
                 </div>
               </div>
             </div>
+          </article>
+
+          <!-- RELEASE / NOTIFY -->
+          <article class="item">
+            <h3>Release</h3>
+            <p>
+              <strong>Status:</strong> Coming soon.<br />
+              Leave your email and I’ll notify you when the book is released.
+            </p>
+
+            <div class="item-actions">
+              <a
+                class="btn small"
+                href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Get notified
+              </a>
+            </div>
 
             <p class="micro">
-              TOC source. :contentReference[oaicite:7]{index=7}
+              No spam. One email when it’s ready.
             </p>
           </article>
 
-          <article class="item">
-  <h3>Release</h3>
-  <p>
-    <strong>Status:</strong> Unpublished manuscript (© 2025).<br />
-    <strong>Coming soon.</strong>  
-    Leave your email to be notified when the book is released.
-  </p>
-
-  <div class="item-actions">
-    <a
-      class="btn small"
-      href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Get notified
-    </a>
-  </div>
-
-  <p class="micro">
-    No spam. One email when it’s ready.
-  </p>
-</article>
-
+          <!-- ABOUT AUTHOR -->
           <article class="item">
             <h3>About the author</h3>
             <p>
-              Darren Steptoe has spent his career inside institutions where outcomes matter and ambiguity carries real cost.
-              His work spans national service, electoral campaigns, advocacy institutions, and organizational leadership —
-              often translating values into action under pressure. :contentReference[oaicite:9]{index=9}
+              Darren Steptoe builds work across film, writing, and independent projects — often focused on how institutions
+              shape outcomes and how hidden structure becomes hidden cost.
             </p>
-            <p class="micro">Chicago-based. :contentReference[oaicite:10]{index=10}</p>
+            <p class="micro">Chicago-based.</p>
           </article>
         </div>
 
