@@ -4,141 +4,139 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Books — Darren Steptoe</title>
-  <meta name="description" content="When Good Intentions Fail — forthcoming book by Darren Steptoe." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Books and writing by Darren Steptoe." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <main class="wrap">
 
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="index.html">DS</a>
-      <div class="nav-links">
-        <a href="work.html">Work</a>
-        <a href="books.html" aria-current="page">Books</a>
-        <a href="music.html">Music</a>
-        <a href="live.html">Live</a>
-        <a href="fantasy.html">Fantasy</a>
-        <a href="contact.html">Contact</a>
+    <header class="header">
+      <h1 class="title">Books</h1>
+      <p class="sub">Writing and forthcoming work</p>
+    </header>
+
+    <!-- Search -->
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Search the site..."
+        />
+        <button id="clear" type="button">Clear</button>
       </div>
-    </nav>
-  </header>
 
-  <main id="main">
-    <section class="section">
-      <div class="container">
-
-        <div class="section-head">
-          <p class="kicker">Forthcoming</p>
-          <h1 class="page-title">When Good Intentions Fail</h1>
-          <p class="section-note">How Institutions Quietly Transfer Burden</p>
-        </div>
-
-        <div class="stack">
-
-          <article class="item">
-            <h3>Overview</h3>
-            <p>
-              This book examines a recurring pattern in values-driven institutions:
-              when structure remains incomplete, responsibility does not disappear.
-              It relocates — into ambiguity, into informal expectations, and eventually
-              into the people most willing to carry it.
-            </p>
-            <p>
-              It is written for people asked to translate unclear direction, absorb risk
-              without authority, and sustain systems whose language remains aspirational
-              while their design stays unresolved.
-            </p>
-          </article>
-
-          <article class="item">
-            <h3>Excerpt</h3>
-            <div class="reading">
-              <p>
-                Most institutions begin with language. Mission statements. Values decks.
-                Guiding principles. These words appear early, before systems harden and
-                before anyone knows how the work will feel once it is underway.
-              </p>
-              <p>
-                That language matters. It attracts people who care. It establishes tone.
-                It creates alignment before anything concrete exists to test it.
-              </p>
-              <p>
-                But language cannot carry weight.
-              </p>
-              <p>
-                At some point, values must become structure — roles, authority, process,
-                and protection. When that translation never fully occurs, values begin
-                doing work they were never designed to do.
-              </p>
-            </div>
-          </article>
-
-          <article class="item">
-            <h3>Structure</h3>
-
-            <div class="panel">
-              <strong>Part I</strong><br />
-              Values Are Not Structure · Ambiguity Is a Design Choice ·
-              The Invisible Labor That Holds Things Together
-            </div>
-
-            <div class="panel">
-              <strong>Part II</strong><br />
-              Collaboration Without Authority · Urgency Changes What Values Mean ·
-              When Good Intentions Meet Incentives · Drift Feels Like Stability
-            </div>
-
-            <div class="panel">
-              <strong>Part III</strong><br />
-              Moral Language as Management · The Cost of Being Reliable ·
-              Exhaustion as a Signal · How Burden Finds a Carrier
-            </div>
-          </article>
-
-          <article class="item">
-            <h3>Release</h3>
-            <p>
-              The book is currently unpublished. Notifications will be sent when it is released.
-            </p>
-            <div class="item-actions">
-              <a
-                class="btn small"
-                href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Get notified
-              </a>
-            </div>
-          </article>
-
-          <article class="item">
-            <h3>Author</h3>
-            <p>
-              Darren Steptoe works across film, writing, and independent projects,
-              with a focus on how institutional design shapes outcomes and transfers cost.
-            </p>
-          </article>
-
-          <article class="item">
-            <h3>Cover</h3>
-            <div class="panel" aria-label="Book cover placeholder">
-              Cover preview forthcoming
-            </div>
-          </article>
-
-        </div>
-
-        <footer class="footer">
-          <p>© <span id="year"></span> Darren Steptoe</p>
-        </footer>
-
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
       </div>
+
+      <ul id="results" class="results" aria-live="polite"></ul>
     </section>
+
+    <!-- Navigation -->
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./fantasy.html">Fantasy Football</a></li>
+        <li><a href="./books.html" aria-current="page">Books</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./music.html">Music</a></li>
+        <li><a href="./live.html">Live</a></li>
+        <li><a href="./contact.html">Contact</a></li>
+      </ul>
+    </section>
+
+    <!-- Book -->
+    <section class="panel" aria-label="Book">
+      <h2 class="h2">When Good Intentions Fail</h2>
+      <p><em>How Institutions Quietly Transfer Burden</em></p>
+
+      <p>
+        This book examines a recurring pattern in values-driven institutions:
+        when structure remains incomplete, responsibility does not disappear.
+        It relocates into ambiguity, informal expectations, and eventually
+        into the people most willing to carry it.
+      </p>
+
+      <p>
+        It is written for people asked to translate unclear direction, absorb
+        risk without authority, and sustain systems whose language remains
+        aspirational while their design stays unresolved.
+      </p>
+    </section>
+
+    <!-- Excerpt -->
+    <section class="panel" aria-label="Excerpt">
+      <h2 class="h2">Excerpt</h2>
+
+      <p>
+        Most institutions begin with language. Mission statements. Values decks.
+        Guiding principles. These words appear early, before systems harden and
+        before anyone knows how the work will feel once it is underway.
+      </p>
+
+      <p>
+        That language matters. It attracts people who care. It establishes tone.
+        It creates alignment before anything concrete exists to test it.
+      </p>
+
+      <p>
+        But language cannot carry weight.
+      </p>
+
+      <p>
+        At some point, values must become structure — roles, authority, process,
+        and protection. When that translation never fully occurs, values begin
+        doing work they were never designed to do.
+      </p>
+    </section>
+
+    <!-- Structure -->
+    <section class="panel" aria-label="Structure">
+      <h2 class="h2">Structure</h2>
+
+      <p><strong>Part I</strong><br />
+        Values Are Not Structure · Ambiguity Is a Design Choice ·
+        The Invisible Labor That Holds Things Together
+      </p>
+
+      <p><strong>Part II</strong><br />
+        Collaboration Without Authority · Urgency Changes What Values Mean ·
+        When Good Intentions Meet Incentives · Drift Feels Like Stability
+      </p>
+
+      <p><strong>Part III</strong><br />
+        Moral Language as Management · The Cost of Being Reliable ·
+        Exhaustion as a Signal · How Burden Finds a Carrier
+      </p>
+    </section>
+
+    <!-- Release -->
+    <section class="panel" aria-label="Release">
+      <h2 class="h2">Release</h2>
+      <p>The book is currently unpublished.</p>
+      <p>
+        <a
+          href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Get notified when it’s released
+        </a>
+      </p>
+    </section>
+
+    <footer class="footer">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+    </footer>
+
   </main>
 
-  <script src="script.js"></script>
+  <script src="./search.js"></script>
 </body>
 </html>
