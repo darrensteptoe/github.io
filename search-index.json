@@ -1,0 +1,8 @@
+[
+  { "title": "Home", "url": "./", "desc": "Main directory and search.", "tags": ["home", "start"] },
+  { "title": "Book", "url": "./book/", "desc": "Preview + release updates.", "tags": ["book", "writing"] },
+  { "title": "Consulting", "url": "./consulting/", "desc": "Field + comms + strategy offerings.", "tags": ["consulting", "politics", "field", "comms"] },
+  { "title": "Media / Film", "url": "./media/", "desc": "Documentary + production work.", "tags": ["film", "video", "documentary"] },
+  { "title": "Docs", "url": "./docs/", "desc": "Files and resources.", "tags": ["documents", "files"] },
+  { "title": "Contact", "url": "./contact/", "desc": "How to reach me.", "tags": ["email", "contact"] }
+]
