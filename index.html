@@ -4,141 +4,57 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Darren Steptoe</title>
-  <meta name="description" content="Darren Steptoe — film, writing, music, live. Everything in one place." />
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    .open-to-work{
-      display:inline-flex !important;
-      align-items:center !important;
-      gap:.55rem !important;
-      padding:.38rem .82rem !important;
-      border-radius:999px !important;
-      background: rgba(34,197,94,0.14) !important;
-      border: 1px solid rgba(34,197,94,0.55) !important;
-      color: #22c55e !important;
-      text-decoration:none !important;
-      opacity: 1 !important;
-      font-size: .85rem !important;
-      line-height: 1 !important;
-      white-space: nowrap !important;
-      box-shadow: 0 0 0 rgba(34,197,94,0) !important;
-    }
-    .open-to-work:hover{ background: rgba(34,197,94,0.18) !important; }
-    .otw-dot{
-      width:.46rem !important;
-      height:.46rem !important;
-      border-radius:50% !important;
-      background:#22c55e !important;
-      flex: 0 0 auto !important;
-      box-shadow: 0 0 10px rgba(34,197,94,0.35) !important;
-      animation: otw-dot-pulse 1.9s ease-in-out infinite !important;
-    }
-    @keyframes otw-dot-pulse{
-      0%{
-        box-shadow:
-          0 0 8px rgba(34,197,94,0.25),
-          0 0 0 rgba(34,197,94,0);
-        opacity: .92;
-      }
-      55%{
-        box-shadow:
-          0 0 14px rgba(34,197,94,0.55),
-          0 0 26px rgba(34,197,94,0.18);
-        opacity: 1;
-      }
-      100%{
-        box-shadow:
-          0 0 8px rgba(34,197,94,0.25),
-          0 0 0 rgba(34,197,94,0);
-        opacity: .92;
-      }
-    }
-    @media (prefers-reduced-motion: reduce){
-      .otw-dot{ animation: none !important; }
-    }
-  </style>
+  <meta name="description" content="A simple website that loads fast and says what it means." />
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <main class="wrap">
+    <header class="header">
+      <h1 class="title">Darren Steptoe</h1>
+      <p class="tagline">A plain website. It loads fast. It works everywhere.</p>
+    </header>
 
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="index.html" aria-label="Home">DS</a>
+    <section class="panel">
+      <h2>Search</h2>
+      <p class="muted">Type to filter pages. Press Enter to open the top result.</p>
 
-      <div class="nav-links">
-        <a href="work.html">Work</a>
-        <a href="books.html">Books</a>
-        <a href="music.html">Music</a>
-        <a href="live.html">Live</a>
-        <a href="fantasy.html">Fantasy</a>
-        <a href="contact.html">Contact</a>
-
-        <a class="open-to-work" href="contact.html" aria-label="Open to work — go to contact">
-          <span class="otw-dot" aria-hidden="true"></span>
-          <span class="otw-text">Open to work</span>
-        </a>
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search the site</label>
+        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search (e.g., book, consulting, docs, film)..." />
+        <button id="clear" type="button">Clear</button>
       </div>
-    </nav>
-  </header>
 
-  <main id="main">
-    <section class="hero">
-      <div class="container">
-        <p class="kicker">Independent work, housed in one place.</p>
-        <h1 class="title">DARREN<br/>STEPTOE</h1>
-        <p class="subhead">Film. Writing. Music. Live.</p>
-
-        <div class="hero-actions">
-          <a class="btn" href="work.html">Enter</a>
-          <a class="btn ghost" href="contact.html">Reach me</a>
-        </div>
+      <div class="resultsMeta">
+        <span id="count">0</span> result(s)
       </div>
+
+      <ul id="results" class="results" aria-live="polite"></ul>
     </section>
 
-    <section class="modules">
-      <div class="container">
-        <h2 class="section-title">Modules</h2>
+    <section class="panel">
+      <h2>Directory</h2>
+      <p class="muted">Start simple. Add pages as you build them.</p>
 
-        <div class="grid">
-          <a class="panel" href="work.html">
-            <span class="panel-label">WORK</span>
-            <span class="panel-meta">Film + documentary + projects</span>
-          </a>
+      <ul class="links">
+        <li><a href="./book/">Book (preview)</a></li>
+        <li><a href="./consulting/">Consulting</a></li>
+        <li><a href="./media/">Media / Film</a></li>
+        <li><a href="./docs/">Docs</a></li>
+        <li><a href="./contact/">Contact</a></li>
+      </ul>
 
-          <a class="panel" href="books.html">
-            <span class="panel-label">BOOKS</span>
-            <span class="panel-meta">In progress → purchase later</span>
-          </a>
+      <hr />
 
-          <a class="panel" href="music.html">
-            <span class="panel-label">MUSIC</span>
-            <span class="panel-meta">SoundCloud listening</span>
-          </a>
-
-          <a class="panel" href="live.html">
-            <span class="panel-label">LIVE</span>
-            <span class="panel-meta">Streams + archive</span>
-          </a>
-
-          <a class="panel wide" href="fantasy.html">
-            <span class="panel-label">FANTASY FOOTBALL</span>
-            <span class="panel-meta">Signup + rules + season archive</span>
-          </a>
-
-          <a class="panel wide" href="contact.html">
-            <span class="panel-label">CONTACT</span>
-            <span class="panel-meta">Email + links</span>
-          </a>
-        </div>
-
-        <footer class="footer">
-          <p>© <span id="year"></span> Darren Steptoe</p>
-        </footer>
-      </div>
+      <p class="muted">
+        Want a protected area later? We can add it after the content exists.
+      </p>
     </section>
+
+    <footer class="footer">
+      <p class="muted">© <span id="year"></span> Darren Steptoe</p>
+    </footer>
   </main>
 
-  <script src="script.js"></script>
+  <script src="./search.js"></script>
 </body>
 </html>
-<a href="/documents.html" style="opacity:0.6;">Internal</a>
