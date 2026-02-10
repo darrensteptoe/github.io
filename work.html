@@ -134,3 +134,163 @@
   <script src="./search.js"></script>
 </body>
 </html>
+<!-- IMDb Link Preview Card (drop-in example) -->
+<!-- Paste this anywhere inside your page's main container -->
+
+<style>
+  /* IMDb Preview Card */
+  .imdb-card {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.25);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    min-height: 118px;
+  }
+
+  .imdb-card:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  .imdb-card:focus-visible {
+    outline: 2px solid rgba(255, 208, 0, 0.85);
+    outline-offset: 3px;
+  }
+
+  .imdb-badge {
+    width: 52px;
+    min-width: 52px;
+    border-radius: 12px;
+    background: #f5c518; /* IMDb yellow */
+    display: grid;
+    place-items: center;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
+  }
+
+  .imdb-badge span {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: #111;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .imdb-card-main {
+    flex: 1;
+    display: grid;
+    gap: 8px;
+  }
+
+  .imdb-card-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .imdb-card-title {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .imdb-chip {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.06);
+    white-space: nowrap;
+  }
+
+  .imdb-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    opacity: 0.92;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 13px;
+  }
+
+  .imdb-dot {
+    opacity: 0.6;
+  }
+
+  .imdb-card-desc {
+    margin: 0;
+    opacity: 0.88;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .imdb-card-cta {
+    margin-top: 2px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: 0.9;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .imdb-arrow {
+    display: inline-block;
+    transform: translateY(0.5px);
+    opacity: 0.9;
+  }
+
+  /* Optional: make it fit your "box" grid nicely */
+  .imdb-card-wrap {
+    max-width: 720px;
+  }
+</style>
+
+<div class="imdb-card-wrap">
+  <a
+    class="imdb-card"
+    href="https://www.imdb.com/name/nm12602714/?ref_=nv_sr_srsg_0_tt_0_nm_8_in_0_q_darren%2520steptoe"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Open Darren Steptoe IMDb profile in a new tab"
+  >
+    <div class="imdb-badge" aria-hidden="true"><span>IMDb</span></div>
+
+    <div class="imdb-card-main">
+      <div class="imdb-card-top">
+        <h3 class="imdb-card-title">Darren Steptoe — IMDb</h3>
+        <span class="imdb-chip">Film credits</span>
+      </div>
+
+      <div class="imdb-card-meta">
+        <span>Producer</span>
+        <span class="imdb-dot">•</span>
+        <span>Writer</span>
+        <span class="imdb-dot">•</span>
+        <span>Editor</span>
+      </div>
+
+      <p class="imdb-card-desc">
+        Explore selected credits and projects. (This is a preview card — you can swap this text to match
+        your real work highlights.)
+      </p>
+
+      <span class="imdb-card-cta">
+        Open profile <span class="imdb-arrow">↗</span>
+      </span>
+    </div>
+  </a>
+</div>
