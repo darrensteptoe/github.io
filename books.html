@@ -4,10 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Books — Darren Steptoe</title>
-  <meta name="description" content="Preview: When Good Intentions Fail — How Institutions Quietly Transfer Burden. Coming soon." />
+  <meta name="description" content="When Good Intentions Fail — coming soon." />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- Page-specific layout only (so you don't have to touch styles.css) -->
+  <!-- Page-specific layout only -->
   <style>
     .book-hero{
       display: grid;
@@ -26,11 +26,10 @@
       border-radius: 20px;
       border: 1px solid rgba(21,21,21,.12);
       background:
-        linear-gradient( to bottom, rgba(255,255,255,.65), rgba(255,255,255,.35) ),
-        repeating-linear-gradient( 135deg, rgba(31,77,58,.10) 0 14px, rgba(31,77,58,.04) 14px 28px );
+        linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,.35)),
+        repeating-linear-gradient(135deg, rgba(31,77,58,.10) 0 14px, rgba(31,77,58,.04) 14px 28px);
       display: grid;
       place-items: center;
-      overflow: hidden;
       position: relative;
     }
     .cover-placeholder::after{
@@ -49,13 +48,6 @@
       text-align: center;
       padding: 0 14px;
     }
-    .cover-micro{
-      font-size: 13px;
-      color: rgba(21,21,21,.55);
-      text-align: right;
-      max-width: 280px;
-    }
-    /* Make the excerpt box read like a “reading room” */
     .reading{
       padding: 28px;
       border-radius: 20px;
@@ -67,27 +59,18 @@
       font-weight: 900;
       letter-spacing: .08em;
       text-transform: uppercase;
-      color: rgba(21,21,21,.68);
       font-size: 12px;
+      color: rgba(21,21,21,.68);
     }
     .reading p{
       margin: 0 0 12px;
       color: rgba(21,21,21,.78);
     }
-    .reading p:last-child{
-      margin-bottom: 0;
-    }
-    /* Responsive */
+    .reading p:last-child{ margin-bottom: 0; }
+
     @media (max-width: 860px){
-      .book-hero{
-        grid-template-columns: 1fr;
-      }
-      .cover-wrap{
-        justify-items: start;
-      }
-      .cover-micro{
-        text-align: left;
-      }
+      .book-hero{ grid-template-columns: 1fr; }
+      .cover-wrap{ justify-items: start; }
     }
   </style>
 </head>
@@ -97,7 +80,7 @@
 
   <header class="site-header">
     <nav class="nav" aria-label="Primary">
-      <a class="brand" href="index.html" aria-label="Home">DS</a>
+      <a class="brand" href="index.html">DS</a>
       <div class="nav-links">
         <a href="work.html">Work</a>
         <a href="books.html" aria-current="page">Books</a>
@@ -110,9 +93,10 @@
   </header>
 
   <main id="main">
-    <!-- HERO -->
     <section class="section">
       <div class="container">
+
+        <!-- TITLE + COVER -->
         <div class="book-hero">
           <div class="section-head">
             <p class="kicker">Coming soon</p>
@@ -120,55 +104,46 @@
             <p class="section-note">How Institutions Quietly Transfer Burden</p>
           </div>
 
-          <div class="cover-wrap" aria-label="Book cover preview">
-            <div class="cover-placeholder" role="img" aria-label="Book cover placeholder">
-              <div class="cover-label">
-                Cover preview<br />
-                (placeholder)
-              </div>
-            </div>
-            <div class="cover-micro">
-              This will become the final cover image once the book is published.
+          <div class="cover-wrap">
+            <div class="cover-placeholder" aria-hidden="true">
+              <div class="cover-label">Cover preview</div>
             </div>
           </div>
         </div>
 
         <div class="stack">
+
           <!-- WHAT THIS IS -->
           <article class="item">
             <h3>What this book is</h3>
             <p>
-              This is a short book about a common pattern in values-driven places:
-              when structure stays unfinished, the weight doesn’t disappear — it moves.
-              It settles into ambiguity, becomes “flexibility,” and eventually becomes someone’s job.
+              This book examines a recurring pattern inside values-driven institutions:
+              when structure remains incomplete, responsibility does not disappear.
+              It migrates — into ambiguity, into flexibility, and eventually into individuals
+              who absorb risk without authority.
             </p>
             <p>
-              It’s written for people who can feel the load but keep getting told to manage it better:
-              translate unclear direction, absorb risk without authority, and hold things together
-              while the language stays inspiring and the design stays the same.
-            </p>
-            <p class="micro">
-              A preview lives below. The full release date and purchase link will be posted here.
+              It is written for people who keep things working without being able to name
+              why the work feels heavier than it should.
             </p>
           </article>
 
-          <!-- PREVIEW EXCERPT -->
+          <!-- EXCERPT -->
           <article class="item">
-            <h3>Preview excerpt</h3>
-            <p class="section-note">A short excerpt from Chapter 1, “Values Are Not Structure.”</p>
+            <h3>Excerpt</h3>
 
-            <div class="reading" aria-label="Book excerpt">
+            <div class="reading">
               <p class="chapter-kicker">Chapter 1 — Values Are Not Structure</p>
 
               <p>
-                Most institutions begin with language. Mission statements. Values decks. Guiding principles.
-                These words tend to show up early, before systems have hardened, before anyone really knows
-                how the work will feel once it’s underway.
+                Most institutions begin with language. Mission statements. Values decks.
+                Guiding principles. These words tend to arrive early, before systems have
+                hardened and before anyone knows how the work will feel once it is underway.
               </p>
 
               <p>
-                That language matters. It draws in people who care. It sets a tone. It creates a sense of shared
-                purpose before anything concrete exists to test it.
+                Language matters. It draws people in. It establishes tone. It creates a sense
+                of shared purpose before anything concrete exists to test it.
               </p>
 
               <p>
@@ -176,63 +151,49 @@
               </p>
 
               <p>
-                At some point, values have to become structure. They have to show up as roles, as authority,
-                as process, as protection. When that translation never quite happens, values start doing work
-                they were never designed to do.
+                At some point, values have to become structure. They have to show up as roles,
+                authority, process, and protection. When that translation does not happen,
+                values begin doing work they were never designed to do.
               </p>
             </div>
-
-            <p class="micro">
-              Note: this is a short excerpt only. Longer preview sections can be added later.
-            </p>
           </article>
 
-          <!-- TOC PREVIEW -->
+          <!-- TOC -->
           <article class="item">
-            <h3>Table of contents (preview)</h3>
-            <p class="section-note">A snapshot of the structure — short chapters, one idea at a time.</p>
+            <h3>Contents</h3>
 
-            <div class="grid" style="margin-top: 18px;">
+            <div class="grid">
               <div class="panel">
-                <div>
-                  <div class="panel-label">Part I</div>
-                  <div class="panel-meta">Values, ambiguity, invisible labor</div>
-                </div>
-                <div class="panel-meta" style="margin-top: 14px;">
-                  Values Are Not Structure · Ambiguity Is a Design Choice · The Invisible Labor That Holds Things Together
+                <div class="panel-label">Part I</div>
+                <div class="panel-meta">
+                  Values Are Not Structure · Ambiguity Is a Design Choice ·
+                  The Invisible Labor That Holds Things Together
                 </div>
               </div>
 
               <div class="panel">
-                <div>
-                  <div class="panel-label">Part II</div>
-                  <div class="panel-meta">How the system “keeps working”</div>
-                </div>
-                <div class="panel-meta" style="margin-top: 14px;">
-                  Collaboration Without Authority · Urgency Changes What Values Mean · When Good Intentions Meet Incentives · Drift Feels Like Stability
+                <div class="panel-label">Part II</div>
+                <div class="panel-meta">
+                  Collaboration Without Authority · Urgency Changes What Values Mean ·
+                  Drift Feels Like Stability
                 </div>
               </div>
 
               <div class="panel wide">
-                <div>
-                  <div class="panel-label">Part III</div>
-                  <div class="panel-meta">Naming the pattern, and what clarity offers</div>
-                </div>
-                <div class="panel-meta" style="margin-top: 14px;">
-                  When Naming the Pattern Becomes Risky · Moral Language as Management · The Cost of Being Reliable ·
-                  The Myth of Alignment · Exhaustion as a Signal · What Happens When People Leave · Staying Does Not Make It Work ·
-                  When Adaptation Becomes Expectation · Recognition Without Rescue · How Burden Finds a Carrier
+                <div class="panel-label">Part III</div>
+                <div class="panel-meta">
+                  The Cost of Being Reliable · Exhaustion as a Signal ·
+                  Recognition Without Rescue · How Burden Finds a Carrier
                 </div>
               </div>
             </div>
           </article>
 
-          <!-- RELEASE / NOTIFY -->
+          <!-- RELEASE -->
           <article class="item">
             <h3>Release</h3>
             <p>
-              <strong>Status:</strong> Coming soon.<br />
-              Leave your email and I’ll notify you when the book is released.
+              The book will be released later this year.
             </p>
 
             <div class="item-actions">
@@ -245,26 +206,24 @@
                 Get notified
               </a>
             </div>
-
-            <p class="micro">
-              No spam. One email when it’s ready.
-            </p>
           </article>
 
-          <!-- ABOUT AUTHOR -->
+          <!-- AUTHOR -->
           <article class="item">
-            <h3>About the author</h3>
+            <h3>Author</h3>
             <p>
-              Darren Steptoe builds work across film, writing, and independent projects — often focused on how institutions
-              shape outcomes and how hidden structure becomes hidden cost.
+              Darren Steptoe works across film, writing, and independent projects,
+              often focused on how institutions shape outcomes and where invisible
+              structure becomes invisible cost.
             </p>
-            <p class="micro">Chicago-based.</p>
           </article>
+
         </div>
 
         <footer class="footer">
           <p>© <span id="year"></span> Darren Steptoe</p>
         </footer>
+
       </div>
     </section>
   </main>
