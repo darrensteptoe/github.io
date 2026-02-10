@@ -4,54 +4,37 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Darren Steptoe</title>
-  <meta name="description" content="A simple website that loads fast and says what it means." />
+  <meta name="description" content="Darren Steptoe — website directory." />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <main class="wrap">
     <header class="header">
       <h1 class="title">Darren Steptoe</h1>
-      <p class="tagline">A plain website. It loads fast. It works everywhere.</p>
+      <p class="sub">Directory</p>
     </header>
 
-    <section class="panel">
-      <h2>Search</h2>
-      <p class="muted">Type to filter pages. Press Enter to open the top result.</p>
-
+    <section class="panel" aria-label="Site search">
       <div class="searchRow">
-        <label class="srOnly" for="q">Search the site</label>
-        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search (e.g., book, consulting, docs, film)..." />
+        <label class="srOnly" for="q">Search</label>
+        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
         <button id="clear" type="button">Clear</button>
       </div>
 
       <div class="resultsMeta">
-        <span id="count">0</span> result(s)
+        <strong><span id="count">0</span></strong> result(s)
       </div>
 
       <ul id="results" class="results" aria-live="polite"></ul>
     </section>
 
-    <section class="panel">
-      <h2>Directory</h2>
-      <p class="muted">Start simple. Add pages as you build them.</p>
-
-      <ul class="links">
-        <li><a href="./book/">Book (preview)</a></li>
-        <li><a href="./consulting/">Consulting</a></li>
-        <li><a href="./media/">Media / Film</a></li>
-        <li><a href="./docs/">Docs</a></li>
-        <li><a href="./contact/">Contact</a></li>
-      </ul>
-
-      <hr />
-
-      <p class="muted">
-        Want a protected area later? We can add it after the content exists.
-      </p>
+    <section class="panel" aria-label="Directory">
+      <h2 class="h2">Pages</h2>
+      <ul id="dir" class="links"></ul>
     </section>
 
     <footer class="footer">
-      <p class="muted">© <span id="year"></span> Darren Steptoe</p>
+      <p>© <span id="year"></span> Darren Steptoe</p>
     </footer>
   </main>
 
