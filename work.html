@@ -4,61 +4,107 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Work — Darren Steptoe</title>
-  <meta name="description" content="Work by Darren Steptoe." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Film and media work by Darren Steptoe." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <main class="wrap">
 
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="index.html" aria-label="Home">DS</a>
-      <div class="nav-links">
-        <a href="work.html" aria-current="page">Work</a>
-        <a href="books.html">Books</a>
-        <a href="music.html">Music</a>
-        <a href="live.html">Live</a>
-        <a href="fantasy.html">Fantasy</a>
-        <a href="contact.html">Contact</a>
+    <header class="header">
+      <h1 class="title">Work</h1>
+      <p class="sub">Film and media</p>
+    </header>
+
+    <!-- Search -->
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Search the site..."
+        />
+        <button id="clear" type="button">Clear</button>
       </div>
-    </nav>
-  </header>
 
-  <main id="main">
-    <section class="section">
-      <div class="container">
-        <div class="section-head">
-          <h1 class="page-title">Work</h1>
-          <p class="section-note">Film, documentary, and projects.</p>
-        </div>
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
+      </div>
 
-        <div class="stack">
-          <article class="item">
-            <h3>Film / Documentary</h3>
-            <p>Add your flagship projects here. Keep entries short and declarative.</p>
-            <div class="item-actions">
-              <a class="link" href="#" aria-disabled="true">Watch (coming soon)</a>
-              <a class="link" href="#" aria-disabled="true">Press</a>
-            </div>
-          </article>
+      <ul id="results" class="results" aria-live="polite"></ul>
+    </section>
 
-          <article class="item">
-            <h3>Writing</h3>
-            <p>Essays, updates, or select writing that supports the larger body of work.</p>
-            <div class="item-actions">
-              <a class="link" href="#" aria-disabled="true">Read (coming soon)</a>
-            </div>
-          </article>
-        </div>
+    <!-- Navigation -->
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./fantasy.html">Fantasy Football</a></li>
+        <li><a href="./books.html">Books</a></li>
+        <li><a href="./work.html" aria-current="page">Work</a></li>
+        <li><a href="./music.html">Music</a></li>
+        <li><a href="./live.html">Live</a></li>
+        <li><a href="./contact.html">Contact</a></li>
+      </ul>
+    </section>
 
-        <footer class="footer">
-          <p>© <span id="year"></span> Darren Steptoe</p>
-        </footer>
+    <!-- IMDb -->
+    <section class="panel" aria-label="IMDb">
+      <h2 class="h2">IMDb</h2>
+      <p>
+        Film credits and additional work can be found on IMDb:
+      </p>
+      <p>
+        <a
+          href="https://www.imdb.com/name/nm12602714/?ref_=nv_sr_srsg_0_tt_0_nm_8_in_0_q_darren%2520steptoe"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          https://www.imdb.com/name/nm12602714/
+        </a>
+      </p>
+    </section>
+
+    <!-- Documentary -->
+    <section class="panel" aria-label="Documentary">
+      <h2 class="h2">Documentary</h2>
+
+      <p>
+        <strong>Role:</strong> Co-producer · Co-writer · Editor
+      </p>
+
+      <p>
+        This documentary received:
+      </p>
+
+      <ul class="links">
+        <li>Founder’s Best Story Award — The African Film Festival (TAFF)</li>
+        <li>Audience Award for Best Documentary — The Black Film Summit</li>
+        <li>Nominee, Best Editing — Oregon Documentary Film Festival</li>
+      </ul>
+
+      <div style="margin-top:16px;">
+        <iframe
+          width="100%"
+          height="400"
+          src="https://www.youtube.com/embed/ycHys4e6s3Q"
+          title="Documentary"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
       </div>
     </section>
+
+    <footer class="footer">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+    </footer>
+
   </main>
 
-  <script src="script.js"></script>
+  <script src="./search.js"></script>
 </body>
 </html>
