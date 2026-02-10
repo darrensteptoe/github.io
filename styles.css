@@ -1,18 +1,13 @@
-/* =========================
-   Darren Steptoe — Clean UI
-   Minimal / Bold / Elegant
-   ========================= */
-
 :root{
-  --bg: #f6f3ee;          /* warm off-white */
-  --ink: #151515;         /* near-black */
+  --bg: #f6f3ee;
+  --ink: #151515;
   --muted: rgba(21,21,21,.68);
   --faint: rgba(21,21,21,.12);
 
   --panel: #ffffff;
   --panel-soft: rgba(255,255,255,.55);
 
-  --accent: #1f4d3a;      /* deep green */
+  --accent: #1f4d3a;
   --accentLine: rgba(31,77,58,.35);
 
   --radius: 20px;
@@ -30,6 +25,7 @@
 
 *{ box-sizing: border-box; }
 html, body{ height: 100%; }
+
 body{
   margin: 0;
   background: var(--bg);
@@ -42,12 +38,11 @@ a{ color: inherit; text-decoration: none; }
 img{ max-width: 100%; display: block; }
 
 :focus-visible{
-  outline: 3px solid rgba(31,77,58,.35);
+  outline: 3px solid var(--accentLine);
   outline-offset: 3px;
   border-radius: 10px;
 }
 
-/* Layout */
 .container{
   max-width: var(--max);
   margin: 0 auto;
@@ -58,11 +53,9 @@ img{ max-width: 100%; display: block; }
   .container{ padding: 0 var(--s3); }
 }
 
-/* Skip link (accessibility) */
 .skip{
   position:absolute;
   left:-999px;
-  top:auto;
   width:1px;
   height:1px;
   overflow:hidden;
@@ -70,7 +63,8 @@ img{ max-width: 100%; display: block; }
 .skip:focus{
   left: var(--s3);
   top: var(--s3);
-  width:auto; height:auto;
+  width:auto;
+  height:auto;
   background: var(--panel);
   padding: 10px 12px;
   border: 1px solid var(--faint);
@@ -78,9 +72,6 @@ img{ max-width: 100%; display: block; }
   z-index: 9999;
 }
 
-/* =========================
-   Header / Nav
-   ========================= */
 .site-header{
   position: sticky;
   top: 0;
@@ -112,8 +103,13 @@ img{ max-width: 100%; display: block; }
   border-radius: 999px;
   border: 1px solid var(--faint);
   background: var(--panel);
-  font-weight: 800;
-  letter-spacing: .06em;
+  overflow: hidden;
+}
+
+.brand img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .nav-links{
@@ -142,9 +138,6 @@ img{ max-width: 100%; display: block; }
   color: var(--ink);
 }
 
-/* =========================
-   Typography
-   ========================= */
 .kicker{
   margin: 0 0 var(--s2);
   color: var(--muted);
@@ -193,9 +186,6 @@ img{ max-width: 100%; display: block; }
   color: rgba(21,21,21,.55);
 }
 
-/* =========================
-   Hero
-   ========================= */
 .hero{
   position: relative;
   padding: var(--s6) 0;
@@ -209,7 +199,6 @@ img{ max-width: 100%; display: block; }
   gap: var(--s2);
 }
 
-/* Circle module (geometric) */
 .shape{
   position:absolute;
   right: -60px;
@@ -247,9 +236,6 @@ img{ max-width: 100%; display: block; }
   .shape{ display:none; }
 }
 
-/* =========================
-   Sections / Panels
-   ========================= */
 .modules{
   padding: var(--s5) 0;
   border-top: 1px solid var(--faint);
@@ -312,7 +298,6 @@ img{ max-width: 100%; display: block; }
   grid-column: 1 / -1;
 }
 
-/* Content stack cards */
 .stack{
   display:grid;
   gap: var(--s3);
@@ -343,9 +328,6 @@ img{ max-width: 100%; display: block; }
   gap: var(--s2);
 }
 
-/* =========================
-   Buttons / Links
-   ========================= */
 .btn{
   display:inline-flex;
   align-items:center;
@@ -386,9 +368,10 @@ img{ max-width: 100%; display: block; }
   border-color: rgba(21,21,21,.22);
 }
 
-/* =========================
-   Embeds / Placeholders
-   ========================= */
+.link[role="note"]{
+  pointer-events: none;
+}
+
 .embed-placeholder{
   background: var(--panel);
   border: 1px dashed rgba(21,21,21,.25);
@@ -396,17 +379,12 @@ img{ max-width: 100%; display: block; }
   padding: var(--s5);
 }
 
-/* Optional: real iframe embeds look clean */
 .embed iframe{
   width: 100%;
   border: 0;
   border-radius: var(--radius);
-  overflow: hidden;
 }
 
-/* =========================
-   Footer
-   ========================= */
 .footer{
   margin-top: var(--s5);
   padding-top: var(--s3);
