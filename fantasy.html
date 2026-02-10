@@ -4,120 +4,58 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fantasy Football — Darren Steptoe</title>
-  <meta name="description" content="Blitzed and Confused — payments, payouts, results, and league rules." />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="description" content="Blitzed and Confused — payments, results, payouts, rules, and settings." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
-  <a class="skip" href="#main">Skip to content</a>
+  <main class="wrap">
+    <header class="header">
+      <h1 class="title">Fantasy Football</h1>
+      <p class="sub">Blitzed and Confused</p>
+    </header>
 
-  <header class="site-header">
-    <nav class="nav" aria-label="Primary">
-      <a class="brand" href="index.html">DS</a>
-      <div class="nav-links">
-        <a href="work.html">Work</a>
-        <a href="books.html">Books</a>
-        <a href="music.html">Music</a>
-        <a href="live.html">Live</a>
-        <a href="fantasy.html" aria-current="page">Fantasy</a>
-        <a href="contact.html">Contact</a>
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
+        <button id="clear" type="button">Clear</button>
       </div>
-    </nav>
-  </header>
 
-  <main id="main">
-    <section class="section">
-      <div class="container">
-
-        <div class="section-head">
-          <h1 class="page-title">Fantasy Football</h1>
-          <p class="section-note">Blitzed and Confused — league hub</p>
-        </div>
-
-        <div class="stack">
-
-          <article class="item">
-            <h3>LeagueSafe</h3>
-            <p>Entry fee: <strong>$25</strong></p>
-            <div class="item-actions">
-              <a class="btn small" href="https://www.leaguesafe.com/join/4351949" target="_blank" rel="noopener noreferrer">
-                Pay on LeagueSafe
-              </a>
-            </div>
-            <p class="micro">https://www.leaguesafe.com/join/4351949</p>
-          </article>
-
-          <article class="item">
-            <h3>Payouts</h3>
-            <p><strong>1st:</strong> 60% &nbsp;·&nbsp; <strong>2nd:</strong> 25% &nbsp;·&nbsp; <strong>3rd:</strong> 15%</p>
-          </article>
-
-          <article class="item">
-            <h3>Last Season Results</h3>
-            <ul class="links" aria-label="Final placements">
-              <li>🏆 1st — No Malice</li>
-              <li>🥈 2nd — Penei for your thoughts</li>
-              <li>🥉 3rd — A Bawdy Doodle</li>
-              <li>4th — Jerry Circus</li>
-              <li>5th — Vegas Eaddy</li>
-              <li>6th — Delulu Bears Fan</li>
-            </ul>
-          </article>
-
-          <article class="item" id="rules">
-            <h3>League Rules</h3>
-
-            <p><strong>Format:</strong> 10 teams · Redraft with <strong>4 keepers</strong> · Snake draft (randomized order) · Half-PPR</p>
-            <p><strong>Playoffs:</strong> Top 6 · Weeks 15–17 · One-week matchups each round · Ties broken by <strong>bench points</strong></p>
-
-            <p>
-              <strong>Roster:</strong>
-              1 QB · 2 RB · 2 WR · 1 TE · 1 Flex (WR/RB/TE) · 1 K · 1 DEF · Bench 6 · IR 3
-            </p>
-
-            <p>
-              <strong>Waivers/FAAB:</strong>
-              Waiver period 1 day · Waiver budget 100 · Players lock at game time
-            </p>
-
-            <p>
-              <strong>Transactions:</strong>
-              Adds max 5/week and 35/season · Trades max 10/season
-            </p>
-
-            <p>
-              <strong>Trades:</strong>
-              Reviewed by commissioner · Trade deadline <strong>Nov 21, 2025</strong> (updates each season) · In-season pick trades allowed · Collusion = removal
-            </p>
-
-            <p>
-              <strong>Keepers:</strong>
-              Up to 4 keepers · Keepers lock on the date of the league draft
-            </p>
-
-            <p>
-              <strong>Conduct:</strong>
-              Competitive lineups required weekly · No collusion/tanking/abandonment · Trash talk ok · Harassment not tolerated
-            </p>
-          </article>
-
-          <article class="item" id="settings">
-            <h3>Settings Snapshot</h3>
-            <p><strong>League:</strong> Blitzed and Confused · League ID <strong>12709265</strong></p>
-            <p><strong>Draft:</strong> Live · Standard · 90 seconds per pick</p>
-            <p><strong>Scoring:</strong> Half-PPR with standard yardage/TD settings · Defense and kicking enabled</p>
-          </article>
-
-        </div>
-
-        <footer class="footer">
-          <p>© <span id="year"></span> Darren Steptoe</p>
-        </footer>
-
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
       </div>
+
+      <ul id="results" class="results" aria-live="polite"></ul>
     </section>
-  </main>
 
-  <script src="script.js"></script>
-</body>
-</html>
+    <section class="panel" aria-label="Directory">
+      <h2 class="h2">Directory</h2>
+      <ul id="dir" class="links"></ul>
+    </section>
+
+    <section class="panel" aria-label="LeagueSafe">
+      <h2 class="h2">LeagueSafe</h2>
+      <p>Entry fee: <strong>$25</strong></p>
+      <p>
+        <a href="https://www.leaguesafe.com/join/4351949" target="_blank" rel="noopener noreferrer">
+          https://www.leaguesafe.com/join/4351949
+        </a>
+      </p>
+    </section>
+
+    <section class="panel" aria-label="Last season results">
+      <h2 class="h2">Last Season Results</h2>
+      <ul class="links">
+        <li>🏆 <strong>No Malice</strong></li>
+        <li>🥈 Penei for your thoughts</li>
+        <li>🥉 A Bawdy Doodle</li>
+        <li>Jerry Circus</li>
+        <li>Vegas Eaddy</li>
+        <li>Delulu Bears Fan</li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-label="Payouts">
+      <h2 class="h2">Payouts</h2>
+      <
