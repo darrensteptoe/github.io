@@ -1,296 +1,285 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Work — Darren Steptoe</title>
-  <meta name="description" content="Film, media, and project work by Darren Steptoe." />
-  <link rel="stylesheet" href="./styles.css" />
+
+  <style>
+    :root {
+      --bg: #0e0e10;
+      --panel: #141418;
+      --border: rgba(255,255,255,0.08);
+      --text: #e9e9ee;
+      --muted: #b6b6c2;
+      --purple: #c9a8ff;
+      --purple-border: rgba(170,120,255,0.35);
+      --purple-bg: rgba(170,120,255,0.15);
+      --green: #2ecc71;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    a {
+      color: var(--purple);
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 24px;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 12px;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: var(--muted);
+    }
+
+    ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+      color: var(--muted);
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .box {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+
+    /* Open to Work badge */
+    .open-to-work {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+    }
+
+    .open-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(46,204,113,0.7);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46,204,113,0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(46,204,113,0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(46,204,113,0);
+      }
+    }
+
+    /* IMDb row */
+    .imdb-card {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      color: inherit;
+    }
+
+    .imdb-badge {
+      width: 56px;
+      min-width: 56px;
+      background: #f5c518;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 16px;
+      color: #111;
+    }
+
+    .imdb-content {
+      flex: 1;
+      display: grid;
+      gap: 8px;
+    }
+
+    .imdb-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .imdb-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .imdb-chip {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--purple-bg);
+      border: 1px solid var(--purple-border);
+      color: var(--purple);
+      white-space: nowrap;
+    }
+
+    .imdb-meta {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .imdb-desc {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .imdb-cta {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
 </head>
 
 <body>
-  <main class="wrap">
+  <main class="container">
+    <h1>Work</h1>
 
-    <header class="header">
-      <h1 class="title">Work</h1>
-      <p class="sub">Selected projects and recognition</p>
-    </header>
+    <section class="grid">
 
-    <section class="panel" aria-label="Site search">
-      <div class="searchRow">
-        <label class="srOnly" for="q">Search</label>
-        <input
-          id="q"
-          name="q"
-          type="search"
-          autocomplete="off"
-          placeholder="Search the site..."
-        />
-        <button id="clear" type="button">Clear</button>
+      <div class="box">
+        <div class="open-to-work">
+          <div class="open-dot"></div>
+          Open to work
+        </div>
+
+        <h2>Media Production Services</h2>
+        <p>
+          I provide end-to-end media production services for individuals,
+          organizations, campaigns, and institutions.
+        </p>
+        <ul>
+          <li>Documentary filmmaking (development, production, post)</li>
+          <li>Video production & editing (short-form, long-form)</li>
+          <li>Event, interview, and field production</li>
+          <li>Script development and story consulting</li>
+          <li>Post-production workflows, color, and delivery</li>
+        </ul>
       </div>
 
-      <div class="resultsMeta">
-        <strong><span id="count">0</span></strong> result(s)
-      </div>
-
-      <ul id="results" class="results" aria-live="polite"></ul>
-    </section>
-
-    <section class="panel" aria-label="Navigation">
-      <h2 class="h2">Pages</h2>
-      <ul class="links">
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./fantasy.html">Fantasy Football</a></li>
-        <li><a href="./books.html">Books</a></li>
-        <li><a href="./work.html" aria-current="page">Work</a></li>
-        <li><a href="./music.html">Music</a></li>
-        <li><a href="./live.html">Live</a></li>
-        <li><a href="./contact.html">Contact</a></li>
-      </ul>
-    </section>
-
-    <section class="panel" aria-label="IMDb">
-      <h2 class="h2">IMDb</h2>
-      <p>
+      <div class="box">
         <a
-          href="https://www.imdb.com/name/nm12602714/?ref_=nv_sr_srsg_0_tt_0_nm_8_in_0_q_darren%2520steptoe"
+          class="imdb-card"
+          href="https://www.imdb.com/name/nm12602714/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          https://www.imdb.com/name/nm12602714/
+          <div class="imdb-badge">IMDb</div>
+
+          <div class="imdb-content">
+            <div class="imdb-title-row">
+              <h2 class="imdb-title">Darren Steptoe — IMDb</h2>
+              <span class="imdb-chip">Film credits</span>
+            </div>
+
+            <div class="imdb-meta">
+              <span>Producer</span>
+              <span>•</span>
+              <span>Writer</span>
+              <span>•</span>
+              <span>Editor</span>
+            </div>
+
+            <p class="imdb-desc">
+              Selected documentary and narrative work, including award-winning
+              projects and festival screenings.
+            </p>
+
+            <div class="imdb-cta">Open profile ↗</div>
+          </div>
         </a>
-      </p>
-    </section>
-
-    <section class="panel" aria-label="Documentary">
-      <h2 class="h2">Documentary</h2>
-      <p><strong>Role:</strong> Co-producer · Co-writer · Editor</p>
-
-      <h3 class="h2" style="margin-top:14px;">Recognition</h3>
-      <ul class="links">
-        <li>Founder’s Best Story Award — The African Film Festival (TAFF)</li>
-        <li>Audience Award for Best Documentary — The Black Film Summit</li>
-        <li>Nominee, Best Editing — Oregon Documentary Film Festival</li>
-      </ul>
-
-      <div style="margin-top:16px;">
-        <iframe
-          width="100%"
-          height="400"
-          src="https://www.youtube.com/embed/ycHys4e6s3Q"
-          title="Documentary"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        ></iframe>
       </div>
 
-      <p style="margin-top:12px;">
-        <a
-          href="https://youtu.be/ycHys4e6s3Q?si=zBzxtBS0YsfGvDld"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Watch on YouTube
-        </a>
-      </p>
+      <div class="box">
+        <h2>Academic and Institutional Work</h2>
+        <p>
+          While serving as an AmeriCorps VISTA, I designed and implemented a
+          community-based project that was incorporated into applied sociology
+          coursework at the University of Tampa.
+        </p>
+        <p>
+          The project was featured as a case example in
+          <a
+            href="https://www.bloomsbury.com/us/national-service-and-volunteerism-9780739196946/"
+            target="_blank"
+          >
+            National Service and Volunteerism (Bloomsbury)
+          </a>.
+        </p>
+      </div>
+
+      <div class="box">
+        <h2>Awards / recognition:</h2>
+        <ul>
+          <li>The President’s Volunteer Service Award — 2011 / CNCS, AmeriCorps NCCC</li>
+          <li>Congressional Award — 2011 / CNCS, AmeriCorps NCCC</li>
+        </ul>
+      </div>
+
     </section>
 
-    <section class="panel" aria-label="Academic and institutional work">
-      <h2 class="h2">Academic and Institutional Work</h2>
-      <p>
-        While serving as an AmeriCorps VISTA, I designed and implemented a community-based project
-        that was incorporated into applied sociology coursework at the University of Tampa.
-      </p>
-      <p>
-        The project was featured as a case example in:
-        <a
-          href="https://www.bloomsbury.com/us/national-service-and-volunteerism-9780739196946/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          National Service and Volunteerism (Bloomsbury)
-        </a>
-      </p>
-    </section>
-
-    <section class="panel" aria-label="AmeriCorps service and recognition">
-      <h2 class="h2">AmeriCorps</h2>
-      <p>
-        Awards / recognition:
-      </p>
-      <ul class="links">
-        <li>The President's Volunteer Service Award — [2011 / CNCS]</li>
-        <li>Congressional Award — [2011 / CNCS]</li>
-      </ul>
-    </section>
-
-    <footer class="footer">
-      <p>© <span id="year"></span> Darren Steptoe</p>
+    <footer>
+      © 2026 Darren Steptoe
     </footer>
-
   </main>
-
-  <script src="./search.js"></script>
 </body>
 </html>
-<!-- IMDb Link Preview Card (drop-in example) -->
-<!-- Paste this anywhere inside your page's main container -->
-
-<style>
-  /* IMDb Preview Card */
-  .imdb-card {
-    display: flex;
-    gap: 14px;
-    align-items: stretch;
-    padding: 14px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.04);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.25);
-    text-decoration: none;
-    color: inherit;
-    transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
-    min-height: 118px;
-  }
-
-  .imdb-card:hover {
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.18);
-  }
-
-  .imdb-card:focus-visible {
-    outline: 2px solid rgba(255, 208, 0, 0.85);
-    outline-offset: 3px;
-  }
-
-  .imdb-badge {
-    width: 52px;
-    min-width: 52px;
-    border-radius: 12px;
-    background: #f5c518; /* IMDb yellow */
-    display: grid;
-    place-items: center;
-    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18);
-  }
-
-  .imdb-badge span {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-weight: 900;
-    letter-spacing: 0.5px;
-    color: #111;
-    font-size: 16px;
-    line-height: 1;
-  }
-
-  .imdb-card-main {
-    flex: 1;
-    display: grid;
-    gap: 8px;
-  }
-
-  .imdb-card-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-  }
-
-  .imdb-card-title {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-weight: 800;
-    font-size: 16px;
-    margin: 0;
-  }
-
-  .imdb-chip {
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-weight: 700;
-    font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(255,255,255,0.06);
-    white-space: nowrap;
-  }
-
-  .imdb-card-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    opacity: 0.92;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-size: 13px;
-  }
-
-  .imdb-dot {
-    opacity: 0.6;
-  }
-
-  .imdb-card-desc {
-    margin: 0;
-    opacity: 0.88;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-size: 13px;
-    line-height: 1.35;
-  }
-
-  .imdb-card-cta {
-    margin-top: 2px;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    opacity: 0.9;
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .imdb-arrow {
-    display: inline-block;
-    transform: translateY(0.5px);
-    opacity: 0.9;
-  }
-
-  /* Optional: make it fit your "box" grid nicely */
-  .imdb-card-wrap {
-    max-width: 720px;
-  }
-</style>
-
-<div class="imdb-card-wrap">
-  <a
-    class="imdb-card"
-    href="https://www.imdb.com/name/nm12602714/?ref_=nv_sr_srsg_0_tt_0_nm_8_in_0_q_darren%2520steptoe"
-    target="_blank"
-    rel="noopener noreferrer"
-    aria-label="Open Darren Steptoe IMDb profile in a new tab"
-  >
-    <div class="imdb-badge" aria-hidden="true"><span>IMDb</span></div>
-
-    <div class="imdb-card-main">
-      <div class="imdb-card-top">
-        <h3 class="imdb-card-title">Darren Steptoe — IMDb</h3>
-        <span class="imdb-chip">Film credits</span>
-      </div>
-
-      <div class="imdb-card-meta">
-        <span>Producer</span>
-        <span class="imdb-dot">•</span>
-        <span>Writer</span>
-        <span class="imdb-dot">•</span>
-        <span>Editor</span>
-      </div>
-
-      <p class="imdb-card-desc">
-        Explore selected credits and projects. (This is a preview card — you can swap this text to match
-        your real work highlights.)
-      </p>
-
-      <span class="imdb-card-cta">
-        Open profile <span class="imdb-arrow">↗</span>
-      </span>
-    </div>
-  </a>
-</div>
