@@ -64,6 +64,9 @@
       width: 92%;
       height: 92%;
     }
+    .coverPh.comingSoon {
+      filter: grayscale(100%) contrast(90%) brightness(85%);
+    }
     .h3 {
       margin: 0 0 10px;
       font-size: 16px;
@@ -73,6 +76,18 @@
     }
     .tight p { margin: 0 0 10px; }
     .tight p:last-child { margin-bottom: 0; }
+
+    .testimonial {
+      font-style: italic;
+      opacity: .95;
+    }
+    .testimonial span {
+      display: block;
+      margin-top: 6px;
+      font-style: normal;
+      opacity: .75;
+    }
+
     @media (max-width: 560px) {
       .bookTopRow { grid-template-columns: 1fr; }
       .coverPh { width: 190px; justify-self: start; }
@@ -123,7 +138,7 @@
       </ul>
     </section>
 
-    <!-- Book (grouped so it feels like one thing) -->
+    <!-- Book -->
     <section class="panel bookGroup" aria-label="When Good Intentions Fail">
       <div class="bookGroupHead">
         <p class="bookGroupTitle">Forthcoming</p>
@@ -131,49 +146,50 @@
 
       <div class="bookStack">
 
-        <!-- 1) Title + cover -->
-        <div class="bookCard" aria-label="Title and cover">
+        <!-- Title + cover -->
+        <div class="bookCard">
           <div class="bookTopRow">
             <div>
               <h2 class="bookName">When Good Intentions Fail</h2>
               <p class="bookTagline"><em>How Institutions Quietly Transfer Burden</em></p>
             </div>
 
-            <div class="coverPh" aria-label="Book cover placeholder">
+            <div class="coverPh comingSoon" aria-label="Book cover coming soon">
               <svg viewBox="0 0 300 450" role="img" aria-label="Placeholder cover">
                 <defs>
                   <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="rgba(255,255,255,.10)"/>
-                    <stop offset="1" stop-color="rgba(255,255,255,.03)"/>
+                    <stop offset="0" stop-color="rgba(255,255,255,.08)"/>
+                    <stop offset="1" stop-color="rgba(255,255,255,.02)"/>
                   </linearGradient>
                 </defs>
-                <rect x="10" y="10" width="280" height="430" rx="14" fill="url(#g)" stroke="rgba(255,255,255,.14)" />
-                <text x="34" y="90" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  WHEN GOOD
-                </text>
-                <text x="34" y="120" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  INTENTIONS
-                </text>
-                <text x="34" y="150" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  FAIL
-                </text>
-                <rect x="34" y="185" width="232" height="1" fill="rgba(255,255,255,.18)" />
-                <text x="34" y="230" fill="rgba(255,255,255,.72)" font-size="14" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  How Institutions Quietly
-                </text>
-                <text x="34" y="252" fill="rgba(255,255,255,.72)" font-size="14" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  Transfer Burden
-                </text>
-                <text x="34" y="405" fill="rgba(255,255,255,.60)" font-size="12" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
-                  Darren Steptoe
+
+                <rect
+                  x="10"
+                  y="10"
+                  width="280"
+                  height="430"
+                  rx="14"
+                  fill="url(#g)"
+                  stroke="rgba(255,255,255,.12)"
+                />
+
+                <text
+                  x="150"
+                  y="225"
+                  text-anchor="middle"
+                  fill="rgba(255,255,255,.55)"
+                  font-size="18"
+                  letter-spacing=".14em"
+                  font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  COMING SOON
                 </text>
               </svg>
             </div>
           </div>
         </div>
 
-        <!-- 2) Back cover -->
-        <div class="bookCard tight" aria-label="Back cover">
+        <!-- Back cover -->
+        <div class="bookCard tight">
           <h3 class="h3">Back Cover</h3>
           <p>
             Values-driven institutions often look humane on the surface: careful language,
@@ -192,8 +208,8 @@
           </p>
         </div>
 
-        <!-- 3) Excerpt -->
-        <div class="bookCard tight" aria-label="Excerpt">
+        <!-- Excerpt -->
+        <div class="bookCard tight">
           <h3 class="h3">Excerpt</h3>
           <p>
             Most institutions begin with language—mission statements, values decks, guiding principles.
@@ -208,17 +224,32 @@
           </p>
         </div>
 
-        <!-- 4) Release / updates -->
-        <div class="bookCard tight" aria-label="Release and updates">
+        <!-- Testimonials -->
+        <div class="bookCard tight">
+          <h3 class="h3">Early Reader Feedback</h3>
+
+          <p class="testimonial">
+            “Bravo! Excellent read—extremely relatable, without being emotionally heavy.”
+            <span>— Harmony</span>
+          </p>
+
+          <p class="testimonial">
+            “You are a very good writer. I’m impressed by how effective your sentences are—enough words to
+            make an interesting point, but not overly flowery.”
+            <span>— Griffith</span>
+          </p>
+        </div>
+
+        <!-- Release -->
+        <div class="bookCard tight">
           <h3 class="h3">Release Notes</h3>
           <p>The book is currently unpublished.</p>
           <p>
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
               target="_blank"
-              rel="noopener noreferrer"
-            >
-              Get notified when it's released →
+              rel="noopener noreferrer">
+              Sign up for updates
             </a>
           </p>
         </div>
