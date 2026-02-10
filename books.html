@@ -6,6 +6,78 @@
   <title>Books — Darren Steptoe</title>
   <meta name="description" content="Books and writing by Darren Steptoe." />
   <link rel="stylesheet" href="./styles.css" />
+
+  <style>
+    .bookGroup {
+      border-radius: 16px;
+      overflow: hidden;
+      padding: 0;
+    }
+    .bookGroupHead {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .bookGroupTitle {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .85;
+    }
+    .bookStack {
+      display: grid;
+      gap: 0;
+    }
+    .bookCard {
+      padding: 18px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .bookCard:last-child {
+      border-bottom: none;
+    }
+    .bookTopRow {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 16px;
+      align-items: center;
+    }
+    .bookName {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+    }
+    .bookTagline {
+      margin: 6px 0 0;
+      opacity: .9;
+    }
+    .coverPh {
+      width: 160px;
+      aspect-ratio: 2 / 3;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      display: grid;
+      place-items: center;
+    }
+    .coverPh svg {
+      width: 92%;
+      height: 92%;
+    }
+    .h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .9;
+    }
+    .tight p { margin: 0 0 10px; }
+    .tight p:last-child { margin-bottom: 0; }
+    @media (max-width: 560px) {
+      .bookTopRow { grid-template-columns: 1fr; }
+      .coverPh { width: 190px; justify-self: start; }
+    }
+  </style>
 </head>
 
 <body>
@@ -51,84 +123,107 @@
       </ul>
     </section>
 
-    <!-- Book -->
-    <section class="panel" aria-label="Book">
-      <h2 class="h2">When Good Intentions Fail</h2>
-      <p><em>How Institutions Quietly Transfer Burden</em></p>
+    <!-- Book (grouped so it feels like one thing) -->
+    <section class="panel bookGroup" aria-label="When Good Intentions Fail">
+      <div class="bookGroupHead">
+        <p class="bookGroupTitle">Forthcoming</p>
+      </div>
 
-      <p>
-        This book examines a recurring pattern in values-driven institutions:
-        when structure remains incomplete, responsibility does not disappear.
-        It relocates into ambiguity, informal expectations, and eventually
-        into the people most willing to carry it.
-      </p>
+      <div class="bookStack">
 
-      <p>
-        It is written for people asked to translate unclear direction, absorb
-        risk without authority, and sustain systems whose language remains
-        aspirational while their design stays unresolved.
-      </p>
-    </section>
+        <!-- 1) Title + cover -->
+        <div class="bookCard" aria-label="Title and cover">
+          <div class="bookTopRow">
+            <div>
+              <h2 class="bookName">When Good Intentions Fail</h2>
+              <p class="bookTagline"><em>How Institutions Quietly Transfer Burden</em></p>
+            </div>
 
-    <!-- Excerpt -->
-    <section class="panel" aria-label="Excerpt">
-      <h2 class="h2">Excerpt</h2>
+            <div class="coverPh" aria-label="Book cover placeholder">
+              <svg viewBox="0 0 300 450" role="img" aria-label="Placeholder cover">
+                <defs>
+                  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="rgba(255,255,255,.10)"/>
+                    <stop offset="1" stop-color="rgba(255,255,255,.03)"/>
+                  </linearGradient>
+                </defs>
+                <rect x="10" y="10" width="280" height="430" rx="14" fill="url(#g)" stroke="rgba(255,255,255,.14)" />
+                <text x="34" y="90" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  WHEN GOOD
+                </text>
+                <text x="34" y="120" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  INTENTIONS
+                </text>
+                <text x="34" y="150" fill="rgba(255,255,255,.92)" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  FAIL
+                </text>
+                <rect x="34" y="185" width="232" height="1" fill="rgba(255,255,255,.18)" />
+                <text x="34" y="230" fill="rgba(255,255,255,.72)" font-size="14" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  How Institutions Quietly
+                </text>
+                <text x="34" y="252" fill="rgba(255,255,255,.72)" font-size="14" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  Transfer Burden
+                </text>
+                <text x="34" y="405" fill="rgba(255,255,255,.60)" font-size="12" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">
+                  Darren Steptoe
+                </text>
+              </svg>
+            </div>
+          </div>
+        </div>
 
-      <p>
-        Most institutions begin with language. Mission statements. Values decks.
-        Guiding principles. These words appear early, before systems harden and
-        before anyone knows how the work will feel once it is underway.
-      </p>
+        <!-- 2) Back cover -->
+        <div class="bookCard tight" aria-label="Back cover">
+          <h3 class="h3">Back Cover</h3>
+          <p>
+            Values-driven institutions often look humane on the surface: careful language,
+            collaborative norms, and a shared sense of mission. But when roles, authority,
+            and decision-making stay unfinished, responsibility doesn’t disappear.
+          </p>
+          <p>
+            It relocates into ambiguity, informal expectations, and the people most willing
+            to carry the load. Over time, “being reliable” becomes a job requirement. Exhaustion
+            becomes normal. And the system keeps functioning precisely because someone keeps compensating.
+          </p>
+          <p>
+            <strong>When Good Intentions Fail</strong> names the pattern clearly—without drama—and gives readers
+            a way to recognize where the burden went, why it landed there, and how to stop mistaking personal
+            strain for personal failure.
+          </p>
+        </div>
 
-      <p>
-        That language matters. It attracts people who care. It establishes tone.
-        It creates alignment before anything concrete exists to test it.
-      </p>
+        <!-- 3) Excerpt -->
+        <div class="bookCard tight" aria-label="Excerpt">
+          <h3 class="h3">Excerpt</h3>
+          <p>
+            Most institutions begin with language—mission statements, values decks, guiding principles.
+            Early on, those words attract people who care and create a sense of shared purpose.
+          </p>
+          <p>
+            But eventually, values have to become structure: roles, authority, process, and protection.
+            When that translation never fully happens, values start doing work they were never designed to do.
+          </p>
+          <p>
+            <em>“Values can guide decisions. They cannot carry them.”</em>
+          </p>
+        </div>
 
-      <p>
-        But language cannot carry weight.
-      </p>
+        <!-- 4) Release / updates -->
+        <div class="bookCard tight" aria-label="Release and updates">
+          <h3 class="h3">Release Notes</h3>
+          <p>The book is currently unpublished.</p>
+          <p>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get notified when it's released →
+            </a>
+          </p>
+        </div>
 
-      <p>
-        At some point, values must become structure — roles, authority, process,
-        and protection. When that translation never fully occurs, values begin
-        doing work they were never designed to do.
-      </p>
-    </section>
-
-    <!-- Structure -->
-    <section class="panel" aria-label="Structure">
-      <h2 class="h2">Structure</h2>
-
-      <p><strong>Part I</strong><br />
-        Values Are Not Structure · Ambiguity Is a Design Choice ·
-        The Invisible Labor That Holds Things Together
-      </p>
-
-      <p><strong>Part II</strong><br />
-        Collaboration Without Authority · Urgency Changes What Values Mean ·
-        When Good Intentions Meet Incentives · Drift Feels Like Stability
-      </p>
-
-      <p><strong>Part III</strong><br />
-        Moral Language as Management · The Cost of Being Reliable ·
-        Exhaustion as a Signal · How Burden Finds a Carrier
-      </p>
-    </section>
-
-    <!-- Release -->
-    <section class="panel" aria-label="Release">
-      <h2 class="h2">Release</h2>
-      <p>The book is currently unpublished.</p>
-      <p>
-        <a
-          href="https://docs.google.com/forms/d/e/1FAIpQLSd6dzvBJ4JIcK7pOP0wM3skn8f-k69Vi5kWyw5NfNr6HsIw5w/viewform?usp=publish-editor"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Get notified when it’s released
-        </a>
-      </p>
+      </div>
     </section>
 
     <footer class="footer">
