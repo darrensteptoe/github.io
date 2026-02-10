@@ -30,7 +30,6 @@
 
 *{ box-sizing: border-box; }
 html, body{ height: 100%; }
-
 body{
   margin: 0;
   background: var(--bg);
@@ -387,12 +386,6 @@ img{ max-width: 100%; display: block; }
   border-color: rgba(21,21,21,.22);
 }
 
-/* Make non-click "chips" behave like labels */
-.link[role="note"]{
-  pointer-events: none;
-  opacity: .95;
-}
-
 /* =========================
    Embeds / Placeholders
    ========================= */
@@ -403,6 +396,7 @@ img{ max-width: 100%; display: block; }
   padding: var(--s5);
 }
 
+/* Optional: real iframe embeds look clean */
 .embed iframe{
   width: 100%;
   border: 0;
