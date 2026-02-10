@@ -1,25 +1,43 @@
 [
   {
+    "title": "Home",
+    "url": "./index.html",
+    "desc": "Main directory.",
+    "tags": ["home", "directory"]
+  },
+  {
     "title": "Fantasy Football",
-    "url": "./fantasy-football/",
-    "desc": "League rules, outcomes, and next-season setup.",
-    "tags": ["fantasy", "football", "rules", "league"]
+    "url": "./fantasy.html",
+    "desc": "Blitzed and Confused — payments, rules, results, and settings.",
+    "tags": ["fantasy", "football", "league", "rules", "payouts", "leaguesafe", "blitzed and confused"]
   },
   {
-    "title": "Book",
-    "url": "./book/",
-    "desc": "Preview and release updates.",
-    "tags": ["book", "writing", "release"]
+    "title": "Books",
+    "url": "./books.html",
+    "desc": "When Good Intentions Fail — excerpt, structure, and release notifications.",
+    "tags": ["books", "writing", "when good intentions fail", "excerpt", "release"]
   },
   {
-    "title": "Files / Docs",
-    "url": "./docs/",
-    "desc": "Documents and resources.",
-    "tags": ["docs", "files", "resources"]
+    "title": "Work",
+    "url": "./work.html",
+    "desc": "Work and projects.",
+    "tags": ["work", "projects", "resume"]
+  },
+  {
+    "title": "Music",
+    "url": "./music.html",
+    "desc": "Music page.",
+    "tags": ["music"]
+  },
+  {
+    "title": "Live",
+    "url": "./live.html",
+    "desc": "Live page.",
+    "tags": ["live"]
   },
   {
     "title": "Contact",
-    "url": "./contact/",
+    "url": "./contact.html",
     "desc": "How to reach me.",
     "tags": ["contact", "email"]
   }
