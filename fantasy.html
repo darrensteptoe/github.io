@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fantasy Football — Darren Steptoe</title>
-  <meta name="description" content="Blitzed and Confused — payments, results, payouts, rules, and settings." />
+  <meta name="description" content="Blitzed and Confused — NFL.com fantasy league information, rules, payouts, and entry." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -13,9 +13,24 @@
 
     <header class="header">
       <h1 class="title">Fantasy Football</h1>
-      <p class="sub">NFL.com League - Blitzed and Confused</p>
+      <p class="sub">NFL.com League — Blitzed and Confused</p>
     </header>
 
+    <!-- Pages -->
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./fantasy.html" aria-current="page">Fantasy Football</a></li>
+        <li><a href="./books.html">Books</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./music.html">Music</a></li>
+        <li><a href="./live.html">Live</a></li>
+        <li><a href="./contact.html">Contact</a></li>
+      </ul>
+    </section>
+
+    <!-- Search -->
     <section class="panel" aria-label="Site search">
       <div class="searchRow">
         <label class="srOnly" for="q">Search</label>
@@ -36,31 +51,44 @@
       <ul id="results" class="results" aria-live="polite"></ul>
     </section>
 
-    <section class="panel" aria-label="Navigation">
-      <h2 class="h2">Pages</h2>
-      <ul class="links">
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./fantasy.html" aria-current="page">Fantasy Football</a></li>
-        <li><a href="./books.html">Books</a></li>
-        <li><a href="./work.html">Work</a></li>
-        <li><a href="./music.html">Music</a></li>
-        <li><a href="./live.html">Live</a></li>
-        <li><a href="./contact.html">Contact</a></li>
-      </ul>
-    </section>
-
-    <section class="panel" aria-label="LeagueSafe">
-      <h2 class="h2">All league funds are securely collected and distributed through LeagueSafe.com</h2>
-      <p>Entry fee: <strong>$25 + Processing fee</strong></p>
+    <!-- Description -->
+    <section class="panel" aria-label="League description" style="position: relative;">
+      <img
+        src="./assets/img/National_Football_League_logo.svg.png"
+        alt="NFL logo"
+        style="position:absolute; top:16px; right:16px; width:36px; height:auto;"
+      />
+      <h2 class="h2">League Description</h2>
       <p>
-        <a href="https://www.leaguesafe.com/join/4351949" target="_blank" rel="noopener noreferrer">
-          https://www.leaguesafe.com/join/4351949
-        </a>
+        I am the commissioner of an official <strong>NFL.com</strong> fantasy football league called
+        <strong>Blitzed and Confused</strong>.
+      </p>
+      <p>
+        This page contains everything you need to know about the league — rules, payouts, settings,
+        results, and how to join.
+      </p>
+      <p>
+        <strong>There are several open spots available.</strong> If you’re interested in joining,
+        review the information below and use the LeagueSafe link to enter.
       </p>
     </section>
 
+    <!-- Settings Snapshot -->
+    <section class="panel" aria-label="Settings snapshot">
+      <h2 class="h2">Settings Snapshot</h2>
+      <ul class="links">
+        <li>Hosting site: NFL.com</li>
+        <li>League name: Blitzed and Confused</li>
+        <li>League ID: 12709265</li>
+        <li>Draft: Live · Standard · 90 seconds per pick</li>
+        <li>Playoffs: 6 teams · Weeks 15–17</li>
+        <li>Scoring: Half-PPR</li>
+      </ul>
+    </section>
+
+    <!-- Results -->
     <section class="panel" aria-label="Last season results">
-      <h2 class="h2">2025-26 Season Results</h2>
+      <h2 class="h2">2025–26 Season Results</h2>
       <ul class="links">
         <li>🏆 <strong>No Malice</strong></li>
         <li>🥈 Penei for your thoughts</li>
@@ -71,15 +99,7 @@
       </ul>
     </section>
 
-    <section class="panel" aria-label="Payouts">
-      <h2 class="h2">Payouts</h2>
-      <ul class="links">
-        <li>1st — 60%</li>
-        <li>2nd — 25%</li>
-        <li>3rd — 15%</li>
-      </ul>
-    </section>
-
+    <!-- Rules -->
     <section class="panel" aria-label="League rules">
       <h2 class="h2">League Rules</h2>
 
@@ -102,28 +122,43 @@
       </p>
 
       <p><strong>Trades</strong><br />
-        Commissioner review · Deadline: Nov 21 (seasonal) · Pick trades allowed · Collusion = removal
+        Commissioner review · Deadline: Nov 21 · Pick trades allowed · Collusion = removal
       </p>
 
       <p><strong>Keepers</strong><br />
-        Up to 4 keepers · Keepers lock on the date of the league draft
+        Up to 4 keepers · Lock at draft date
       </p>
 
       <p><strong>Conduct</strong><br />
-        Competitive lineups required · No collusion/tanking/abandonment · Trash talk allowed · Harassment not tolerated
+        Competitive lineups required · No collusion/tanking/abandonment · Trash talk allowed
       </p>
     </section>
 
-    <section class="panel" aria-label="Settings snapshot">
-      <h2 class="h2">Settings Snapshot</h2>
+    <!-- Payouts -->
+    <section class="panel" aria-label="Payouts">
+      <h2 class="h2">Payouts</h2>
       <ul class="links">
-        <li>Hosting site: NFL.com</li>
-        <li>League name: Blitzed and Confused</li>
-        <li>League ID: 12709265</li>
-        <li>Draft: Live · Standard · 90 seconds per pick</li>
-        <li>Playoffs: 6 teams · Weeks 15–17</li>
-        <li>Scoring: Half-PPR</li>
+        <li>1st — 60%</li>
+        <li>2nd — 25%</li>
+        <li>3rd — 15%</li>
       </ul>
+    </section>
+
+    <!-- LeagueSafe -->
+    <section class="panel" aria-label="LeagueSafe" style="position: relative;">
+      <img
+        src="./assets/img/icon_full_orange.svg"
+        alt="LeagueSafe logo"
+        style="position:absolute; top:16px; right:16px; width:40px; height:auto;"
+      />
+      <h2 class="h2">LeagueSafe Entry Fee</h2>
+      <p>All league funds are securely collected and distributed through <strong>LeagueSafe.com</strong>.</p>
+      <p>Entry fee: <strong>$25 + processing fee</strong></p>
+      <p>
+        <a href="https://www.leaguesafe.com/join/4351949" target="_blank" rel="noopener noreferrer">
+          https://www.leaguesafe.com/join/4351949
+        </a>
+      </p>
     </section>
 
     <footer class="footer">
