@@ -86,6 +86,337 @@ img{ max-width: 100%; display: block; }
   position: sticky;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border-bottom: 1px solid var(--faint);
+}
 
-  /* SAFE fallback (no color-mix) */
-  background: rgba(246,243,238,.8
+.nav{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: var(--s2) var(--s4);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: var(--s3);
+}
+
+@media (max-width: 860px){
+  .nav{ padding: var(--s2) var(--s3); }
+}
+
+.brand{
+  width: 44px;
+  height: 44px;
+  display:grid;
+  place-items:center;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+  background: var(--panel);
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.nav-links{
+  display:flex;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+  gap: var(--s2);
+}
+
+.nav-links a{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--muted);
+}
+
+.nav-links a:hover{
+  border-color: var(--faint);
+  background: rgba(255,255,255,.6);
+  color: var(--ink);
+}
+
+.nav-links a[aria-current="page"]{
+  border-color: var(--accentLine);
+  background: rgba(31,77,58,.08);
+  color: var(--ink);
+}
+
+/* =========================
+   Typography
+   ========================= */
+.kicker{
+  margin: 0 0 var(--s2);
+  color: var(--muted);
+  letter-spacing: .02em;
+}
+
+.title{
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.045em;
+  font-size: clamp(56px, 7vw, 112px);
+  line-height: .92;
+}
+
+.subhead{
+  margin: var(--s3) 0 0;
+  font-size: 18px;
+  color: var(--muted);
+}
+
+.section-title{
+  margin: 0 0 var(--s3);
+  font-size: 18px;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.page-title{
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  font-size: clamp(42px, 4.5vw, 72px);
+  line-height: 1;
+}
+
+.section-note{
+  margin: 0;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.micro{
+  margin: var(--s3) 0 0;
+  font-size: 13px;
+  color: rgba(21,21,21,.55);
+}
+
+/* =========================
+   Hero
+   ========================= */
+.hero{
+  position: relative;
+  padding: var(--s6) 0;
+  overflow: hidden;
+}
+
+.hero-actions{
+  margin-top: var(--s4);
+  display:flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+/* Circle module (geometric) */
+.shape{
+  position:absolute;
+  right: -60px;
+  top: 50%;
+  transform: translateY(-48%);
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+  background: rgba(255,255,255,.45);
+  display:grid;
+  place-items:center;
+}
+
+.shape-grid{
+  width: 220px;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.dot{
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(21,21,21,.14);
+  background: linear-gradient(
+    to right,
+    rgba(31,77,58,.25) 50%,
+    rgba(31,77,58,.08) 50%
+  );
+}
+
+@media (max-width: 860px){
+  .shape{ display:none; }
+}
+
+/* =========================
+   Sections / Panels
+   ========================= */
+.modules{
+  padding: var(--s5) 0;
+  border-top: 1px solid var(--faint);
+}
+
+.section{
+  padding: var(--s6) 0;
+  border-top: 1px solid var(--faint);
+}
+
+.section.alt{
+  background: var(--panel-soft);
+}
+
+.section-head{
+  display:grid;
+  gap: var(--s2);
+  margin-bottom: var(--s4);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s3);
+}
+
+@media (max-width: 860px){
+  .grid{ grid-template-columns: 1fr; }
+}
+
+.panel{
+  background: var(--panel);
+  border: 1px solid var(--faint);
+  border-radius: var(--radius);
+  padding: var(--s4);
+  min-height: 140px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.panel:hover{
+  transform: translateY(-2px);
+  border-color: var(--accentLine);
+  box-shadow: var(--shadow);
+}
+
+.panel-label{
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.panel-meta{
+  margin-top: var(--s2);
+  color: var(--muted);
+}
+
+.panel.wide{
+  grid-column: 1 / -1;
+}
+
+/* Content stack cards */
+.stack{
+  display:grid;
+  gap: var(--s3);
+}
+
+.item{
+  background: var(--panel);
+  border: 1px solid var(--faint);
+  border-radius: var(--radius);
+  padding: var(--s4);
+}
+
+.item h3{
+  margin: 0 0 var(--s2);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+
+.item p{
+  margin: 0 0 var(--s3);
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.item-actions{
+  display:flex;
+  flex-wrap: wrap;
+  gap: var(--s2);
+}
+
+/* =========================
+   Buttons / Links
+   ========================= */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accentLine);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.btn:hover{ filter: brightness(1.03); }
+
+.btn.ghost{
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--faint);
+}
+
+.btn.small{
+  padding: 10px 14px;
+  font-size: 14px;
+}
+
+.link{
+  display:inline-flex;
+  align-items:center;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+  background: rgba(255,255,255,.6);
+  color: var(--ink);
+}
+
+.link:hover{
+  border-color: rgba(21,21,21,.22);
+}
+
+/* Make non-click "chips" behave like labels */
+.link[role="note"]{
+  pointer-events: none;
+  opacity: .95;
+}
+
+/* =========================
+   Embeds / Placeholders
+   ========================= */
+.embed-placeholder{
+  background: var(--panel);
+  border: 1px dashed rgba(21,21,21,.25);
+  border-radius: var(--radius);
+  padding: var(--s5);
+}
+
+.embed iframe{
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+/* =========================
+   Footer
+   ========================= */
+.footer{
+  margin-top: var(--s5);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--faint);
+  color: rgba(21,21,21,.55);
+  font-size: 14px;
+}
