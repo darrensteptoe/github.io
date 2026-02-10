@@ -1,51 +1,136 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fantasy Football</title>
-  <link rel="stylesheet" href="fantasy.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fantasy Football — Darren Steptoe</title>
+  <meta name="description" content="Blitzed and Confused — payments, results, payouts, rules, and settings." />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
+  <main class="wrap">
 
-  <main class="fantasy-container">
+    <header class="header">
+      <h1 class="title">Fantasy Football</h1>
+      <p class="sub">NFL.com League - Blitzed and Confused</p>
+    </header>
 
-    <!-- BOX 1: LeagueSafe -->
-    <div class="fantasy-box">
-      <div class="fantasy-text">
-        <p>
-          All league funds are securely collected and distributed through LeagueSafe.
-        </p>
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Search the site..."
+        />
+        <button id="clear" type="button">Clear</button>
       </div>
 
-      <img
-        src="assets/img/leaguesafe.238f8c6d.svg"
-        alt="LeagueSafe"
-        class="leaguesafe-logo"
-      />
-    </div>
-
-    <!-- BOX 2 -->
-    <div class="fantasy-box">
-      <div class="fantasy-text">
-        <h3>League Rules</h3>
-        <p>
-          Standard PPR scoring with custom playoff seeding and tiebreakers.
-        </p>
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
       </div>
-    </div>
 
-    <!-- BOX 3 -->
-    <div class="fantasy-box">
-      <div class="fantasy-text">
-        <h3>Draft Details</h3>
-        <p>
-          Snake draft conducted online prior to the start of the season.
-        </p>
-      </div>
-    </div>
+      <ul id="results" class="results" aria-live="polite"></ul>
+    </section>
+
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./fantasy.html" aria-current="page">Fantasy Football</a></li>
+        <li><a href="./books.html">Books</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./music.html">Music</a></li>
+        <li><a href="./live.html">Live</a></li>
+        <li><a href="./contact.html">Contact</a></li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-label="LeagueSafe">
+      <h2 class="h2">Entry collected via LeagueSafe.com</h2>
+      <p>Entry fee: <strong>$25</strong></p>
+      <p>
+        <a href="https://www.leaguesafe.com/join/4351949" target="_blank" rel="noopener noreferrer">
+          https://www.leaguesafe.com/join/4351949
+        </a>
+      </p>
+    </section>
+
+    <section class="panel" aria-label="Last season results">
+      <h2 class="h2">Last Season Results</h2>
+      <ul class="links">
+        <li>🏆 <strong>No Malice</strong></li>
+        <li>🥈 Penei for your thoughts</li>
+        <li>🥉 A Bawdy Doodle</li>
+        <li>4th — Jerry Circus</li>
+        <li>5th — Vegas Eaddy</li>
+        <li>6th — Delulu Bears Fan</li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-label="Payouts">
+      <h2 class="h2">Payouts</h2>
+      <ul class="links">
+        <li>1st — 60%</li>
+        <li>2nd — 25%</li>
+        <li>3rd — 15%</li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-label="League rules">
+      <h2 class="h2">League Rules</h2>
+
+      <p><strong>Format</strong><br />
+        10 teams · Redraft · 4 keepers · Half-PPR · Snake draft (random order)
+      </p>
+
+      <p><strong>Playoffs</strong><br />
+        Top 6 · Weeks 15–17 · One-week matchups · Ties broken by bench points
+      </p>
+
+      <p><strong>Roster</strong><br />
+        1 QB · 2 RB · 2 WR · 1 TE · 1 Flex (WR/RB/TE) · 1 K · 1 DEF<br />
+        Bench: 6 · IR: 3
+      </p>
+
+      <p><strong>Waivers / Transactions</strong><br />
+        FAAB 100 · 1-day waivers · Players lock at game time<br />
+        Adds: 5/week, 35/season · Trades: 10/season
+      </p>
+
+      <p><strong>Trades</strong><br />
+        Commissioner review · Deadline: Nov 21 (seasonal) · Pick trades allowed · Collusion = removal
+      </p>
+
+      <p><strong>Keepers</strong><br />
+        Up to 4 keepers · Keepers lock on the date of the league draft
+      </p>
+
+      <p><strong>Conduct</strong><br />
+        Competitive lineups required · No collusion/tanking/abandonment · Trash talk allowed · Harassment not tolerated
+      </p>
+    </section>
+
+    <section class="panel" aria-label="Settings snapshot">
+      <h2 class="h2">Settings Snapshot</h2>
+      <ul class="links">
+        <li>League name: Blitzed and Confused</li>
+        <li>League ID: 12709265</li>
+        <li>Draft: Live · Standard · 90 seconds per pick</li>
+        <li>Playoffs: 6 teams · Weeks 15–17</li>
+        <li>Scoring: Half-PPR</li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+    </footer>
 
   </main>
 
+  <script src="./search.js"></script>
 </body>
 </html>
