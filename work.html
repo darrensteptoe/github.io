@@ -8,9 +8,34 @@
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
+    .navBar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    .navBar a{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+      color:inherit;
+      text-decoration:none;
+    }
+    .navBar a:hover{
+      background:rgba(255,255,255,0.06);
+    }
+    .navBadge{
+      font-weight:900;
+      letter-spacing:0.5px;
+      opacity:0.9;
+    }
+
     .openRow{
       display:flex;
-      justify-content:flex-end;
+      justify-content:flex-start;
       align-items:center;
       gap:10px;
       margin:6px 0 14px;
@@ -105,6 +130,20 @@
       color:#c9a8ff;
       opacity:0.9;
     }
+
+    .videoWrap{
+      position:relative;
+      width:100%;
+      padding-top:56.25%;
+      overflow:hidden;
+    }
+    .videoWrap iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+    }
   </style>
 </head>
 
@@ -115,6 +154,35 @@
       <h1 class="title">Work</h1>
       <p class="sub">Selected projects, services, and experience</p>
     </header>
+
+    <section class="panel" aria-label="Site navigation">
+      <div class="navBar">
+        <a href="./index.html"><span class="navBadge">DS</span><span>Home</span></a>
+        <a href="./work.html">Work</a>
+        <a href="./books.html">Books</a>
+        <a href="./fantasy.html">Fantasy</a>
+        <a href="./documents.html">Documents</a>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
+        <button id="clear" type="button">Clear</button>
+      </div>
+
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
+      </div>
+
+      <ul id="results" class="results" aria-live="polite"></ul>
+    </section>
+
+    <section class="panel" aria-label="Directory">
+      <h2 class="h2">Pages</h2>
+      <ul id="dir" class="links"></ul>
+    </section>
 
     <section class="panel">
       <h2 class="h2">Media Production Services</h2>
@@ -141,7 +209,12 @@
       <h2 class="h2">Documentary Work</h2>
 
       <p>
-        I co-produced, co-wrote, and edited an award-winning documentary.
+        Join 89-year-old retired educator and 2022 Nobel Peace Prize Nominee, Dr. Opal Lee (oft referred to as the “Grandmother of Juneteenth"), as she begins a years-long campaign to make her vision of Juneteenth becoming a federally-recognized holiday a reality.
+      </p>
+
+      <p>
+        Released: March 19, 2022<br />
+        Directed by Erica Stevenson
       </p>
 
       <ul class="links">
@@ -149,10 +222,17 @@
         <li>Audience Award for Best Documentary — The Black Film Summit</li>
         <li>Nominee, Best Editing — Oregon Documentary Film Festival</li>
       </ul>
+    </section>
 
-      <p>
-        <a href="https://youtu.be/ycHys4e6s3Q?si=zBzxtBS0Y" target="_blank" rel="noopener noreferrer">Watch the documentary ↗</a>
-      </p>
+    <section class="panel" aria-label="Documentary video">
+      <div class="videoWrap">
+        <iframe
+          src="https://www.youtube.com/embed/ycHys4e6s3Q"
+          title="Documentary video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
     </section>
 
     <section class="panel">
@@ -208,6 +288,51 @@
   </main>
 
   <script>
+    const PAGES = [
+      { title: "Home", url: "./index.html", keywords: "darren steptoe home", content: "Home page and overview." },
+      { title: "Work", url: "./work.html", keywords: "work media production documentary imdb", content: "Media production services, documentary work, film credits, institutional work." },
+      { title: "Books", url: "./books.html", keywords: "books writing institutional clarity", content: "Books and upcoming releases." },
+      { title: "Fantasy", url: "./fantasy.html", keywords: "fantasy football leaguesafe", content: "Fantasy football info and rules." },
+      { title: "Documents", url: "./documents.html", keywords: "documents files directory", content: "Document links and resources." }
+    ];
+
+    const dir = document.getElementById("dir");
+    if (dir) {
+      dir.innerHTML = PAGES.map(p => `<li><a href="${p.url}">${p.title}</a></li>`).join("");
+    }
+
+    const q = document.getElementById("q");
+    const clearBtn = document.getElementById("clear");
+    const results = document.getElementById("results");
+    const count = document.getElementById("count");
+
+    function norm(s){ return (s || "").toLowerCase().trim(); }
+
+    function render(list){
+      if (!results || !count) return;
+      count.textContent = String(list.length);
+      results.innerHTML = list.map(item => {
+        const snippet = item.content ? item.content : "";
+        return `<li><a href="${item.url}">${item.title}</a><div class="resultSub">${snippet}</div></li>`;
+      }).join("");
+    }
+
+    function search(){
+      const query = norm(q?.value);
+      if (!query) { render([]); return; }
+      const parts = query.split(/\s+/).filter(Boolean);
+
+      const hits = PAGES.filter(p => {
+        const hay = norm([p.title, p.keywords, p.content].join(" "));
+        return parts.every(t => hay.includes(t));
+      });
+
+      render(hits);
+    }
+
+    if (q) q.addEventListener("input", search);
+    if (clearBtn) clearBtn.addEventListener("click", () => { q.value = ""; q.focus(); render([]); });
+
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
