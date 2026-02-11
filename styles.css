@@ -32,21 +32,22 @@ body{
   margin:14px 0;
 }
 
+/* Panels with corner logos */
 .panel-has-logo{
-  padding-right:96px;
+  padding-right:84px;
 }
 
 .panel-logo{
   position:absolute;
   top:16px;
   right:16px;
-  width:auto;
-  height:20px;
+  width:36px;
+  height:auto;
   pointer-events:none;
 }
 
-.panel-logo-tall{
-  height:20px;
+.panel-logo-lg{
+  width:40px;
 }
 
 .h2{margin:0 0 10px;font-size:1.1rem}
@@ -56,6 +57,7 @@ a:visited{color:var(--visited)}
 a:focus,button:focus,input:focus{outline:2px solid #111;outline-offset:2px}
 
 .searchRow{display:flex;gap:10px}
+
 input[type="search"]{
   flex:1;
   padding:10px 12px;
@@ -65,6 +67,7 @@ input[type="search"]{
   color:var(--fg);
   font-size:1rem;
 }
+
 button{
   padding:10px 12px;
   border:1px solid var(--rule);
@@ -73,13 +76,27 @@ button{
   cursor:pointer;
   border-radius:0;
 }
+
 button:hover{border-color:#999}
+
+.button{
+  display:inline-block;
+  margin-top:10px;
+  padding:10px 14px;
+  border:1px solid var(--rule);
+  background:#fff;
+  color:var(--fg);
+  text-decoration:none;
+  font-weight:600;
+}
+
+.button:hover{
+  border-color:#999;
+}
 
 .resultsMeta{margin-top:10px;color:var(--muted)}
 .results,.links{margin:10px 0 0;padding-left:18px}
 .results li{margin:10px 0}
-.resultTitle{font-weight:700}
-.resultDesc{margin:4px 0 0;color:var(--muted)}
 
 .footer{margin:18px 0 10px;padding-top:6px;color:var(--muted)}
 
@@ -101,6 +118,11 @@ button:hover{border-color:#999}
     --link:#8ab4f8;
     --visited:#c58af9;
   }
+
   a:focus,button:focus,input:focus{outline:2px solid var(--fg)}
-  input[type="search"],button{background:#0f0f10;color:var(--fg);border-color:var(--rule)}
+  input[type="search"],button,.button{
+    background:#0f0f10;
+    color:var(--fg);
+    border-color:var(--rule);
+  }
 }
