@@ -3,18 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Books — Darren Steptoe</title>
-  <meta name="description" content="Books and writing by Darren Steptoe." />
+  <title>Writing — Darren Steptoe</title>
+  <meta name="description" content="Writing by Darren Steptoe." />
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
-    /* ONLY CHANGE: force square (90-degree) outer corners */
     .bookGroup {
       border-radius: 0;
       overflow: hidden;
       padding: 0;
     }
-
     .bookGroupHead {
       padding: 16px 16px 12px;
       border-bottom: 1px solid rgba(255,255,255,.08);
@@ -26,33 +24,22 @@
       text-transform: uppercase;
       opacity: .85;
     }
-    .bookStack {
-      display: grid;
-      gap: 0;
-    }
+    .bookStack { display: grid; gap: 0; }
     .bookCard {
       padding: 18px 16px;
       border-bottom: 1px solid rgba(255,255,255,.08);
     }
-    .bookCard:last-child {
-      border-bottom: none;
-    }
+    .bookCard:last-child { border-bottom: none; }
     .bookTopRow {
       display: grid;
       grid-template-columns: 1fr 160px;
       gap: 16px;
       align-items: center;
     }
-    .bookName {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1.15;
-    }
-    .bookTagline {
-      margin: 6px 0 0;
-      opacity: .9;
-    }
-    .coverPh {
+    .bookName { margin: 0; font-size: 22px; line-height: 1.15; }
+    .bookTagline { margin: 6px 0 0; opacity: .9; }
+
+    .coverPh{
       width: 160px;
       aspect-ratio: 2 / 3;
       border-radius: 10px;
@@ -62,13 +49,9 @@
       display: grid;
       place-items: center;
     }
-    .coverPh svg {
-      width: 92%;
-      height: 92%;
-    }
-    .coverPh.comingSoon {
-      filter: grayscale(100%) contrast(90%) brightness(85%);
-    }
+    .coverPh svg { width: 92%; height: 92%; }
+    .coverPh.comingSoon { filter: grayscale(100%) contrast(90%) brightness(85%); }
+
     .h3 {
       margin: 0 0 10px;
       font-size: 16px;
@@ -79,10 +62,7 @@
     .tight p { margin: 0 0 10px; }
     .tight p:last-child { margin-bottom: 0; }
 
-    .testimonial {
-      font-style: italic;
-      opacity: .95;
-    }
+    .testimonial { font-style: italic; opacity: .95; }
     .testimonial span {
       display: block;
       margin-top: 6px;
@@ -101,33 +81,20 @@
   <main class="wrap">
 
     <header class="header">
-      <h1 class="title">Books</h1>
-      <p class="sub">Writing and forthcoming work</p>
+      <h1 class="title">Writing</h1>
+      <p class="sub">Forthcoming work and excerpts</p>
     </header>
 
-    <!-- Search -->
-    <section class="panel" aria-label="Site search">
-      <div class="searchRow">
-        <label class="srOnly" for="q">Search</label>
-        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
-        <button id="clear" type="button">Clear</button>
-      </div>
-      <div class="resultsMeta">
-        <strong><span id="count">0</span></strong> result(s)
-      </div>
-      <ul id="results" class="results" aria-live="polite"></ul>
-    </section>
-
-    <!-- Navigation -->
+    <!-- Pages -->
     <section class="panel" aria-label="Navigation">
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
+        <li><a href="./services.html">Services</a></li>
         <li><a href="./work.html">Work</a></li>
-        <li><a href="./research.html">Projects & Research</a></li>
-        <li><a href="./livestream.html">Livestream</a></li>
-        <li><a href="./fantasy.html">Fantasy Football</a></li>
-        <li><a href="./contact.html">Contact</a></li>        
+        <li><a href="./writing.html" aria-current="page">Writing</a></li>
+        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./more.html">More</a></li>
       </ul>
     </section>
 
@@ -139,7 +106,6 @@
 
       <div class="bookStack">
 
-        <!-- Title + cover -->
         <div class="bookCard">
           <div class="bookTopRow">
             <div>
@@ -171,7 +137,6 @@
           </div>
         </div>
 
-        <!-- Back cover -->
         <div class="bookCard tight">
           <h3 class="h3">Back Cover</h3>
           <p>
@@ -191,7 +156,6 @@
           </p>
         </div>
 
-        <!-- Excerpt -->
         <div class="bookCard tight">
           <h3 class="h3">Excerpt</h3>
           <p>
@@ -207,7 +171,6 @@
           </p>
         </div>
 
-        <!-- Testimonials -->
         <div class="bookCard tight">
           <h3 class="h3">Early Reader Feedback</h3>
           <p class="testimonial">
@@ -221,7 +184,6 @@
           </p>
         </div>
 
-        <!-- Release -->
         <div class="bookCard tight">
           <h3 class="h3">Release Notes</h3>
           <p>The book is currently unpublished.</p>
@@ -252,14 +214,5 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-
-  <script src="./search.js"></script>
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-</body>
-</html>
-
-  </main>
-
-  <script src="./search.js"></script>
 </body>
 </html>
