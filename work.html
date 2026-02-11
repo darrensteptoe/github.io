@@ -8,19 +8,36 @@
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
+    .panel p {
+      margin: 0 0 14px;
+      line-height: 1.55;
+    }
+
+    .panel p:last-child {
+      margin-bottom: 0;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .panel ul li {
+      margin: 8px 0;
+    }
+
+    .sectionHeader {
+      padding-bottom: 4px;
+    }
+
     .imdbLink{
       display:flex;
       gap:16px;
       align-items:stretch;
       color:inherit;
       text-decoration:none;
-      padding:0;
-      margin:0;
-      border-radius:0;
-      background:transparent;
-      border:0;
-      box-shadow:none;
     }
+
     .imdbBadge{
       width:56px;
       min-width:56px;
@@ -31,19 +48,22 @@
       font-size:16px;
       color:#111;
     }
+
     .imdbContent{
       flex:1;
       display:grid;
-      gap:8px;
+      gap:10px;
       min-width:0;
     }
+
     .imdbTitleRow{
       display:flex;
       justify-content:space-between;
-      align-items:baseline;
+      align-items:center;
       gap:12px;
       min-width:0;
     }
+
     .imdbTitle{
       margin:0;
       font-size:16px;
@@ -52,6 +72,7 @@
       overflow:hidden;
       text-overflow:ellipsis;
     }
+
     .imdbChip{
       font-size:12px;
       font-weight:700;
@@ -62,6 +83,7 @@
       color:#c9a8ff;
       white-space:nowrap;
     }
+
     .imdbMeta{
       font-size:13px;
       opacity:0.9;
@@ -69,12 +91,14 @@
       gap:8px;
       flex-wrap:wrap;
     }
+
     .imdbDesc{
       margin:0;
       font-size:13px;
-      line-height:1.45;
+      line-height:1.5;
       opacity:0.85;
     }
+
     .imdbCta{
       font-size:12px;
       font-weight:700;
@@ -88,6 +112,7 @@
       padding-top:56.25%;
       overflow:hidden;
     }
+
     .videoWrap iframe{
       position:absolute;
       inset:0;
@@ -106,32 +131,30 @@
       <p class="sub">Selected projects and experience</p>
     </header>
 
-    <!-- Pages -->
-    <section class="panel" aria-label="Navigation">
+    <section class="panel">
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
         <li><a href="./services.html">Services</a></li>
         <li><a href="./work.html" aria-current="page">Work</a></li>
         <li><a href="./writing.html">Writing</a></li>
-        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./projects.html">Projects & Research</a></li>
         <li><a href="./more.html">More</a></li>
       </ul>
     </section>
 
-    <section class="panel" aria-label="Documentary Work">
+    <section class="panel sectionHeader">
       <h2 class="h2">Documentary Work</h2>
     </section>
 
-    <section class="panel" aria-label="IMDb">
+    <section class="panel">
       <a
         class="imdbLink"
         href="https://www.imdb.com/name/nm12602714/"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open IMDb profile in a new tab"
       >
-        <div class="imdbBadge" aria-hidden="true">IMDb</div>
+        <div class="imdbBadge">IMDb</div>
 
         <div class="imdbContent">
           <div class="imdbTitleRow">
@@ -140,7 +163,9 @@
           </div>
 
           <div class="imdbMeta">
-            <span>Producer</span><span>•</span><span>Writer</span><span>•</span><span>Editor</span>
+            <span>Producer</span><span>•</span>
+            <span>Writer</span><span>•</span>
+            <span>Editor</span>
           </div>
 
           <p class="imdbDesc">
@@ -152,17 +177,16 @@
       </a>
     </section>
 
-    <!-- Documentary Item (add more of these later) -->
-    <section class="panel" aria-label="Documentary item">
-      <p style="margin:0 0 10px;">
+    <section class="panel">
+      <p>
         <b>The Last to Know (2022)</b><br />
         Join 89-year-old retired educator and community activist,
-        Dr. Opal Lee (oft referred to as the “Grandmother of Juneteenth”), as she
+        Dr. Opal Lee (often referred to as the “Grandmother of Juneteenth”), as she
         begins a years-long campaign to make her vision of Juneteenth becoming a
         federally-recognized holiday a reality.
       </p>
 
-      <p style="margin:0 0 12px;">
+      <p>
         My Roles: Co-producer, Co-writer, Editor<br />
         Released: March 19, 2022<br />
         Directed by Erica Stevenson
@@ -171,12 +195,11 @@
       <ul class="links">
         <li>🏆 Founder’s Best Story Award — The African Film Festival (TAFF)</li>
         <li>🏆 Audience Award for Best Documentary — The Black Film Summit</li>
-        <li> Nominee, Best Editing — Oregon Documentary Film Festival</li>
+        <li>Nominee, Best Editing — Oregon Documentary Film Festival</li>
       </ul>
     </section>
 
-    <!-- Documentary Item: video (kept as its own item box) -->
-    <section class="panel" aria-label="Documentary item video">
+    <section class="panel">
       <div class="videoWrap">
         <iframe
           src="https://www.youtube.com/embed/ycHys4e6s3Q"
@@ -187,19 +210,21 @@
       </div>
     </section>
 
-    <!-- Academic & Institutional Work (HEADER BOX) -->
-    <section class="panel" aria-label="Academic and Institutional Work">
+    <section class="panel sectionHeader">
       <h2 class="h2">Academic and Institutional Work</h2>
     </section>
 
-    <!-- Academic Item (add more of these later) -->
-    <section class="panel" aria-label="Academic item">
+    <section class="panel">
       <p>
         <b>Homeless PhotoVoice Project</b><br />
-        During my AmeriCorps VISTA service with the Homeless Coalition of Hillsborough County, I developed and led the Homeless PhotoVoice Project, a community-based applied sociology initiative. I designed the project and approached University of Tampa professor Norma Winston to integrate it into her Applied Sociology course. The project became a core part of the curriculum, engaging students in fieldwork, media coordination, and a public PhotoVoice showcase focused on homelessness in Tampa.
+        During my AmeriCorps VISTA service with the Homeless Coalition of Hillsborough County, I developed and led the Homeless PhotoVoice Project, a community-based applied sociology initiative. I designed the project and approached University of Tampa professor Norma Winston to integrate it into her Applied Sociology course.
       </p>
 
-      <p style="margin:0;">
+      <p>
+        The project became a core part of the curriculum, engaging students in fieldwork, media coordination, and a public PhotoVoice showcase focused on homelessness in Tampa.
+      </p>
+
+      <p>
         The project was later documented as a case example in
         <a
           href="https://www.bloomsbury.com/us/national-service-and-volunteerism-9780739196946/"
@@ -207,7 +232,7 @@
           rel="noopener noreferrer"
         >
           National Service and Volunteerism (Bloomsbury) ↗
-        </a>
+        </a>.
       </p>
     </section>
 
