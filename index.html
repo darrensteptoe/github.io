@@ -100,13 +100,22 @@
     </section>
 
     <footer class="footer" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:8px;">
+      <p>© <span id="year"></span> Darren Steptoe</p>
 
-  <p>© <span id="year"></span> Darren Steptoe</p>
+      <p style="font-size:12px;opacity:.7;text-align:right;">
+        <a href="./privacy.html">Privacy</a> |
+        <a href="./terms.html">Terms</a> |
+        <a href="./refund.html">Refund</a>
+      </p>
+    </footer>
 
-  <p style="font-size:12px;opacity:.7;text-align:right;">
-    <a href="./privacy.html">Privacy</a> |
-    <a href="./terms.html">Terms</a> |
-    <a href="./refund.html">Refund</a>
-  </p>
+  </main>
 
-</footer>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+  <script src="./search.js"></script>
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+</body>
+</html>
