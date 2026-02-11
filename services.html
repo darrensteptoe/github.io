@@ -46,11 +46,19 @@
       100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}
     }
 
+    .sectionRule{
+      border:0;
+      border-top:1px solid rgba(0,0,0,.14);
+      margin:18px 0;
+      width:100%;
+    }
+
     .pricingWrap h3{
       margin:22px 0 8px;
       font-size:15px;
       letter-spacing:.3px;
     }
+
     .pricingItem{
       margin-bottom:18px;
     }
@@ -67,6 +75,35 @@
     .pricingItem p{
       font-size:12px;
       margin:0 0 6px;
+    }
+
+    .pricingGrid{
+      display:grid;
+      gap:14px;
+    }
+    .pricingGrid.twoCol{
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+    .pricingCard{
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:10px;
+      padding:12px 12px 10px;
+      background:rgba(255,255,255,.55);
+    }
+    .pricingCard h4{
+      margin:0 0 6px;
+      font-size:13px;
+      font-weight:700;
+    }
+    .pricingCard ul{
+      margin:0 0 6px 16px;
+      font-size:12px;
+      line-height:1.5;
+    }
+    .pricingCard p{
+      margin:0;
+      font-size:12px;
+      line-height:1.5;
     }
 
     .videoWrap{
@@ -157,6 +194,10 @@
     .formStatus[data-kind="error"]{ color:#b00020; }
     .formStatus[data-kind="info"]{ opacity:.8; }
 
+    @media (max-width: 760px){
+      .pricingGrid.twoCol{ grid-template-columns:1fr; }
+    }
+
     @media (max-width: 520px){
       .panelHasCornerLogo{ padding-right:54px; }
       .panelLogo{ height:18px; }
@@ -184,90 +225,7 @@
       </ul>
     </section>
 
-    <section class="panel pricingWrap" aria-label="Price sheet">
-      <h2 class="h2">Price Sheet</h2>
-
-      <h3>Wedding Films</h3>
-
-      <div class="pricingItem">
-        <h4>Bronze — $2,400</h4>
-        <ul>
-          <li>Up to 6 hours</li>
-          <li>5–7 min highlight film</li>
-          <li>14-day turnaround</li>
-        </ul>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Silver — $3,200</h4>
-        <ul>
-          <li>Up to 8 hours</li>
-          <li>Full speeches edit</li>
-          <li>6–8 min cinematic film</li>
-        </ul>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Gold — $4,200</h4>
-        <ul>
-          <li>Up to 10 hours</li>
-          <li>Multi-cam ceremony</li>
-          <li>Drone + social teaser</li>
-        </ul>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Platinum — $5,200</h4>
-        <ul>
-          <li>Up to 12 hours</li>
-          <li>Immersive specialty cameras</li>
-          <li>Full ceremony + speeches</li>
-          <li>48-hr teaser • 7-day delivery</li>
-        </ul>
-      </div>
-
-      <h3>Event & Promotional</h3>
-
-      <div class="pricingItem">
-        <h4>Half Day — $600</h4>
-        <p>Up to 4 hrs • 60–90 sec highlight</p>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Full Day — $1,000</h4>
-        <p>Up to 8 hrs • 2–3 min highlight</p>
-      </div>
-
-      <p style="font-size:12px;">Additional Hour — $125</p>
-
-      <h3>Corporate & Small Business</h3>
-
-      <div class="pricingItem">
-        <h4>Brand Promo — $1,200</h4>
-        <p>Interview + b-roll • 2–3 min film • Social cut</p>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Executive Interview — $850</h4>
-        <p>Up to 2 hrs • 1–2 min polished edit</p>
-      </div>
-
-      <div class="pricingItem">
-        <h4>Monthly Content — From $2,500</h4>
-        <p>1 filming day • 3–5 edited videos</p>
-      </div>
-
-      <h3>Documentary & Editing</h3>
-      <p style="font-size:12px;">Editing — $85/hr (5-hr minimum)</p>
-      <p style="font-size:12px;">Full Documentary Support — Custom Quote</p>
-
-      <h3>Political Consulting</h3>
-      <p style="font-size:12px;">Strategy Intensive (1 Hour) — $250</p>
-      <p style="font-size:12px;">Municipal Campaign Retainer — $3,000–6,000 / month</p>
-      <p style="font-size:12px;">State Legislative Retainer — $5,000–10,000 / month</p>
-      <p style="font-size:12px;">Congressional Retainer — $10,000–20,000+ / month</p>
-
-    </section>
+    <!-- ORDER STARTS HERE -->
 
     <section class="panel" aria-label="Media Production Services">
       <h2 class="h2">Media Production Services</h2>
@@ -290,11 +248,11 @@
       </ul>
     </section>
 
-    <section class="panel" aria-label="Video placeholder">
+    <section class="panel" aria-label="YouTube video">
       <div class="videoWrap">
         <iframe
           src="https://www.youtube.com/embed/ycHys4e6s3Q"
-          title="Video placeholder"
+          title="YouTube video"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
         ></iframe>
@@ -379,6 +337,119 @@
       </form>
     </section>
 
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Political Consulting">
+      <h2 class="h2">Political Consulting</h2>
+
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
+        <span>Open to work</span>
+      </div>
+
+      <p>
+        I support campaigns, committees, and independent candidates with practical, field-tested strategy. If you need a clean plan, strong execution, and someone who can build the infrastructure and train the team, I can help.
+      </p>
+
+      <ul class="links">
+        <li>Win number + targeting (what it takes to win, who to talk to, and how often)</li>
+        <li>Field plan (persuasion → GOTV), universes, turf cutting, and staging locations</li>
+        <li>Volunteer &amp; staff training (canvass, phones, data entry, packet build)</li>
+        <li>Scripts and message discipline (doors, phones, texts, digital)</li>
+        <li>GOTV operations (chase, visibility, poll coverage planning)</li>
+        <li>Basic comms support (social content guidance, rapid response structure)</li>
+        <li>Office systems (weekly goals, pipeline, reporting, and accountability)</li>
+      </ul>
+    </section>
+
+    <section class="panel pricingWrap" aria-label="Pricing">
+      <h2 class="h2">Pricing</h2>
+
+      <h3>Wedding Films</h3>
+      <div class="pricingGrid twoCol" aria-label="Wedding tiers">
+        <div class="pricingCard">
+          <h4>Bronze — $2,400</h4>
+          <ul>
+            <li>Up to 6 hours</li>
+            <li>5–7 min highlight film</li>
+            <li>14-day turnaround</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Silver — $3,200</h4>
+          <ul>
+            <li>Up to 8 hours</li>
+            <li>Full speeches edit</li>
+            <li>6–8 min cinematic film</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Gold — $4,200</h4>
+          <ul>
+            <li>Up to 10 hours</li>
+            <li>Multi-cam ceremony</li>
+            <li>Drone + social teaser</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Platinum — $5,200</h4>
+          <ul>
+            <li>Up to 12 hours</li>
+            <li>Immersive specialty cameras</li>
+            <li>Full ceremony + speeches</li>
+            <li>48-hr teaser • 7-day delivery</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Event &amp; Promotional</h3>
+      <div class="pricingGrid twoCol" aria-label="Event and promotional">
+        <div class="pricingCard">
+          <h4>Half Day — $600</h4>
+          <p>Up to 4 hrs • 60–90 sec highlight</p>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Full Day — $1,000</h4>
+          <p>Up to 8 hrs • 2–3 min highlight</p>
+        </div>
+      </div>
+
+      <p style="font-size:12px;margin-top:10px;">Additional Hour — $125</p>
+
+      <h3>Corporate &amp; Small Business</h3>
+
+      <div class="pricingItem">
+        <h4>Brand Promo — $1,200</h4>
+        <p>Interview + b-roll • 2–3 min film • Social cut</p>
+      </div>
+
+      <div class="pricingItem">
+        <h4>Executive Interview — $850</h4>
+        <p>Up to 2 hrs • 1–2 min polished edit</p>
+      </div>
+
+      <div class="pricingItem">
+        <h4>Monthly Content — From $2,500</h4>
+        <p>1 filming day • 3–5 edited videos</p>
+      </div>
+
+      <h3>Documentary &amp; Editing</h3>
+      <p style="font-size:12px;">Editing — $85/hr (5-hr minimum)</p>
+      <p style="font-size:12px;">Full Documentary Support — Custom Quote</p>
+
+      <h3>Political Consulting</h3>
+      <p style="font-size:12px;">Strategy Intensive (1 Hour) — $250</p>
+      <p style="font-size:12px;">Municipal Campaign Retainer — $3,000–6,000 / month</p>
+      <p style="font-size:12px;">State Legislative Retainer — $5,000–10,000 / month</p>
+      <p style="font-size:12px;">Congressional Retainer — $10,000–20,000+ / month</p>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
     <section class="panel panelHasCornerLogo" aria-label="Schedule">
       <h2 class="h2">Schedule</h2>
 
@@ -395,7 +466,9 @@
       ></div>
     </section>
 
-    <section class="panel panelHasCornerLogo" aria-label="Payments">
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel panelHasCornerLogo" aria-label="Payment">
       <h2 class="h2">Payment</h2>
 
       <img
