@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Darren Steptoe</title>
+  <meta name="description" content="Contact Darren Steptoe." />
+  <link rel="stylesheet" href="./styles.css" />
+  <!-- uses your site layout structure :contentReference[oaicite:0]{index=0} -->
+</head>
+
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <h1 class="title">Contact</h1>
+      <p class="sub">Send a message directly</p>
+    </header>
+
+    <!-- Pages -->
+    <section class="panel" aria-label="Directory">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./books.html">Books</a></li>
+        <li><a href="./fantasy.html">Fantasy</a></li>
+      </ul>
+    </section>
+
+    <!-- Contact Form -->
+    <section class="panel">
+      <h2 class="h2">Get in Touch</h2>
+
+      <form
+        id="contactForm"
+        action="https://formspree.io/f/xdalazpw"
+        method="POST"
+        class="contactForm"
+        novalidate
+      >
+        <label>
+          Full Name
+          <input type="text" name="name" autocomplete="name" required>
+        </label>
+
+        <label>
+          Email Address
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+
+        <label>
+          Subject
+          <input type="text" name="subject" autocomplete="off">
+        </label>
+
+        <label>
+          Message
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+
+        <!-- Spam filter: honeypot (bots often fill hidden fields) -->
+        <div class="hp" aria-hidden="true">
+          <label>
+            Leave this field empty
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
+        <button id="submitBtn" type="submit">Send Message</button>
+
+        <!-- Success / error message area -->
+        <p id="formStatus" class="formStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+    </footer>
+
+  </main>
+
+  <script>
+    // footer year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // AJAX submit + success message (no redirect)
+    (function () {
+      const form = document.getElementById("contactForm");
+      const statusEl = document.getElementById("formStatus");
+      const btn = document.getElementById("submitBtn");
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.dataset.kind = kind || "";
+      }
+
+      function disableForm(disabled) {
+        btn.disabled = disabled;
+        Array.from(form.elements).forEach(el => {
+          if (el.tagName === "BUTTON") return;
+          el.disabled = disabled;
+        });
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Basic client-side required checks
+        const name = form.querySelector('input[name="name"]');
+        const email = form.querySelector('input[name="email"]');
+        const message = form.querySelector('textarea[name="message"]');
+
+        if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
+          setStatus("Please fill out Name, Email, and Message.", "error");
+          return;
+        }
+
+        // Honeypot: if filled, pretend success but do nothing
+        const gotcha = form.querySelector('input[name="_gotcha"]');
+        if (gotcha && gotcha.value.trim()) {
+          form.reset();
+          setStatus("Thanks — your message has been sent.", "success");
+          return;
+        }
+
+        setStatus("Sending…", "info");
+        disableForm(true);
+
+        try {
+          const data = new FormData(form);
+
+          const res = await fetch(form.action, {
+            method: "POST",
+            body: data,
+            headers: { "Accept": "application/json" }
+          });
+
+          if (res.ok) {
+            form.reset();
+            setStatus("✅ Message sent. I’ll get back to you soon.", "success");
+          } else {
+            // try to parse Formspree errors
+            let errMsg = "Something went wrong. Please try again.";
+            try {
+              const json = await res.json();
+              if (json && json.errors && json.errors.length) {
+                errMsg = json.errors.map(e => e.message).join(" ");
+              }
+            } catch (_) {}
+            setStatus(errMsg, "error");
+          }
+        } catch (err) {
+          setStatus("Network error. Please try again in a moment.", "error");
+        } finally {
+          disableForm(false);
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>
