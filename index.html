@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
-    /* Page-specific spacing refinement */
+    /* Page-specific spacing refinement (no content changes) */
 
     .wrap{
       max-width: 920px;
@@ -54,10 +54,12 @@
       display: flex;
       gap: 12px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .searchRow input{
       flex: 1;
+      min-width: 200px;
     }
 
     .resultsMeta{
@@ -83,4 +85,79 @@
       }
 
       .panel{
-       
+        padding: 24px;
+        gap: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <h1 class="title">Darren Steptoe</h1>
+      <p class="sub">Artist • Author • Storyteller</p>
+    </header>
+
+    <!-- Pages -->
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./services.html">Services</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./writing.html">Writing</a></li>
+        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./more.html">More</a></li>
+      </ul>
+    </section>
+
+    <!-- Search -->
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          autocomplete="off"
+          placeholder="Search the site..."
+        />
+        <button id="clear" type="button">Clear</button>
+      </div>
+
+      <div class="resultsMeta">
+        <strong><span id="count">0</span></strong> result(s)
+      </div>
+
+      <ul id="results" class="results" aria-live="polite"></ul>
+    </section>
+
+    <!-- About -->
+    <section class="panel" aria-label="About">
+      <h2 class="h2">About</h2>
+      <p>
+        I’m Darren Steptoe! Welcome to the site. This space is intended for curious newcomers and those already
+        acquainted with me and my work, providing effortless access to my creations including short films,
+        livestreams, research, and more. Check in periodically for updates.
+      </p>
+    </section>
+
+    <footer class="footer" style="text-align:center;">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+      <p style="font-size:12px;opacity:.7;margin-top:6px;">
+        <a href="./privacy.html">Privacy</a> |
+        <a href="./terms.html">Terms</a> |
+        <a href="./refund.html">Refund</a>
+      </p>
+    </footer>
+
+  </main>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+
+  <script src="./search.js"></script>
+</body>
+</html>
