@@ -90,9 +90,7 @@ button:hover{border-color:#999}
   font-weight:600;
 }
 
-.button:hover{
-  border-color:#999;
-}
+.button:hover{border-color:#999}
 
 .resultsMeta{margin-top:10px;color:var(--muted)}
 .results,.links{margin:10px 0 0;padding-left:18px}
@@ -139,51 +137,62 @@ button:hover{border-color:#999}
   font-size:1rem;
 }
 
-/* Make textarea feel consistent */
-.contactForm textarea{
-  resize:vertical;
+.contactForm textarea{resize:vertical}
+
+.contactForm button{width:fit-content}
+
+.contactForm button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
 /* Fieldset / radio group */
 .fieldSet{
-  border:0;
-  padding:0;
+  border:1px solid var(--rule);
+  padding:10px 12px;
   margin:0;
 }
 
 .fieldSet legend{
+  padding:0 6px;
   font-weight:600;
-  margin-bottom:6px;
 }
 
+/* Align radio dot with label text properly */
 .radioRow{
-  display:flex;
+  display:grid;
+  grid-template-columns:18px 1fr;
   align-items:center;
-  gap:10px;
+  column-gap:10px;
+  row-gap:0;
   padding:6px 0;
 }
 
 .radioRow input[type="radio"]{
   margin:0;
+  width:16px;
+  height:16px;
+  justify-self:start;
 }
 
+.radioRow span{
+  line-height:1.2;
+}
+
+/* Other row: radio + "Other:" + text input on same baseline */
 .otherRow{
-  flex-wrap:wrap;
+  grid-template-columns:18px auto 1fr;
 }
 
 .otherRow input[type="text"]{
-  flex:1;
+  width:100%;
   min-width:220px;
-}
-
-/* Submit button */
-.contactForm button{
-  width:fit-content;
-}
-
-.contactForm button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
+  padding:10px 12px;
+  border:1px solid var(--rule);
+  border-radius:0;
+  background:#fff;
+  color:var(--fg);
+  font-size:1rem;
 }
 
 /* Honeypot (spam filter) */
@@ -201,9 +210,9 @@ button:hover{border-color:#999}
   color:var(--muted);
 }
 
-.formStatus[data-kind="success"]{ color: var(--fg); }
-.formStatus[data-kind="error"]{ color: var(--fg); }
-.formStatus[data-kind="info"]{ color: var(--muted); }
+.formStatus[data-kind="success"]{color:var(--fg)}
+.formStatus[data-kind="error"]{color:var(--fg)}
+.formStatus[data-kind="info"]{color:var(--muted)}
 
 @media (prefers-color-scheme:dark){
   :root{
@@ -230,6 +239,16 @@ button:hover{border-color:#999}
   .contactForm input[type="date"],
   .contactForm textarea,
   .contactForm select{
+    background:#0f0f10;
+    color:var(--fg);
+    border-color:var(--rule);
+  }
+
+  .fieldSet{
+    border-color:var(--rule);
+  }
+
+  .otherRow input[type="text"]{
     background:#0f0f10;
     color:var(--fg);
     border-color:var(--rule);
