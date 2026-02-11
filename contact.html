@@ -6,7 +6,6 @@
   <title>Contact — Darren Steptoe</title>
   <meta name="description" content="Contact Darren Steptoe." />
   <link rel="stylesheet" href="./styles.css" />
-  <!-- uses your site layout structure :contentReference[oaicite:0]{index=0} -->
 </head>
 
 <body>
@@ -17,7 +16,6 @@
       <p class="sub">Send a message directly</p>
     </header>
 
-    <!-- Pages -->
     <section class="panel" aria-label="Directory">
       <h2 class="h2">Pages</h2>
       <ul class="links">
@@ -28,8 +26,7 @@
       </ul>
     </section>
 
-    <!-- Contact Form -->
-    <section class="panel">
+    <section class="panel" aria-label="Contact form">
       <h2 class="h2">Get in Touch</h2>
 
       <form
@@ -59,7 +56,7 @@
           <textarea name="message" rows="6" required></textarea>
         </label>
 
-        <!-- Spam filter: honeypot (bots often fill hidden fields) -->
+        <!-- Spam filter (honeypot): bots fill this, humans won't see it -->
         <div class="hp" aria-hidden="true">
           <label>
             Leave this field empty
@@ -69,7 +66,6 @@
 
         <button id="submitBtn" type="submit">Send Message</button>
 
-        <!-- Success / error message area -->
         <p id="formStatus" class="formStatus" role="status" aria-live="polite"></p>
       </form>
     </section>
@@ -81,10 +77,8 @@
   </main>
 
   <script>
-    // footer year
     document.getElementById("year").textContent = new Date().getFullYear();
 
-    // AJAX submit + success message (no redirect)
     (function () {
       const form = document.getElementById("contactForm");
       const statusEl = document.getElementById("formStatus");
@@ -106,7 +100,6 @@
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        // Basic client-side required checks
         const name = form.querySelector('input[name="name"]');
         const email = form.querySelector('input[name="email"]');
         const message = form.querySelector('textarea[name="message"]');
@@ -116,11 +109,11 @@
           return;
         }
 
-        // Honeypot: if filled, pretend success but do nothing
+        // Honeypot hit -> silently drop and show “success”
         const gotcha = form.querySelector('input[name="_gotcha"]');
         if (gotcha && gotcha.value.trim()) {
           form.reset();
-          setStatus("Thanks — your message has been sent.", "success");
+          setStatus("✅ Message sent. I’ll get back to you soon.", "success");
           return;
         }
 
@@ -129,7 +122,6 @@
 
         try {
           const data = new FormData(form);
-
           const res = await fetch(form.action, {
             method: "POST",
             body: data,
@@ -140,7 +132,6 @@
             form.reset();
             setStatus("✅ Message sent. I’ll get back to you soon.", "success");
           } else {
-            // try to parse Formspree errors
             let errMsg = "Something went wrong. Please try again.";
             try {
               const json = await res.json();
