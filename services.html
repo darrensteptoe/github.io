@@ -24,6 +24,7 @@
 
     .openRow{
       display:flex;
+      justify-content:flex-start;
       align-items:center;
       gap:10px;
       margin:6px 0 14px;
@@ -103,6 +104,10 @@
       -webkit-appearance:none;
     }
 
+    .contactForm select{
+      background-image:none;
+    }
+
     .contactForm textarea{
       resize:vertical;
       min-height:140px;
@@ -125,7 +130,6 @@
       margin:0;
       font-weight:700;
     }
-
     .formStatus[data-kind="success"]{ color:#0a7a31; }
     .formStatus[data-kind="error"]{ color:#b00020; }
     .formStatus[data-kind="info"]{ opacity:.8; }
@@ -145,7 +149,7 @@
       <p class="sub">Media production • Consulting</p>
     </header>
 
-    <section class="panel">
+    <section class="panel" aria-label="Navigation">
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
@@ -157,15 +161,18 @@
       </ul>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Media Production Services">
       <h2 class="h2">Media Production Services</h2>
 
-      <div class="openRow">
-        <span class="openDot"></span>
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
         <span>Open to work</span>
       </div>
 
-      <p>I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.</p>
+      <p>
+        I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.
+      </p>
+
       <ul class="links">
         <li>Documentary filmmaking (development, production, post)</li>
         <li>Video production and editing (short-form, long-form)</li>
@@ -175,7 +182,7 @@
       </ul>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Video placeholder">
       <div class="videoWrap">
         <iframe
           src="https://www.youtube.com/embed/ycHys4e6s3Q"
@@ -186,12 +193,12 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Price sheet">
       <h2 class="h2">Price Sheet</h2>
       <p><em>Placeholder — coming soon.</em></p>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Inquiry form">
       <h2 class="h2">Inquiry Form</h2>
 
       <form
@@ -256,7 +263,7 @@
           <input type="text" name="promo_code" autocomplete="off">
         </label>
 
-        <div class="hp">
+        <div class="hp" aria-hidden="true">
           <label>
             Leave this field empty
             <input type="text" name="_gotcha" tabindex="-1" autocomplete="off">
@@ -269,11 +276,11 @@
       </form>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Political consulting">
       <h2 class="h2">Political Consulting (Strategy Session)</h2>
 
-      <div class="openRow">
-        <span class="openDot"></span>
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
         <span>Open to work</span>
       </div>
 
@@ -293,7 +300,7 @@
       </p>
     </section>
 
-    <section class="panel panelHasCornerLogo">
+    <section class="panel panelHasCornerLogo" aria-label="Schedule">
       <h2 class="h2">Schedule</h2>
 
       <img
@@ -309,7 +316,7 @@
       ></div>
     </section>
 
-    <section class="panel panelHasCornerLogo">
+    <section class="panel panelHasCornerLogo" aria-label="Payments">
       <h2 class="h2">Payment</h2>
 
       <img
@@ -318,7 +325,9 @@
         class="panelLogo"
       />
 
-      <p>For invoices, deposits, or project payments, you can securely pay online.</p>
+      <p>
+        For invoices, deposits, or project payments, you can securely pay online using card, Apple Pay, or Google Pay.
+      </p>
       <p>
         <a
           href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00"
@@ -343,6 +352,105 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    (function () {
+      const form = document.getElementById("contactForm");
+      const statusEl = document.getElementById("formStatus");
+      const btn = document.getElementById("submitBtn");
+
+      const eventTypeSelect = document.getElementById("eventTypeSelect");
+      const eventTypeOtherWrap = document.getElementById("eventTypeOtherWrap");
+      const eventTypeOther = document.getElementById("eventTypeOther");
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg || "";
+        statusEl.dataset.kind = kind || "";
+      }
+
+      function disableForm(disabled) {
+        btn.disabled = disabled;
+        Array.from(form.elements).forEach(el => {
+          if (el.tagName === "BUTTON") return;
+          el.disabled = disabled;
+        });
+      }
+
+      eventTypeSelect.addEventListener("change", () => {
+        if (eventTypeSelect.value === "Other") {
+          eventTypeOtherWrap.style.display = "grid";
+          eventTypeOther.setAttribute("required", "required");
+        } else {
+          eventTypeOtherWrap.style.display = "none";
+          eventTypeOther.removeAttribute("required");
+          eventTypeOther.value = "";
+        }
+      });
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const requiredEls = form.querySelectorAll("[required]");
+        for (const el of requiredEls) {
+          if (!String(el.value || "").trim()) {
+            setStatus("Please fill out all required fields (*).", "error");
+            el.focus();
+            return;
+          }
+        }
+
+        if (eventTypeSelect.value === "Other" && !eventTypeOther.value.trim()) {
+          setStatus("Please specify your event type.", "error");
+          eventTypeOther.focus();
+          return;
+        }
+
+        const gotcha = form.querySelector('input[name="_gotcha"]');
+        if (gotcha && gotcha.value.trim()) {
+          form.reset();
+          eventTypeOtherWrap.style.display = "none";
+          eventTypeOther.removeAttribute("required");
+          setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
+          return;
+        }
+
+        setStatus("Sending…", "info");
+        disableForm(true);
+
+        try {
+          const data = new FormData(form);
+
+          if (eventTypeSelect.value === "Other") {
+            data.set("event_type", "Other: " + eventTypeOther.value.trim());
+          }
+
+          const res = await fetch(form.action, {
+            method: "POST",
+            body: data,
+            headers: { "Accept": "application/json" }
+          });
+
+          if (res.ok) {
+            form.reset();
+            eventTypeOtherWrap.style.display = "none";
+            eventTypeOther.removeAttribute("required");
+            setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
+          } else {
+            let errMsg = "Something went wrong. Please try again.";
+            try {
+              const json = await res.json();
+              if (json && json.errors && json.errors.length) {
+                errMsg = json.errors.map(e => e.message).join(" ");
+              }
+            } catch (_) {}
+            setStatus(errMsg, "error");
+          }
+        } catch (err) {
+          setStatus("Network error. Please try again in a moment.", "error");
+        } finally {
+          disableForm(false);
+        }
+      });
+    })();
   </script>
 
   <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
