@@ -6,39 +6,33 @@
     "tags": ["home", "directory"]
   },
   {
-    "title": "Fantasy Football",
-    "url": "./fantasy.html",
-    "desc": "Blitzed and Confused — payments, rules, results, and settings.",
-    "tags": ["fantasy", "football", "league", "rules", "payouts", "leaguesafe", "blitzed and confused"]
-  },
-  {
-    "title": "Books",
-    "url": "./books.html",
-    "desc": "When Good Intentions Fail — excerpt, structure, and release notifications.",
-    "tags": ["books", "writing", "when good intentions fail", "excerpt", "release"]
+    "title": "Services",
+    "url": "./services.html",
+    "desc": "Media production, political consulting, inquiry form, scheduling, and payments.",
+    "tags": ["services", "media", "video", "production", "consulting", "politics", "calendly", "stripe", "form"]
   },
   {
     "title": "Work",
     "url": "./work.html",
-    "desc": "Work and projects.",
-    "tags": ["work", "projects", "resume"]
+    "desc": "Selected projects and experience.",
+    "tags": ["work", "documentary", "imdb", "projects"]
   },
   {
-    "title": "Music",
-    "url": "./music.html",
-    "desc": "Music page.",
-    "tags": ["music"]
+    "title": "Writing",
+    "url": "./writing.html",
+    "desc": "Forthcoming writing, excerpts, and release notifications.",
+    "tags": ["writing", "books", "when good intentions fail", "excerpt", "release"]
   },
   {
-    "title": "Live",
-    "url": "./live.html",
-    "desc": "Live page.",
-    "tags": ["live"]
+    "title": "Projects & Research",
+    "url": "./projects.html",
+    "desc": "Documentary development and research projects.",
+    "tags": ["projects", "research", "documentary", "archives", "transcription"]
   },
   {
-    "title": "Contact",
-    "url": "./contact.html",
-    "desc": "How to reach me.",
-    "tags": ["contact", "email"]
+    "title": "More",
+    "url": "./more.html",
+    "desc": "Extras and side projects (includes fantasy football).",
+    "tags": ["more", "fantasy", "football", "league", "rules", "payouts", "leaguesafe", "blitzed and confused"]
   }
 ]
