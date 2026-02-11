@@ -6,146 +6,101 @@
   <title>More — Darren Steptoe</title>
   <meta name="description" content="More pages and extras." />
   <link rel="stylesheet" href="./styles.css" />
-</head>
 
-<body>
-  <main class="wrap">
+  <style>
+    .fantasyBig {
+      padding: 0;
+      overflow: hidden;
+    }
 
-    <header class="header">
-      <h1 class="title">More</h1>
-      <p class="sub">Extras and side projects</p>
-    </header>
+    .fantasyHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
 
-    <!-- Pages -->
-    <section class="panel" aria-label="Navigation">
-      <h2 class="h2">Pages</h2>
-      <ul class="links">
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./services.html">Services</a></li>
-        <li><a href="./work.html">Work</a></li>
-        <li><a href="./writing.html">Writing</a></li>
-        <li><a href="./projects.html">Projects &amp; Research</a></li>
-        <li><a href="./more.html" aria-current="page">More</a></li>
-      </ul>
-    </section>
+    .fantasyHeadLeft {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
 
-    <!-- Fantasy Football (moved here) -->
-    <section class="panel">
-      <h2 class="h2">Fantasy Football</h2>
-      <p class="sub" style="margin:0;">NFL.com League — Blitzed and Confused</p>
-    </section>
+    .fantasyLogoTop {
+      height: 22px;
+      width: auto;
+      display: block;
+      flex: 0 0 auto;
+      opacity: .95;
+    }
 
-    <section class="panel panel-has-logo">
-      <img
-        src="./assets/National_Football_League_logo.svg.png"
-        alt="NFL logo"
-        class="panel-logo"
-      />
-      <h2 class="h2">League Description</h2>
-      <p>
-        I am the commissioner of an official <strong>NFL.com</strong> fantasy football custom league called
-        <strong>Blitzed and Confused</strong>.
-      </p>
-      <p>
-        This page contains everything you need to know about the league — rules, payouts, settings,
-        results, and how to join.
-      </p>
-      <p>
-        <strong>There are several open spots available for the 2026–27 season.</strong>
-      </p>
-    </section>
+    .fantasyTitleWrap {
+      min-width: 0;
+    }
 
-    <section class="panel">
-      <h2 class="h2">Snapshot</h2>
-      <ul class="links">
-        <li>Hosting site: NFL.com</li>
-        <li>League name: Blitzed and Confused</li>
-        <li>League ID: 12709265</li>
-        <li>Draft: Live · Standard · 90 seconds per pick</li>
-        <li>Playoffs: 6 teams · Weeks 15–17</li>
-        <li>Scoring: Half-PPR</li>
-      </ul>
-    </section>
+    .fantasyTitle {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-    <section class="panel">
-      <h2 class="h2">2025–26 Season Results</h2>
-      <ul class="links">
-        <li>🏆 <strong>No Malice</strong></li>
-        <li>🥈 Penei for your thoughts</li>
-        <li>🥉 A Bawdy Doodle (me)</li>
-        <li>4th — Jerry Circus</li>
-        <li>5th — Vegas Eaddy</li>
-        <li>6th — Delulu Bears Fan</li>
-      </ul>
-    </section>
+    .fantasySub {
+      margin: 6px 0 0;
+      font-size: 13px;
+      opacity: .85;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-    <section class="panel">
-      <h2 class="h2">League Rules</h2>
+    .fantasyBody {
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
 
-      <p><strong>Format</strong><br />
-        10 teams · Redraft · 4 keepers · Half-PPR · Snake draft
-      </p>
+    .fantasySection {
+      padding: 14px 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      border-radius: 10px;
+    }
 
-      <p><strong>Playoffs</strong><br />
-        Top 6 · Weeks 15–17 · One-week matchups
-      </p>
+    .fantasySection h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      opacity: .9;
+    }
 
-      <p><strong>Roster</strong><br />
-        1 QB · 2 RB · 2 WR · 1 TE · 1 Flex · 1 K · 1 DEF<br />
-        Bench: 6 · IR: 3
-      </p>
+    .fantasySection p {
+      margin: 0 0 10px;
+    }
+    .fantasySection p:last-child {
+      margin-bottom: 0;
+    }
 
-      <p><strong>Transactions</strong><br />
-        FAAB 100 · Adds: 5/week · Trades: 10/season
-      </p>
+    .fantasyList {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .fantasyList li {
+      margin: 6px 0;
+    }
 
-      <p><strong>Conduct</strong><br />
-        Competitive lineups required · No collusion · Trash talk allowed
-      </p>
-    </section>
+    .fantasyRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
 
-    <section class="panel">
-      <h2 class="h2">Payouts</h2>
-      <ul class="links">
-        <li>1st — 60%</li>
-        <li>2nd — 25%</li>
-        <li>3rd — 15%</li>
-      </ul>
-    </section>
-
-    <section class="panel panel-has-logo">
-      <img
-        src="./assets/icon_full_orange.svg"
-        alt="LeagueSafe logo"
-        class="panel-logo"
-      />
-      <h2 class="h2">Entry Fee</h2>
-      <p>All league funds are securely collected and distributed through <strong>LeagueSafe</strong>.</p>
-      <p>Entry fee: <strong>$25 + processing fee</strong></p>
-
-      <a
-        href="https://www.leaguesafe.com/join/4351949"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="button"
-      >
-        Pay Your Dues
-      </a>
-    </section>
-
-    <footer class="footer" style="text-align:center;">
-      <p>© <span id="year"></span> Darren Steptoe</p>
-      <p style="font-size:12px;opacity:.7;margin-top:6px;">
-        <a href="./privacy.html">Privacy</a> |
-        <a href="./terms.html">Terms</a> |
-        <a href="./refund.html">Refund</a>
-      </p>
-    </footer>
-
-  </main>
-
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-</body>
-</html>
+    @media (max-width: 720px) {
+      .f
