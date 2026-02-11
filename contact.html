@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Contact — Darren Steptoe</title>
-  <meta name="description" content="Contact Darren Steptoe." />
+  <title>Videography Inquiry — Darren Steptoe</title>
+  <meta name="description" content="Videography inquiry form for Drift Stone Videography Services." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -12,8 +12,8 @@
   <main class="wrap">
 
     <header class="header">
-      <h1 class="title">Contact</h1>
-      <p class="sub">Send a message directly</p>
+      <h1 class="title">Videography Services</h1>
+      <p class="sub">Please fill out the form below and I’ll follow up within 48 hours.</p>
     </header>
 
     <section class="panel" aria-label="Directory">
@@ -26,8 +26,8 @@
       </ul>
     </section>
 
-    <section class="panel" aria-label="Contact form">
-      <h2 class="h2">Get in Touch</h2>
+    <section class="panel" aria-label="Videography inquiry form">
+      <h2 class="h2">Inquiry Form</h2>
 
       <form
         id="contactForm"
@@ -37,26 +37,83 @@
         novalidate
       >
         <label>
-          Full Name
+          Name *
           <input type="text" name="name" autocomplete="name" required>
         </label>
 
         <label>
-          Email Address
+          Telephone *
+          <input type="tel" name="telephone" autocomplete="tel" inputmode="tel" required>
+        </label>
+
+        <label>
+          Email *
           <input type="email" name="email" autocomplete="email" required>
         </label>
 
         <label>
-          Subject
-          <input type="text" name="subject" autocomplete="off">
+          Date of Event *
+          <input type="date" name="date_of_event" required>
+        </label>
+
+        <!-- Event Type (radio list) -->
+        <fieldset class="fieldSet">
+          <legend>Event Type *</legend>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Wedding & Pre-Wedding" required>
+            <span>Wedding &amp; Pre-Wedding</span>
+          </label>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Interview" required>
+            <span>Interview</span>
+          </label>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Event Videography" required>
+            <span>Event Videography</span>
+          </label>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Product & Commercial" required>
+            <span>Product &amp; Commercial</span>
+          </label>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Architectural & Interior" required>
+            <span>Architectural &amp; Interior</span>
+          </label>
+
+          <label class="radioRow">
+            <input type="radio" name="event_type" value="Birthday & Anniversary" required>
+            <span>Birthday &amp; Anniversary</span>
+          </label>
+
+          <label class="radioRow otherRow">
+            <input id="etypeOtherRadio" type="radio" name="event_type" value="Other" required>
+            <span>Other:</span>
+            <input
+              id="etypeOtherText"
+              type="text"
+              name="event_type_other"
+              placeholder="Type here…"
+              autocomplete="off"
+            >
+          </label>
+        </fieldset>
+
+        <label>
+          Details *
+          <textarea name="details" rows="6" required placeholder="Share the key details (location, hours needed, deliverables, vibe, etc.)"></textarea>
         </label>
 
         <label>
-          Message
-          <textarea name="message" rows="6" required></textarea>
+          Promo Code
+          <input type="text" name="promo_code" autocomplete="off">
         </label>
 
-        <!-- Spam filter (honeypot): bots fill this, humans won't see it -->
+        <!-- Honeypot spam filter -->
         <div class="hp" aria-hidden="true">
           <label>
             Leave this field empty
@@ -64,7 +121,7 @@
           </label>
         </div>
 
-        <button id="submitBtn" type="submit">Send Message</button>
+        <button id="submitBtn" type="submit">Send</button>
 
         <p id="formStatus" class="formStatus" role="status" aria-live="polite"></p>
       </form>
@@ -84,6 +141,9 @@
       const statusEl = document.getElementById("formStatus");
       const btn = document.getElementById("submitBtn");
 
+      const otherRadio = document.getElementById("etypeOtherRadio");
+      const otherText = document.getElementById("etypeOtherText");
+
       function setStatus(msg, kind) {
         statusEl.textContent = msg || "";
         statusEl.dataset.kind = kind || "";
@@ -97,23 +157,51 @@
         });
       }
 
+      // If user types in "Other" text, auto-select Other radio
+      otherText.addEventListener("input", () => {
+        if (otherText.value.trim()) otherRadio.checked = true;
+      });
+
+      // If user selects a non-Other option, clear Other text
+      form.addEventListener("change", (e) => {
+        if (e.target && e.target.name === "event_type" && e.target !== otherRadio) {
+          otherText.value = "";
+        }
+      });
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const name = form.querySelector('input[name="name"]');
-        const email = form.querySelector('input[name="email"]');
-        const message = form.querySelector('textarea[name="message"]');
+        // Required validation
+        const requiredEls = form.querySelectorAll("[required]");
+        for (const el of requiredEls) {
+          if (el.type === "radio") continue;
+          if (!String(el.value || "").trim()) {
+            setStatus("Please fill out all required fields (*).", "error");
+            el.focus();
+            return;
+          }
+        }
 
-        if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
-          setStatus("Please fill out Name, Email, and Message.", "error");
+        // Required radio group check
+        const picked = form.querySelector('input[name="event_type"]:checked');
+        if (!picked) {
+          setStatus("Please select an Event Type (*).", "error");
           return;
         }
 
-        // Honeypot hit -> silently drop and show “success”
+        // If Other selected, require the text box
+        if (picked === otherRadio && !otherText.value.trim()) {
+          setStatus("Please fill in the “Other” event type.", "error");
+          otherText.focus();
+          return;
+        }
+
+        // Honeypot hit -> silently drop
         const gotcha = form.querySelector('input[name="_gotcha"]');
         if (gotcha && gotcha.value.trim()) {
           form.reset();
-          setStatus("✅ Message sent. I’ll get back to you soon.", "success");
+          setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
           return;
         }
 
@@ -122,6 +210,12 @@
 
         try {
           const data = new FormData(form);
+
+          // Optional: include a combined human-friendly field too
+          if (picked === otherRadio) {
+            data.set("event_type", "Other: " + otherText.value.trim());
+          }
+
           const res = await fetch(form.action, {
             method: "POST",
             body: data,
@@ -130,7 +224,7 @@
 
           if (res.ok) {
             form.reset();
-            setStatus("✅ Message sent. I’ll get back to you soon.", "success");
+            setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
           } else {
             let errMsg = "Something went wrong. Please try again.";
             try {
