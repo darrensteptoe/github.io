@@ -144,24 +144,16 @@
       <ul id="results" class="results" aria-live="polite"></ul>
     </section>
 
-    <!-- UPDATED PAGES BOX -->
     <section class="panel" aria-label="Directory">
       <h2 class="h2">Pages</h2>
-      <ul class="links">
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./books.html">Books</a></li>
-        <li><a href="./projects.html">Projects &amp; Research</a></li>
-        <li><a href="./livestream.html">Livestream</a></li>
-        <li><a href="./fantasy.html">Fantasy Football</a></li>
-        <li><a href="./contact.html">Contact</a></li>
-      </ul>
+      <ul id="dir" class="links"></ul>
     </section>
 
     <section class="panel">
       <h2 class="h2">Media Production Services</h2>
 
-      <div class="openRow">
-        <span class="openDot"></span>
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
         <span>Open to work</span>
       </div>
 
@@ -180,32 +172,85 @@
 
     <section class="panel">
       <h2 class="h2">Documentary Work</h2>
+
       <p>
         Join 89-year-old retired educator and community activist,
-        Dr. Opal Lee as she begins a years-long campaign to make Juneteenth
-        a federally-recognized holiday.
+        Dr. Opal Lee (oft referred to as the “Grandmother of Juneteenth”), as she
+        begins a years-long campaign to make her vision of Juneteenth becoming a
+        federally-recognized holiday a reality.
       </p>
 
       <p>
-        My Roles: Co-producer, Co-writer, Editor<br />
+        My Roles: Co-producer, Co-writer, Editor
         Released: March 19, 2022<br />
         Directed by Erica Stevenson
       </p>
 
       <ul class="links">
         <li>🏆 Founder’s Best Story Award — The African Film Festival (TAFF)</li>
-        <li>🏆 Audience Award — The Black Film Summit</li>
-        <li>Nominee — Best Editing, Oregon Documentary Film Festival</li>
+        <li>🏆 Audience Award for Best Documentary — The Black Film Summit</li>
+        <li> Nominee, Best Editing — Oregon Documentary Film Festival</li>
       </ul>
     </section>
 
-    <section class="panel">
+    <section class="panel" aria-label="Documentary video">
       <div class="videoWrap">
         <iframe
           src="https://www.youtube.com/embed/ycHys4e6s3Q"
+          title="Documentary video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowfullscreen
         ></iframe>
       </div>
+    </section>
+
+    <section class="panel">
+      <a
+        class="imdbLink"
+        href="https://www.imdb.com/name/nm12602714/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open IMDb profile in a new tab"
+      >
+        <div class="imdbBadge" aria-hidden="true">IMDb</div>
+
+        <div class="imdbContent">
+          <div class="imdbTitleRow">
+            <h2 class="imdbTitle">Darren Steptoe — IMDb</h2>
+            <span class="imdbChip">Film credits</span>
+          </div>
+
+          <div class="imdbMeta">
+            <span>Producer</span><span>•</span><span>Writer</span><span>•</span><span>Editor</span>
+          </div>
+
+          <p class="imdbDesc">
+            Selected credits and projects across documentary and narrative work.
+          </p>
+
+          <div class="imdbCta">Open profile ↗</div>
+        </div>
+      </a>
+    </section>
+
+    <section class="panel">
+      <h2 class="h2">Academic and Institutional Work</h2>
+
+      <p>
+        During my AmeriCorps VISTA service with the Homeless Coalition of Hillsborough County, I developed and led the Homeless PhotoVoice Project, a community-based applied sociology initiative. I designed the project and approached University of Tampa professor Norma Winston to integrate it into her Applied Sociology course.
+The project became a core part of the curriculum, engaging students in fieldwork, media coordination, and a public PhotoVoice showcase focused on homelessness in Tampa.
+      </p>
+
+      <p>
+        The project was later documented as a case example in
+        <a
+          href="https://www.bloomsbury.com/us/national-service-and-volunteerism-9780739196946/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          National Service and Volunteerism (Bloomsbury) ↗
+        </a>
+      </p>
     </section>
 
     <footer class="footer">
@@ -215,8 +260,54 @@
   </main>
 
   <script>
+    // ONLY CHANGE: updated Pages list + search index to match it
+    const PAGES = [
+      { title: "Home", url: "./index.html", keywords: "home", content: "Home page and overview." },
+      { title: "Books", url: "./books.html", keywords: "books writing", content: "Books and upcoming releases." },
+      { title: "Projects & Research", url: "./projects.html", keywords: "projects research", content: "Projects and research." },
+      { title: "Livestream", url: "./livestream.html", keywords: "livestream live", content: "Livestream page." },
+      { title: "Fantasy Football", url: "./fantasy.html", keywords: "fantasy football", content: "Fantasy football info and rules." },
+      { title: "Contact", url: "./contact.html", keywords: "contact email", content: "Contact and inquiry." }
+    ];
+
+    const dir = document.getElementById("dir");
+    if (dir) {
+      dir.innerHTML = PAGES.map(p => `<li><a href="${p.url}">${p.title}</a></li>`).join("");
+    }
+
+    const q = document.getElementById("q");
+    const clearBtn = document.getElementById("clear");
+    const results = document.getElementById("results");
+    const count = document.getElementById("count");
+
+    function norm(s){ return (s || "").toLowerCase().trim(); }
+
+    function render(list){
+      if (!results || !count) return;
+      count.textContent = String(list.length);
+      results.innerHTML = list.map(item => {
+        const snippet = item.content ? item.content : "";
+        return `<li><a href="${item.url}">${item.title}</a><div class="resultSub">${snippet}</div></li>`;
+      }).join("");
+    }
+
+    function search(){
+      const query = norm(q?.value);
+      if (!query) { render([]); return; }
+      const parts = query.split(/\s+/).filter(Boolean);
+
+      const hits = PAGES.filter(p => {
+        const hay = norm([p.title, p.keywords, p.content].join(" "));
+        return parts.every(t => hay.includes(t));
+      });
+
+      render(hits);
+    }
+
+    if (q) q.addEventListener("input", search);
+    if (clearBtn) clearBtn.addEventListener("click", () => { q.value = ""; q.focus(); render([]); });
+
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-
 </body>
 </html>
