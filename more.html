@@ -103,4 +103,166 @@
     }
 
     @media (max-width: 720px) {
-      .f
+      .fantasyRow {
+        grid-template-columns: 1fr;
+      }
+      .fantasyLogoTop {
+        height: 20px;
+      }
+      .fantasyTitle {
+        font-size: 17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+
+    <header class="header">
+      <h1 class="title">More</h1>
+      <p class="sub">Extras and side projects</p>
+    </header>
+
+    <!-- Pages -->
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul class="links">
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./services.html">Services</a></li>
+        <li><a href="./work.html">Work</a></li>
+        <li><a href="./writing.html">Writing</a></li>
+        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./more.html" aria-current="page">More</a></li>
+      </ul>
+    </section>
+
+    <!-- Fantasy Football (single large box) -->
+    <section class="panel fantasyBig" aria-label="Fantasy Football">
+      <div class="fantasyHead">
+        <div class="fantasyHeadLeft">
+          <img
+            src="./assets/National_Football_League_logo.svg.png"
+            alt="NFL logo"
+            class="fantasyLogoTop"
+          />
+          <div class="fantasyTitleWrap">
+            <h2 class="fantasyTitle">Fantasy Football</h2>
+            <p class="fantasySub">NFL.com League — Blitzed and Confused</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fantasyBody">
+
+        <div class="fantasySection">
+          <h3>Description</h3>
+          <p>
+            I am the commissioner of an official <strong>NFL.com</strong> fantasy football custom league called
+            <strong>Blitzed and Confused</strong>.
+          </p>
+          <p>
+            This page contains everything you need to know about the league — rules, payouts, settings,
+            results, and how to join.
+          </p>
+          <p>
+            <strong>There are several open spots available for the 2026–27 season.</strong>
+          </p>
+        </div>
+
+        <div class="fantasyRow">
+          <div class="fantasySection">
+            <h3>Snapshot</h3>
+            <ul class="fantasyList">
+              <li>Hosting site: NFL.com</li>
+              <li>League name: Blitzed and Confused</li>
+              <li>League ID: 12709265</li>
+              <li>Draft: Live · Standard · 90 seconds per pick</li>
+              <li>Playoffs: 6 teams · Weeks 15–17</li>
+              <li>Scoring: Half-PPR</li>
+            </ul>
+          </div>
+
+          <div class="fantasySection">
+            <h3>2025–26 Results</h3>
+            <ul class="fantasyList">
+              <li>🏆 <strong>No Malice</strong></li>
+              <li>🥈 Penei for your thoughts</li>
+              <li>🥉 A Bawdy Doodle (me)</li>
+              <li>4th — Jerry Circus</li>
+              <li>5th — Vegas Eaddy</li>
+              <li>6th — Delulu Bears Fan</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="fantasyRow">
+          <div class="fantasySection">
+            <h3>League Rules</h3>
+
+            <p><strong>Format</strong><br />
+              10 teams · Redraft · 4 keepers · Half-PPR · Snake draft
+            </p>
+
+            <p><strong>Playoffs</strong><br />
+              Top 6 · Weeks 15–17 · One-week matchups
+            </p>
+
+            <p><strong>Roster</strong><br />
+              1 QB · 2 RB · 2 WR · 1 TE · 1 Flex · 1 K · 1 DEF<br />
+              Bench: 6 · IR: 3
+            </p>
+
+            <p><strong>Transactions</strong><br />
+              FAAB 100 · Adds: 5/week · Trades: 10/season
+            </p>
+
+            <p><strong>Conduct</strong><br />
+              Competitive lineups required · No collusion · Trash talk allowed
+            </p>
+          </div>
+
+          <div class="fantasySection">
+            <h3>Payouts</h3>
+            <ul class="fantasyList">
+              <li>1st — 60%</li>
+              <li>2nd — 25%</li>
+              <li>3rd — 15%</li>
+            </ul>
+
+            <div style="height:12px;"></div>
+
+            <h3>Entry Fee</h3>
+            <p>All league funds are securely collected and distributed through <strong>LeagueSafe</strong>.</p>
+            <p>Entry fee: <strong>$25 + processing fee</strong></p>
+
+            <a
+              href="https://www.leaguesafe.com/join/4351949"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="button"
+            >
+              Pay Your Dues
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="footer" style="text-align:center;">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+      <p style="font-size:12px;opacity:.7;margin-top:6px;">
+        <a href="./privacy.html">Privacy</a> |
+        <a href="./terms.html">Terms</a> |
+        <a href="./refund.html">Refund</a>
+      </p>
+    </footer>
+
+  </main>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
