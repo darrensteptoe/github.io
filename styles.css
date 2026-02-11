@@ -254,3 +254,73 @@ button:hover{border-color:#999}
     border-color:var(--rule);
   }
 }
+/* Add this block to the bottom of styles.css */
+
+/* Contact form styling */
+.contactForm{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.contactForm label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.contactForm input[type="text"],
+.contactForm input[type="email"],
+.contactForm input[type="tel"],
+.contactForm input[type="date"],
+.contactForm textarea,
+.contactForm select{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--rule);
+  border-radius:0;
+  background:#fff;
+  color:var(--fg);
+  font-size:1rem;
+}
+
+@media (prefers-color-scheme:dark){
+  .contactForm input[type="text"],
+  .contactForm input[type="email"],
+  .contactForm input[type="tel"],
+  .contactForm input[type="date"],
+  .contactForm textarea,
+  .contactForm select{
+    background:#0f0f10;
+    color:var(--fg);
+    border-color:var(--rule);
+  }
+}
+
+.contactForm button{
+  width:fit-content;
+}
+
+.contactForm button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+/* Honeypot */
+.hp{
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+}
+
+/* Status message */
+.formStatus{
+  margin:0;
+  color:var(--muted);
+}
+
+.formStatus[data-kind="success"]{ color: var(--fg); }
+.formStatus[data-kind="error"]{ color: var(--fg); }
+.formStatus[data-kind="info"]{ color: var(--muted); }
