@@ -6,74 +6,81 @@
   <title>Darren Steptoe</title>
   <meta name="description" content="Personal website and directory for Darren Steptoe." />
   <link rel="stylesheet" href="./styles.css" />
-</head>
 
-<body>
-  <main class="wrap">
+  <style>
+    /* Page-specific spacing refinement */
 
-    <header class="header">
-      <h1 class="title">Darren Steptoe</h1>
-      <p class="sub">Artist • Author • Storyteller</p>
-    </header>
+    .wrap{
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 80px 24px 96px;
+      display: grid;
+      gap: 48px;
+    }
 
-    <!-- Pages -->
-    <section class="panel" aria-label="Navigation">
-      <h2 class="h2">Pages</h2>
-      <ul class="links">
-        <li><a href="./services.html">Services</a></li>
-        <li><a href="./work.html">Work</a></li>
-        <li><a href="./writing.html">Writing</a></li>
-        <li><a href="./projects.html">Projects &amp; Research</a></li>
-        <li><a href="./more.html">More</a></li>
-      </ul>
-    </section>
+    .header{
+      display: grid;
+      gap: 12px;
+    }
 
-    <!-- Search -->
-    <section class="panel" aria-label="Site search">
-      <div class="searchRow">
-        <label class="srOnly" for="q">Search</label>
-        <input
-          id="q"
-          name="q"
-          type="search"
-          autocomplete="off"
-          placeholder="Search the site..."
-        />
-        <button id="clear" type="button">Clear</button>
-      </div>
+    .title{
+      margin: 0;
+    }
 
-      <div class="resultsMeta">
-        <strong><span id="count">0</span></strong> result(s)
-      </div>
+    .sub{
+      margin: 0;
+      opacity: .7;
+    }
 
-      <ul id="results" class="results" aria-live="polite"></ul>
-    </section>
+    .panel{
+      padding: 32px;
+      border-radius: 20px;
+      display: grid;
+      gap: 20px;
+    }
 
-    <!-- About -->
-    <section class="panel" aria-label="About">
-      <h2 class="h2">About</h2>
-      <p>
-        I’m Darren Steptoe! Welcome to the site. This space is intended for curious newcomers and those already
-        acquainted with me and my work, providing effortless access to my creations including short films,
-        livestreams, research, and more. Check in periodically for updates.
-      </p>
-    </section>
+    .h2{
+      margin: 0;
+    }
 
-    <footer class="footer" style="text-align:center;">
-      <p>© <span id="year"></span> Darren Steptoe</p>
-      <p style="font-size:12px;opacity:.7;margin-top:6px;">
-        <a href="./privacy.html">Privacy</a> |
-        <a href="./terms.html">Terms</a> |
-        <a href="./refund.html">Refund</a>
-      </p>
-    </footer>
+    .links{
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+    }
 
-  </main>
+    .searchRow{
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
 
-  <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
+    .searchRow input{
+      flex: 1;
+    }
 
-  <script src="./search.js"></script>
-</body>
-</html>
+    .resultsMeta{
+      margin-top: 4px;
+      opacity: .7;
+    }
+
+    .results{
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .footer{
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px){
+      .wrap{
+        padding: 64px 20px 80px;
+        gap: 40px;
+      }
+
+      .panel{
+       
