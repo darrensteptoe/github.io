@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Fantasy Football — Darren Steptoe</title>
-  <meta name="description" content="Blitzed and Confused — NFL.com fantasy league information, rules, payouts, and entry." />
+  <title>More — Darren Steptoe</title>
+  <meta name="description" content="More pages and extras." />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
@@ -12,40 +12,29 @@
   <main class="wrap">
 
     <header class="header">
-      <h1 class="title">Fantasy Football</h1>
-      <p class="sub">NFL.com League — Blitzed and Confused</p>
+      <h1 class="title">More</h1>
+      <p class="sub">Extras and side projects</p>
     </header>
 
     <!-- Pages -->
-    <section class="panel">
+    <section class="panel" aria-label="Navigation">
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
-        <li><a href="./fantasy.html" aria-current="page">Fantasy Football</a></li>
-        <li><a href="./books.html">Books</a></li>
+        <li><a href="./services.html">Services</a></li>
         <li><a href="./work.html">Work</a></li>
-        <li><a href="./music.html">Music</a></li>
-        <li><a href="./live.html">Live</a></li>
-        <li><a href="./contact.html">Contact</a></li>
+        <li><a href="./writing.html">Writing</a></li>
+        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./more.html" aria-current="page">More</a></li>
       </ul>
     </section>
 
-    <!-- Search -->
+    <!-- Fantasy Football (moved here) -->
     <section class="panel">
-      <div class="searchRow">
-        <label class="srOnly" for="q">Search</label>
-        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
-        <button id="clear" type="button">Clear</button>
-      </div>
-
-      <div class="resultsMeta">
-        <strong><span id="count">0</span></strong> result(s)
-      </div>
-
-      <ul id="results" class="results" aria-live="polite"></ul>
+      <h2 class="h2">Fantasy Football</h2>
+      <p class="sub" style="margin:0;">NFL.com League — Blitzed and Confused</p>
     </section>
 
-    <!-- Description -->
     <section class="panel panel-has-logo">
       <img
         src="./assets/National_Football_League_logo.svg.png"
@@ -66,7 +55,6 @@
       </p>
     </section>
 
-    <!-- Snapshot -->
     <section class="panel">
       <h2 class="h2">Snapshot</h2>
       <ul class="links">
@@ -79,7 +67,6 @@
       </ul>
     </section>
 
-    <!-- Results -->
     <section class="panel">
       <h2 class="h2">2025–26 Season Results</h2>
       <ul class="links">
@@ -92,7 +79,6 @@
       </ul>
     </section>
 
-    <!-- Rules -->
     <section class="panel">
       <h2 class="h2">League Rules</h2>
 
@@ -118,7 +104,6 @@
       </p>
     </section>
 
-    <!-- Payouts -->
     <section class="panel">
       <h2 class="h2">Payouts</h2>
       <ul class="links">
@@ -128,7 +113,6 @@
       </ul>
     </section>
 
-    <!-- LeagueSafe -->
     <section class="panel panel-has-logo">
       <img
         src="./assets/icon_full_orange.svg"
@@ -145,7 +129,7 @@
         rel="noopener noreferrer"
         class="button"
       >
-        Pay/Collect
+        Pay Your Dues
       </a>
     </section>
 
@@ -163,14 +147,5 @@
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
-
-  <script src="./search.js"></script>
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-</body>
-</html>
-
-  </main>
-
-  <script src="./search.js"></script>
 </body>
 </html>
