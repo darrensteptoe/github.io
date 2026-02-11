@@ -4,34 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Work — Darren Steptoe</title>
-  <meta name="description" content="Media production, documentary work, and institutional experience." />
+  <meta name="description" content="Selected projects and experience." />
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
-    .openRow{
-      display:flex;
-      justify-content:flex-start;
-      align-items:center;
-      gap:10px;
-      margin:6px 0 14px;
-      font-size:12px;
-      font-weight:700;
-      color:#2ecc71;
-    }
-    .openDot{
-      width:10px;
-      height:10px;
-      border-radius:999px;
-      background:#2ecc71;
-      box-shadow:0 0 0 0 rgba(46,204,113,0.7);
-      animation:pulse 2s infinite;
-    }
-    @keyframes pulse{
-      0%{box-shadow:0 0 0 0 rgba(46,204,113,0.7);}
-      70%{box-shadow:0 0 0 10px rgba(46,204,113,0);}
-      100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}
-    }
-
     .imdbLink{
       display:flex;
       gap:16px;
@@ -127,46 +103,19 @@
 
     <header class="header">
       <h1 class="title">Work</h1>
-      <p class="sub">Selected projects, services, and experience</p>
+      <p class="sub">Selected projects and experience</p>
     </header>
 
-    <section class="panel" aria-label="Site search">
-      <div class="searchRow">
-        <label class="srOnly" for="q">Search</label>
-        <input id="q" name="q" type="search" autocomplete="off" placeholder="Search the site..." />
-        <button id="clear" type="button">Clear</button>
-      </div>
-
-      <div class="resultsMeta">
-        <strong><span id="count">0</span></strong> result(s)
-      </div>
-
-      <ul id="results" class="results" aria-live="polite"></ul>
-    </section>
-
-    <section class="panel" aria-label="Directory">
+    <!-- Pages -->
+    <section class="panel" aria-label="Navigation">
       <h2 class="h2">Pages</h2>
-      <ul id="dir" class="links"></ul>
-    </section>
-
-    <section class="panel">
-      <h2 class="h2">Media Production Services</h2>
-
-      <div class="openRow" aria-label="Availability">
-        <span class="openDot" aria-hidden="true"></span>
-        <span>Open to work</span>
-      </div>
-
-      <p>
-        I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.
-      </p>
-
       <ul class="links">
-        <li>Documentary filmmaking (development, production, post)</li>
-        <li>Video production and editing (short-form, long-form)</li>
-        <li>Event, interview, and field production</li>
-        <li>Script development and story consulting</li>
-        <li>Post-production workflows, color, and delivery</li>
+        <li><a href="./index.html">Home</a></li>
+        <li><a href="./services.html">Services</a></li>
+        <li><a href="./work.html" aria-current="page">Work</a></li>
+        <li><a href="./writing.html">Writing</a></li>
+        <li><a href="./projects.html">Projects &amp; Research</a></li>
+        <li><a href="./more.html">More</a></li>
       </ul>
     </section>
 
@@ -238,8 +187,7 @@
       <h2 class="h2">Academic and Institutional Work</h2>
 
       <p>
-        During my AmeriCorps VISTA service with the Homeless Coalition of Hillsborough County, I developed and led the Homeless PhotoVoice Project, a community-based applied sociology initiative. I designed the project and approached University of Tampa professor Norma Winston to integrate it into her Applied Sociology course.
-The project became a core part of the curriculum, engaging students in fieldwork, media coordination, and a public PhotoVoice showcase focused on homelessness in Tampa.
+        During my AmeriCorps VISTA service with the Homeless Coalition of Hillsborough County, I developed and led the Homeless PhotoVoice Project, a community-based applied sociology initiative. I designed the project and approached University of Tampa professor Norma Winston to integrate it into her Applied Sociology course. The project became a core part of the curriculum, engaging students in fieldwork, media coordination, and a public PhotoVoice showcase focused on homelessness in Tampa.
       </p>
 
       <p>
@@ -266,64 +214,6 @@ The project became a core part of the curriculum, engaging students in fieldwork
   </main>
 
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
-
-  <script src="./search.js"></script>
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
-</body>
-</html>
-
-  </main>
-
-  <script>
-    // ONLY CHANGE: updated Pages list + search index to match it
-    const PAGES = [
-      { title: "Home", url: "./index.html", keywords: "home", content: "Home page and overview." },
-      { title: "Books", url: "./books.html", keywords: "books writing", content: "Books and upcoming releases." },
-      { title: "Projects & Research", url: "./projects.html", keywords: "projects research", content: "Projects and research." },
-      { title: "Livestream", url: "./livestream.html", keywords: "livestream live", content: "Livestream page." },
-      { title: "Fantasy Football", url: "./fantasy.html", keywords: "fantasy football", content: "Fantasy football info and rules." },
-      { title: "Contact", url: "./contact.html", keywords: "contact email", content: "Contact and inquiry." }
-    ];
-
-    const dir = document.getElementById("dir");
-    if (dir) {
-      dir.innerHTML = PAGES.map(p => `<li><a href="${p.url}">${p.title}</a></li>`).join("");
-    }
-
-    const q = document.getElementById("q");
-    const clearBtn = document.getElementById("clear");
-    const results = document.getElementById("results");
-    const count = document.getElementById("count");
-
-    function norm(s){ return (s || "").toLowerCase().trim(); }
-
-    function render(list){
-      if (!results || !count) return;
-      count.textContent = String(list.length);
-      results.innerHTML = list.map(item => {
-        const snippet = item.content ? item.content : "";
-        return `<li><a href="${item.url}">${item.title}</a><div class="resultSub">${snippet}</div></li>`;
-      }).join("");
-    }
-
-    function search(){
-      const query = norm(q?.value);
-      if (!query) { render([]); return; }
-      const parts = query.split(/\s+/).filter(Boolean);
-
-      const hits = PAGES.filter(p => {
-        const hay = norm([p.title, p.keywords, p.content].join(" "));
-        return parts.every(t => hay.includes(t));
-      });
-
-      render(hits);
-    }
-
-    if (q) q.addEventListener("input", search);
-    if (clearBtn) clearBtn.addEventListener("click", () => { q.value = ""; q.focus(); render([]); });
-
     document.getElementById("year").textContent = new Date().getFullYear();
   </script>
 </body>
