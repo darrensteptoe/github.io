@@ -10,17 +10,16 @@
   <style>
     .fantasyBig{ padding:0; overflow:hidden; }
 
+    /* LEVEL 1 */
     .fantasyHead{
       display:flex;
-      align-items:flex-start;
+      align-items:center;
       justify-content:space-between;
       gap:14px;
       padding:18px 16px 14px;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
-
     .fantasyTitleWrap{ min-width:0; }
-
     .fantasyTitle{
       margin:0;
       font-size:20px;
@@ -28,27 +27,44 @@
       line-height:1.12;
       letter-spacing:.01em;
     }
-
     .fantasySub{
       margin:8px 0 0;
       font-size:14px;
       opacity:.86;
       line-height:1.35;
     }
-
     .fantasyLogoTop{
-      height:26px;
+      height:30px; /* small (not tiny) */
       width:auto;
       display:block;
       flex:0 0 auto;
       opacity:.95;
-      margin-top:2px;
     }
 
+    /* BODY + LEVEL SPACING */
     .fantasyBody{
-      padding:18px 16px 16px;
+      padding:18px 16px 18px;
       display:grid;
+      gap:18px;
+    }
+
+    .fantasyLevel{
+      display:grid;
+      gap:18px;
+    }
+
+    .fantasyRow3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
       gap:16px;
+      align-items:start;
+    }
+
+    .fantasyRow2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      align-items:start;
     }
 
     .fantasySection{
@@ -60,14 +76,14 @@
 
     .fantasyH3{
       margin:0 0 12px;
-      font-size:15px;
+      font-size:16px;          /* slightly larger */
       font-weight:900;
       letter-spacing:.10em;
       text-transform:uppercase;
       opacity:.92;
     }
 
-    .fantasySection p{ margin:0 0 10px; line-height:1.5; }
+    .fantasySection p{ margin:0 0 10px; line-height:1.55; }
     .fantasySection p:last-child{ margin-bottom:0; }
 
     .fantasyList{
@@ -76,33 +92,31 @@
     }
     .fantasyList li{
       margin:7px 0;
-      line-height:1.45;
-    }
-
-    .fantasyRow{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:16px;
-      align-items:start;
+      line-height:1.5;
     }
 
     .fantasyMetaGrid{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px 14px;
+      grid-template-columns:1fr;
+      gap:10px;
     }
-
     .kv{
       margin:0;
-      padding:0;
       display:flex;
       gap:8px;
       flex-wrap:wrap;
-      line-height:1.45;
+      line-height:1.5;
     }
     .kv b{ font-weight:900; }
 
-    .joinRow{
+    .smallNote{
+      font-size:12px;
+      opacity:.78;
+      line-height:1.45;
+      margin-top:10px;
+    }
+
+    .ctaRow{
       display:flex;
       flex-wrap:wrap;
       align-items:center;
@@ -113,17 +127,10 @@
       border-top:1px solid rgba(255,255,255,.08);
     }
 
-    .smallNote{
-      font-size:12px;
-      opacity:.78;
-      line-height:1.45;
-      margin-top:10px;
-    }
-
-    @media (max-width: 820px){
-      .fantasyRow{ grid-template-columns:1fr; }
-      .fantasyMetaGrid{ grid-template-columns:1fr; }
-      .fantasyLogoTop{ height:24px; }
+    @media (max-width: 980px){
+      .fantasyRow3{ grid-template-columns:1fr; }
+      .fantasyRow2{ grid-template-columns:1fr; }
+      .fantasyLogoTop{ height:28px; }
       .fantasyTitle{ font-size:19px; }
     }
   </style>
@@ -152,13 +159,14 @@
 
     <!-- Fantasy Football (single large box) -->
     <section class="panel fantasyBig" aria-label="Fantasy Football">
+
+      <!-- LEVEL 1: Title + NFL logo -->
       <div class="fantasyHead">
         <div class="fantasyTitleWrap">
           <h2 class="fantasyTitle">Fantasy Football</h2>
           <p class="fantasySub">NFL.com League — Blitzed and Confused</p>
         </div>
 
-        <!-- logo moved back to the other side (right) -->
         <img
           src="./assets/National_Football_League_logo.svg.png"
           alt="NFL logo"
@@ -168,58 +176,74 @@
 
       <div class="fantasyBody">
 
-        <div class="fantasySection">
-          <h3 class="fantasyH3">What this is</h3>
-          <p>
-            I’m commissioner for an official <strong>NFL.com</strong> fantasy league called <strong>Blitzed and Confused</strong>.
-            This box is the single source of truth for how the league works, what it costs, how payouts work, and how to join.
-          </p>
-
-          <div class="joinRow">
-            <div>
-              <p class="kv"><b>Teams:</b> 10</p>
-              <p class="kv"><b>Format:</b> Redraft + 4 keepers</p>
-            </div>
-
-            <a
-              href="https://www.leaguesafe.com/join/4351949"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="button"
-            >
-              Pay Your Dues
-            </a>
+        <!-- LEVEL 2: What this is (full width) -->
+        <div class="fantasyLevel">
+          <div class="fantasySection">
+            <h3 class="fantasyH3">What this is</h3>
+            <p>
+              I’m commissioner for an official <strong>NFL.com</strong> fantasy league called <strong>Blitzed and Confused</strong>.
+              This box is the single source of truth for how the league works, what it costs, how payouts work, and how to join.
+            </p>
+            <p>
+              <strong>There are several open spots available for the upcoming season.</strong>
+            </p>
+            <p class="smallNote">
+              League funds are collected and paid out through LeagueSafe.
+            </p>
           </div>
-
-          <p class="smallNote">
-            Entry fee is required before the draft. League funds are collected and paid out through LeagueSafe.
-          </p>
         </div>
 
-        <div class="fantasyRow">
+        <!-- LEVEL 3: Quick Snapshot + Roster + Rules/Conduct -->
+        <div class="fantasyLevel fantasyRow3">
+
           <div class="fantasySection">
             <h3 class="fantasyH3">Quick Snapshot</h3>
-
             <div class="fantasyMetaGrid">
               <p class="kv"><b>League Name:</b> Blitzed and Confused</p>
               <p class="kv"><b>League ID:</b> 12709265</p>
+              <p class="kv"><b>Teams:</b> 10</p>
+              <p class="kv"><b>Format:</b> Redraft + 4 keepers</p>
               <p class="kv"><b>Scoring:</b> Half-PPR</p>
               <p class="kv"><b>Draft:</b> Live • Snake • 90 sec/pick</p>
-              <p class="kv"><b>Season Start:</b> NFL Week 1</p>
               <p class="kv"><b>Playoffs:</b> 6 teams • Weeks 15–17 • 1 week/round</p>
+              <p class="kv"><b>Waivers:</b> Budget (100) • 1-day period</p>
               <p class="kv"><b>Adds:</b> 5/week • 35/season</p>
               <p class="kv"><b>Trades:</b> 10/season • Commissioner approval</p>
-              <p class="kv"><b>Waivers:</b> Budget (100) • 1-day period</p>
-              <p class="kv"><b>Player Locks:</b> Game time</p>
             </div>
-
             <p class="smallNote">
-              Tiebreaker: bench points. Waiver priority: move to last after a successful claim.
+              Player lock: game time. Tiebreaker: bench points.
             </p>
           </div>
 
           <div class="fantasySection">
-            <h3 class="fantasyH3">2025–26 Results</h3>
+            <h3 class="fantasyH3">Roster</h3>
+            <ul class="fantasyList">
+              <li>Starters: 1 QB • 2 RB • 2 WR • 1 TE</li>
+              <li>Flex: 1 (WR/RB/TE)</li>
+              <li>1 K • 1 DEF</li>
+              <li>Bench: 6</li>
+              <li>IR: 3</li>
+              <li>No Superflex • No IDP</li>
+            </ul>
+          </div>
+
+          <div class="fantasySection">
+            <h3 class="fantasyH3">Rules &amp; Conduct</h3>
+            <ul class="fantasyList">
+              <li>Competitive lineups required weekly</li>
+              <li>No collusion, tanking, or roster neglect</li>
+              <li>Trash talk is welcome; disrespect isn’t</li>
+              <li>Payments + keeper locks must be on time</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- LEVEL 4: Last season results + Money + Pay/Collect button -->
+        <div class="fantasyLevel fantasyRow2">
+
+          <div class="fantasySection">
+            <h3 class="fantasyH3">Last Season Results (2025–26)</h3>
             <ul class="fantasyList">
               <li>🏆 <strong>1st — No Malice</strong> (Reg season: 8–6)</li>
               <li>🥈 <strong>2nd — Penei for your thoughts</strong> (Reg season: 9–5)</li>
@@ -229,47 +253,32 @@
               <li>6th — Delulu Bears Fan</li>
             </ul>
           </div>
-        </div>
-
-        <div class="fantasyRow">
-          <div class="fantasySection">
-            <h3 class="fantasyH3">Roster</h3>
-            <ul class="fantasyList">
-              <li>Starters: 1 QB • 2 RB • 2 WR • 1 TE • 1 Flex (WR/RB/TE) • 1 K • 1 DEF</li>
-              <li>Bench: 6</li>
-              <li>IR: 3</li>
-              <li>No Superflex • No IDP</li>
-            </ul>
-
-            <div style="height:10px;"></div>
-
-            <h3 class="fantasyH3">Rules + Conduct</h3>
-            <ul class="fantasyList">
-              <li>Competitive lineups required weekly</li>
-              <li>No collusion, tanking, or roster neglect</li>
-              <li>Trash talk is welcome; disrespect isn’t</li>
-              <li>Deadlines matter (payments, trades, keeper locks)</li>
-            </ul>
-          </div>
 
           <div class="fantasySection">
             <h3 class="fantasyH3">Money</h3>
             <p class="kv"><b>Entry Fee:</b> $25 + processing</p>
             <p class="kv"><b>Payouts:</b> 1st 60% • 2nd 25% • 3rd 15%</p>
 
-            <div style="height:10px;"></div>
+            <div class="ctaRow">
+              <div>
+                <p class="kv"><b>LeagueSafe:</b> required</p>
+              </div>
 
-            <h3 class="fantasyH3">How to Join</h3>
-            <ol class="fantasyList" style="padding-left:20px;">
-              <li>Pay the LeagueSafe fee using the button above.</li>
-              <li>Send me your LeagueSafe name so I can track payments.</li>
-              <li>I’ll confirm your spot and share league invite details.</li>
-            </ol>
+              <a
+                href="https://www.leaguesafe.com/join/4351949"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="button"
+              >
+                Pay/Collect
+              </a>
+            </div>
 
             <p class="smallNote">
-              Trade deadline (per current settings): November 21, 2025. Keepers lock on the league draft date.
+              Pay before the draft. Once the season ends, LeagueSafe is also where payouts are distributed.
             </p>
           </div>
+
         </div>
 
       </div>
