@@ -22,6 +22,29 @@
     }
     .panel ul li{ margin:8px 0; }
 
+    /* Open to Work */
+    .openRow{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:0 0 14px;
+      font-weight:700;
+      color:#2ecc71;
+    }
+    .openDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:#2ecc71;
+      box-shadow:0 0 0 0 rgba(46,204,113,0.7);
+      animation:pulse 2s infinite;
+    }
+    @keyframes pulse{
+      0%{box-shadow:0 0 0 0 rgba(46,204,113,0.7);}
+      70%{box-shadow:0 0 0 10px rgba(46,204,113,0);}
+      100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}
+    }
+
     .videoWrap{
       position:relative;
       width:100%;
@@ -80,10 +103,6 @@
       -webkit-appearance:none;
     }
 
-    .contactForm select{
-      background-image:none;
-    }
-
     .contactForm textarea{
       resize:vertical;
       min-height:140px;
@@ -126,7 +145,7 @@
       <p class="sub">Media production • Consulting</p>
     </header>
 
-    <section class="panel" aria-label="Navigation">
+    <section class="panel">
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
@@ -138,8 +157,14 @@
       </ul>
     </section>
 
-    <section class="panel" aria-label="Media Production Services">
+    <section class="panel">
       <h2 class="h2">Media Production Services</h2>
+
+      <div class="openRow">
+        <span class="openDot"></span>
+        <span>Open to Work</span>
+      </div>
+
       <p>I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.</p>
       <ul class="links">
         <li>Documentary filmmaking (development, production, post)</li>
@@ -150,7 +175,7 @@
       </ul>
     </section>
 
-    <section class="panel" aria-label="Video placeholder">
+    <section class="panel">
       <div class="videoWrap">
         <iframe
           src="https://www.youtube.com/embed/ycHys4e6s3Q"
@@ -161,12 +186,12 @@
       </div>
     </section>
 
-    <section class="panel" aria-label="Price sheet">
+    <section class="panel">
       <h2 class="h2">Price Sheet</h2>
       <p><em>Placeholder — coming soon.</em></p>
     </section>
 
-    <section class="panel" aria-label="Inquiry form">
+    <section class="panel">
       <h2 class="h2">Inquiry Form</h2>
 
       <form
@@ -244,7 +269,7 @@
       </form>
     </section>
 
-    <section class="panel" aria-label="Political consulting">
+    <section class="panel">
       <h2 class="h2">Political Consulting (Strategy Session)</h2>
       <p>
         This session is for candidates, campaign managers, and organizations seeking practical political strategy and field support.
@@ -258,11 +283,11 @@
         <li>Messaging and social media strategy (strategic guidance, not content production)</li>
       </ul>
       <p>
-        This is a working strategy session focused on clarity, decision-making, and execution. Please come prepared with relevant background (office sought, district, timeline, and goals) so we can use the hour effectively.
+        This is a working strategy session focused on clarity, decision-making, and execution.
       </p>
     </section>
 
-    <section class="panel panelHasCornerLogo" aria-label="Schedule">
+    <section class="panel panelHasCornerLogo">
       <h2 class="h2">Schedule</h2>
 
       <img
@@ -278,7 +303,7 @@
       ></div>
     </section>
 
-    <section class="panel panelHasCornerLogo" aria-label="Payments">
+    <section class="panel panelHasCornerLogo">
       <h2 class="h2">Payment</h2>
 
       <img
@@ -312,105 +337,6 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
-
-    (function () {
-      const form = document.getElementById("contactForm");
-      const statusEl = document.getElementById("formStatus");
-      const btn = document.getElementById("submitBtn");
-
-      const eventTypeSelect = document.getElementById("eventTypeSelect");
-      const eventTypeOtherWrap = document.getElementById("eventTypeOtherWrap");
-      const eventTypeOther = document.getElementById("eventTypeOther");
-
-      function setStatus(msg, kind) {
-        statusEl.textContent = msg || "";
-        statusEl.dataset.kind = kind || "";
-      }
-
-      function disableForm(disabled) {
-        btn.disabled = disabled;
-        Array.from(form.elements).forEach(el => {
-          if (el.tagName === "BUTTON") return;
-          el.disabled = disabled;
-        });
-      }
-
-      eventTypeSelect.addEventListener("change", () => {
-        if (eventTypeSelect.value === "Other") {
-          eventTypeOtherWrap.style.display = "grid";
-          eventTypeOther.setAttribute("required", "required");
-        } else {
-          eventTypeOtherWrap.style.display = "none";
-          eventTypeOther.removeAttribute("required");
-          eventTypeOther.value = "";
-        }
-      });
-
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const requiredEls = form.querySelectorAll("[required]");
-        for (const el of requiredEls) {
-          if (!String(el.value || "").trim()) {
-            setStatus("Please fill out all required fields (*).", "error");
-            el.focus();
-            return;
-          }
-        }
-
-        if (eventTypeSelect.value === "Other" && !eventTypeOther.value.trim()) {
-          setStatus("Please specify your event type.", "error");
-          eventTypeOther.focus();
-          return;
-        }
-
-        const gotcha = form.querySelector('input[name="_gotcha"]');
-        if (gotcha && gotcha.value.trim()) {
-          form.reset();
-          eventTypeOtherWrap.style.display = "none";
-          eventTypeOther.removeAttribute("required");
-          setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
-          return;
-        }
-
-        setStatus("Sending…", "info");
-        disableForm(true);
-
-        try {
-          const data = new FormData(form);
-
-          if (eventTypeSelect.value === "Other") {
-            data.set("event_type", "Other: " + eventTypeOther.value.trim());
-          }
-
-          const res = await fetch(form.action, {
-            method: "POST",
-            body: data,
-            headers: { "Accept": "application/json" }
-          });
-
-          if (res.ok) {
-            form.reset();
-            eventTypeOtherWrap.style.display = "none";
-            eventTypeOther.removeAttribute("required");
-            setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
-          } else {
-            let errMsg = "Something went wrong. Please try again.";
-            try {
-              const json = await res.json();
-              if (json && json.errors && json.errors.length) {
-                errMsg = json.errors.map(e => e.message).join(" ");
-              }
-            } catch (_) {}
-            setStatus(errMsg, "error");
-          }
-        } catch (err) {
-          setStatus("Network error. Please try again in a moment.", "error");
-        } finally {
-          disableForm(false);
-        }
-      });
-    })();
   </script>
 
   <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
