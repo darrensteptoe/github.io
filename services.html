@@ -59,24 +59,6 @@
       letter-spacing:.3px;
     }
 
-    .pricingItem{
-      margin-bottom:18px;
-    }
-    .pricingItem h4{
-      margin:0 0 6px;
-      font-size:13px;
-      font-weight:700;
-    }
-    .pricingItem ul{
-      margin:0 0 6px 16px;
-      font-size:12px;
-      line-height:1.5;
-    }
-    .pricingItem p{
-      font-size:12px;
-      margin:0 0 6px;
-    }
-
     .pricingGrid{
       display:grid;
       gap:14px;
@@ -104,6 +86,11 @@
       margin:0;
       font-size:12px;
       line-height:1.5;
+    }
+
+    .miniNote{
+      font-size:12px;
+      margin-top:10px;
     }
 
     .videoWrap{
@@ -418,34 +405,73 @@
         </div>
       </div>
 
-      <p style="font-size:12px;margin-top:10px;">Additional Hour — $125</p>
+      <div class="pricingGrid" style="margin-top:14px;" aria-label="Add-ons">
+        <div class="pricingCard">
+          <h4>Additional Hour — $125</h4>
+          <p>Applied when coverage runs beyond the booked package.</p>
+        </div>
+      </div>
 
       <h3>Corporate &amp; Small Business</h3>
+      <div class="pricingGrid twoCol" aria-label="Corporate and small business">
+        <div class="pricingCard">
+          <h4>Brand Promo — $1,200</h4>
+          <p>Interview + b-roll • 2–3 min film • Social cut</p>
+        </div>
 
-      <div class="pricingItem">
-        <h4>Brand Promo — $1,200</h4>
-        <p>Interview + b-roll • 2–3 min film • Social cut</p>
-      </div>
+        <div class="pricingCard">
+          <h4>Executive Interview — $850</h4>
+          <p>Up to 2 hrs • 1–2 min polished edit</p>
+        </div>
 
-      <div class="pricingItem">
-        <h4>Executive Interview — $850</h4>
-        <p>Up to 2 hrs • 1–2 min polished edit</p>
-      </div>
+        <div class="pricingCard">
+          <h4>Monthly Content — From $2,500</h4>
+          <p>1 filming day • 3–5 edited videos</p>
+        </div>
 
-      <div class="pricingItem">
-        <h4>Monthly Content — From $2,500</h4>
-        <p>1 filming day • 3–5 edited videos</p>
+        <div class="pricingCard">
+          <h4>Custom Package — Quote</h4>
+          <p>For recurring work, multi-day shoots, or multi-location coverage.</p>
+        </div>
       </div>
 
       <h3>Documentary &amp; Editing</h3>
-      <p style="font-size:12px;">Editing — $85/hr (5-hr minimum)</p>
-      <p style="font-size:12px;">Full Documentary Support — Custom Quote</p>
+      <div class="pricingGrid twoCol" aria-label="Documentary and editing">
+        <div class="pricingCard">
+          <h4>Editing — $85/hr</h4>
+          <p>5-hour minimum per project phase.</p>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Full Documentary Support — Quote</h4>
+          <p>Development → post-production support, tailored to scope and deadlines.</p>
+        </div>
+      </div>
 
       <h3>Political Consulting</h3>
-      <p style="font-size:12px;">Strategy Intensive (1 Hour) — $250</p>
-      <p style="font-size:12px;">Municipal Campaign Retainer — $3,000–6,000 / month</p>
-      <p style="font-size:12px;">State Legislative Retainer — $5,000–10,000 / month</p>
-      <p style="font-size:12px;">Congressional Retainer — $10,000–20,000+ / month</p>
+      <div class="pricingGrid twoCol" aria-label="Political consulting pricing">
+        <div class="pricingCard">
+          <h4>Strategy Intensive (1 Hour) — $250</h4>
+          <p>Win number, targeting, field plan, and next steps.</p>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Municipal Campaign Retainer — $3,000–6,000 / month</h4>
+          <p>Field plan + execution support, training, reporting cadence.</p>
+        </div>
+
+        <div class="pricingCard">
+          <h4>State Legislative Retainer — $5,000–10,000 / month</h4>
+          <p>Field ops buildout, universes, weekly goals, GOTV structure.</p>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Congressional Retainer — $10,000–20,000+ / month</h4>
+          <p>Full-scale field + ops systems, staffing support, and performance tracking.</p>
+        </div>
+      </div>
+
+      <p class="miniNote">If you’re not sure what you need, start with the 1-hour intensive and we’ll scope from there.</p>
     </section>
 
     <hr class="sectionRule" aria-hidden="true">
