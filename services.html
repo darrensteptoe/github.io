@@ -189,6 +189,17 @@
       .panelHasCornerLogo{ padding-right:54px; }
       .panelLogo{ height:18px; }
     }
+
+    @media (prefers-color-scheme: dark){
+      .pricingCard{
+        background:rgba(28,28,32,0.70);
+        border:1px solid rgba(255,255,255,0.14);
+        color:rgba(255,255,255,0.92);
+      }
+      .pricingCard h4{ color:rgba(255,255,255,0.94); }
+      .pricingCard p{ color:rgba(255,255,255,0.88); }
+      .pricingCard li{ color:rgba(255,255,255,0.88); }
+    }
   </style>
 </head>
 
@@ -204,12 +215,15 @@
       <h2 class="h2">Pages</h2>
       <ul class="links">
         <li><a href="./index.html">Home</a></li>
+        <li><a href="./services.html" aria-current="page">Services</a></li>
         <li><a href="./work.html">Work</a></li>
         <li><a href="./writing.html">Writing</a></li>
         <li><a href="./projects.html">Projects &amp; Research</a></li>
         <li><a href="./more.html">More</a></li>
       </ul>
     </section>
+
+    <hr class="sectionRule" aria-hidden="true">
 
     <!-- ORDER STARTS HERE -->
 
