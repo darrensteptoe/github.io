@@ -249,3 +249,25 @@ button:hover,
     color-scheme:dark;
   }
 }
+/* FORCE bubble background (put at very bottom of styles.css) */
+body{
+  background-color:var(--bg) !important;
+  background-image:
+    radial-gradient(circle at 25px 25px,
+      rgba(255,255,255,0.55) 0px,
+      rgba(255,255,255,0.35) 8px,
+      rgba(0,0,0,0.045) 9px,
+      rgba(0,0,0,0.025) 10px,
+      transparent 11px
+    ),
+    radial-gradient(circle at 25px 25px,
+      rgba(255,255,255,0.55) 0px,
+      rgba(255,255,255,0.35) 8px,
+      rgba(0,0,0,0.045) 9px,
+      rgba(0,0,0,0.025) 10px,
+      transparent 11px
+    ) !important;
+  background-size:50px 50px,50px 50px !important;
+  background-position:0 0,25px 25px !important;
+  background-repeat:repeat !important;
+}
