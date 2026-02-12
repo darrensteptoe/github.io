@@ -33,9 +33,7 @@ body{
 }
 
 /* Panels with corner logos */
-.panel-has-logo{
-  padding-right:84px;
-}
+.panel-has-logo{ padding-right:84px; }
 
 .panel-logo{
   position:absolute;
@@ -46,15 +44,16 @@ body{
   pointer-events:none;
 }
 
-.panel-logo-lg{
-  width:40px;
-}
+.panel-logo-lg{ width:40px; }
 
 .h2{margin:0 0 10px;font-size:1.1rem}
 
 a{color:var(--link);text-decoration:underline;text-underline-offset:2px}
 a:visited{color:var(--visited)}
-a:focus,button:focus,input:focus,textarea:focus,select:focus{outline:2px solid #111;outline-offset:2px}
+a:focus,button:focus,input:focus,textarea:focus,select:focus{
+  outline:2px solid var(--fg);
+  outline-offset:2px
+}
 
 .searchRow{display:flex;gap:10px}
 
@@ -122,10 +121,7 @@ button:hover{border-color:#999}
   gap:6px;
 }
 
-.contactForm input[type="text"],
-.contactForm input[type="email"],
-.contactForm input[type="tel"],
-.contactForm input[type="date"],
+.contactForm input,
 .contactForm textarea,
 .contactForm select{
   width:100%;
@@ -135,167 +131,11 @@ button:hover{border-color:#999}
   background:#fff;
   color:var(--fg);
   font-size:1rem;
+  appearance:none;
+  -webkit-appearance:none;
 }
 
-.contactForm textarea{resize:vertical}
-
-.contactForm button{width:fit-content}
-
-.contactForm button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-
-/* Fieldset / radio group */
-.fieldSet{
-  border:1px solid var(--rule);
-  padding:10px 12px;
-  margin:0;
-}
-
-.fieldSet legend{
-  padding:0 6px;
-  font-weight:600;
-}
-
-/* Align radio dot with label text properly */
-.radioRow{
-  display:grid;
-  grid-template-columns:18px 1fr;
-  align-items:center;
-  column-gap:10px;
-  row-gap:0;
-  padding:6px 0;
-}
-
-.radioRow input[type="radio"]{
-  margin:0;
-  width:16px;
-  height:16px;
-  justify-self:start;
-}
-
-.radioRow span{
-  line-height:1.2;
-}
-
-/* Other row: radio + "Other:" + text input on same baseline */
-.otherRow{
-  grid-template-columns:18px auto 1fr;
-}
-
-.otherRow input[type="text"]{
-  width:100%;
-  min-width:220px;
-  padding:10px 12px;
-  border:1px solid var(--rule);
-  border-radius:0;
-  background:#fff;
-  color:var(--fg);
-  font-size:1rem;
-}
-
-/* Honeypot (spam filter) */
-.hp{
-  position:absolute;
-  left:-9999px;
-  width:1px;
-  height:1px;
-  overflow:hidden;
-}
-
-/* Status message */
-.formStatus{
-  margin:0;
-  color:var(--muted);
-}
-
-.formStatus[data-kind="success"]{color:var(--fg)}
-.formStatus[data-kind="error"]{color:var(--fg)}
-.formStatus[data-kind="info"]{color:var(--muted)}
-
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#0f0f10;
-    --fg:#f3f3f3;
-    --muted:#b6b6b6;
-    --rule:#2a2a2a;
-    --panel:#121214;
-    --link:#8ab4f8;
-    --visited:#c58af9;
-  }
-
-  a:focus,button:focus,input:focus,textarea:focus,select:focus{outline:2px solid var(--fg)}
-
-  input[type="search"],button,.button{
-    background:#0f0f10;
-    color:var(--fg);
-    border-color:var(--rule);
-  }
-
-  .contactForm input[type="text"],
-  .contactForm input[type="email"],
-  .contactForm input[type="tel"],
-  .contactForm input[type="date"],
-  .contactForm textarea,
-  .contactForm select{
-    background:#0f0f10;
-    color:var(--fg);
-    border-color:var(--rule);
-  }
-
-  .fieldSet{
-    border-color:var(--rule);
-  }
-
-  .otherRow input[type="text"]{
-    background:#0f0f10;
-    color:var(--fg);
-    border-color:var(--rule);
-  }
-}
-/* Add this block to the bottom of styles.css */
-
-/* Contact form styling */
-.contactForm{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-}
-
-.contactForm label{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-.contactForm input[type="text"],
-.contactForm input[type="email"],
-.contactForm input[type="tel"],
-.contactForm input[type="date"],
-.contactForm textarea,
-.contactForm select{
-  width:100%;
-  padding:10px 12px;
-  border:1px solid var(--rule);
-  border-radius:0;
-  background:#fff;
-  color:var(--fg);
-  font-size:1rem;
-}
-
-@media (prefers-color-scheme:dark){
-  .contactForm input[type="text"],
-  .contactForm input[type="email"],
-  .contactForm input[type="tel"],
-  .contactForm input[type="date"],
-  .contactForm textarea,
-  .contactForm select{
-    background:#0f0f10;
-    color:var(--fg);
-    border-color:var(--rule);
-  }
-}
+.contactForm textarea{ resize:vertical; }
 
 .contactForm button{
   width:fit-content;
@@ -321,6 +161,50 @@ button:hover{border-color:#999}
   color:var(--muted);
 }
 
-.formStatus[data-kind="success"]{ color: var(--fg); }
-.formStatus[data-kind="error"]{ color: var(--fg); }
-.formStatus[data-kind="info"]{ color: var(--muted); }
+.formStatus[data-kind="success"]{color:var(--fg)}
+.formStatus[data-kind="error"]{color:var(--fg)}
+.formStatus[data-kind="info"]{color:var(--muted)}
+
+/* =========================
+   Dark Mode
+   ========================= */
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0f0f10;
+    --fg:#f3f3f3;
+    --muted:#b6b6b6;
+    --rule:#2a2a2a;
+    --panel:#121214;
+    --link:#8ab4f8;
+    --visited:#c58af9;
+  }
+
+  input[type="search"],
+  button,
+  .button{
+    background:#0f0f10;
+    color:var(--fg);
+    border-color:var(--rule);
+  }
+
+  /* Form fields — FULL override for iOS */
+  .contactForm input,
+  .contactForm textarea,
+  .contactForm select{
+    background:#161618;
+    color:rgba(255,255,255,0.92);
+    border-color:rgba(255,255,255,0.14);
+    -webkit-text-fill-color:rgba(255,255,255,0.92);
+  }
+
+  .contactForm input::placeholder,
+  .contactForm textarea::placeholder{
+    color:rgba(255,255,255,0.45);
+    -webkit-text-fill-color:rgba(255,255,255,0.45);
+  }
+
+  .contactForm select{
+    color-scheme:dark;
+  }
+}
