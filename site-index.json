@@ -1,0 +1,108 @@
+[
+  {
+    "title": "Home",
+    "url": "./index.html",
+    "desc": "Main directory.",
+    "tags": [
+      "home",
+      "directory"
+    ]
+  },
+  {
+    "title": "Services",
+    "url": "./services.html",
+    "desc": "Media production, political consulting, inquiry form, scheduling, and payments.",
+    "tags": [
+      "services",
+      "media",
+      "video",
+      "production",
+      "consulting",
+      "politics",
+      "calendly",
+      "stripe",
+      "form"
+    ]
+  },
+  {
+    "title": "Work",
+    "url": "./work.html",
+    "desc": "Selected projects and experience.",
+    "tags": [
+      "work",
+      "documentary",
+      "imdb",
+      "projects"
+    ]
+  },
+  {
+    "title": "Writing",
+    "url": "./writing.html",
+    "desc": "Forthcoming writing, excerpts, and release notifications.",
+    "tags": [
+      "writing",
+      "books",
+      "when good intentions fail",
+      "excerpt",
+      "release"
+    ]
+  },
+  {
+    "title": "Projects & Research",
+    "url": "./projects.html",
+    "desc": "Documentary development and research projects.",
+    "tags": [
+      "projects",
+      "research",
+      "documentary",
+      "archives",
+      "transcription"
+    ]
+  },
+  {
+    "title": "More",
+    "url": "./more.html",
+    "desc": "Extras and side projects (includes fantasy football).",
+    "tags": [
+      "more",
+      "fantasy",
+      "football",
+      "league",
+      "rules",
+      "payouts",
+      "leaguesafe",
+      "blitzed and confused"
+    ]
+  },
+  {
+    "title": "Privacy",
+    "url": "./privacy.html",
+    "desc": "Privacy policy.",
+    "tags": [
+      "privacy",
+      "policy"
+    ],
+    "hidden": true
+  },
+  {
+    "title": "Refund",
+    "url": "./refund.html",
+    "desc": "Refund policy.",
+    "tags": [
+      "refund",
+      "policy",
+      "legal"
+    ],
+    "hidden": true
+  },
+  {
+    "title": "Terms",
+    "url": "./terms.html",
+    "desc": "Terms of service.",
+    "tags": [
+      "terms",
+      "legal"
+    ],
+    "hidden": true
+  }
+]
