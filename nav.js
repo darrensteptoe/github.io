@@ -29,22 +29,28 @@
 
   const render = (pages) => {
     const visible = pages.filter((p) => !p.hidden);
+
     visible.sort((a, b) => {
       const af = normalizeUrlToFile(a.url);
       const bf = normalizeUrlToFile(b.url);
-      const ao = (af in sortOrder) ? sortOrder[af] : 999;
-      const bo = (bf in sortOrder) ? sortOrder[bf] : 999;
+      const ao = af in sortOrder ? sortOrder[af] : 999;
+      const bo = bf in sortOrder ? sortOrder[bf] : 999;
       if (ao !== bo) return ao - bo;
       return String(a.title || af).localeCompare(String(b.title || bf));
     });
 
     list.innerHTML = visible
       .map((p) => {
-        const title = escapeHtml(p.title || p.url);
         const url = p.url || "#";
         const file = normalizeUrlToFile(url);
         const isCurrent = file === currentPath;
-        return `<li><a href="${url}"${isCurrent ? " aria-current=\"page\"" : ""}>${title}</a></li>`;
+
+        const displayTitle =
+          file === "index.html"
+            ? "Home"
+            : escapeHtml(p.title || p.url);
+
+        return `<li><a href="${url}"${isCurrent ? ' aria-current="page"' : ""}>${displayTitle}</a></li>`;
       })
       .join("");
   };
