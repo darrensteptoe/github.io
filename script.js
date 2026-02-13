@@ -1,10 +1,7 @@
-// small, intentional JS only
 (() => {
   const year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());
 
-  // Add stable IDs to panels based on aria-label / H2 text.
-  // This enables deep-linking like /work.html#documentary-work without manual IDs.
   const slugify = (s) =>
     String(s ?? "")
       .toLowerCase()
@@ -41,12 +38,9 @@
     ensurePanelIds();
   }
 
-  // PWA-lite: register service worker (safe no-op if unsupported)
   if ("serviceWorker" in navigator && location.protocol === "https:") {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
-        // silent fail: the site still works normally
-      });
+      navigator.serviceWorker.register(new URL("sw.js", document.baseURI)).catch(() => {});
     });
   }
 })();
