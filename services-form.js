@@ -1,4 +1,6 @@
 (() => {
+  "use strict";
+
   const form = document.getElementById("contactForm");
   const statusEl = document.getElementById("formStatus");
   const btn = document.getElementById("submitBtn");
@@ -6,10 +8,9 @@
   if (!form || !statusEl || !btn) return;
 
   const projectType = document.getElementById("projectType");
+
   const mediaFields = document.getElementById("mediaFields");
   const consultingFields = document.getElementById("consultingFields");
-  const otherDetailsWrap = document.getElementById("otherDetailsWrap");
-  const otherDetails = document.getElementById("otherDetails");
 
   const mediaType = document.getElementById("mediaType");
   const mediaDate = document.getElementById("mediaDate");
@@ -22,6 +23,9 @@
   const consultingEngagement = document.getElementById("consultingEngagement");
   const monthsWrap = document.getElementById("monthsWrap");
   const months = document.getElementById("months");
+
+  const otherDetailsWrap = document.getElementById("otherDetailsWrap");
+  const otherDetails = document.getElementById("otherDetails");
 
   const quoteText = document.getElementById("quoteText");
 
@@ -37,17 +41,12 @@
     editingHourly: 85,
   };
 
-  const setStatus = (msg, kind) => {
-    statusEl.textContent = msg || "";
-    statusEl.dataset.kind = kind || "";
-  };
+  const money = (n) =>
+    n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
-  const disableForm = (disabled) => {
-    btn.disabled = disabled;
-    Array.from(form.elements).forEach((el) => {
-      if (el.tagName === "BUTTON") return;
-      el.disabled = disabled;
-    });
+  const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
   };
 
   const setHidden = (el, hidden) => {
@@ -62,13 +61,18 @@
     else el.removeAttribute("required");
   };
 
-  const num = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : 0;
+  const setStatus = (msg, kind) => {
+    statusEl.textContent = msg || "";
+    statusEl.dataset.kind = kind || "";
   };
 
-  const money = (n) =>
-    n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  const disableForm = (disabled) => {
+    btn.disabled = disabled;
+    Array.from(form.elements).forEach((el) => {
+      if (el.tagName === "BUTTON") return;
+      el.disabled = disabled;
+    });
+  };
 
   const updateQuote = () => {
     if (!quoteText) return;
@@ -96,25 +100,20 @@
         const hrs = num(coverageHours?.value);
         const included = { bronze: 6, silver: 8, gold: 10, platinum: 12 }[pkg] || 0;
         const extra = hrs > included ? (hrs - included) * PRICING.wedding.extraHour : 0;
-        const est = base + extra;
-
-        quoteText.textContent =
-          `${money(est)} (base ${money(base)}${extra ? ` + ${money(extra)} estimated overage` : ""})`;
+        quoteText.textContent = `${money(base + extra)} (base ${money(base)}${extra ? ` + ${money(extra)} estimated overage` : ""})`;
         return;
       }
 
       if (mt === "event") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent =
-            `Typical ranges: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for a rough estimate.`;
+          quoteText.textContent = `Typical ranges: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for a rough estimate.`;
           return;
         }
         let est = 0;
         if (hrs <= 4) est = PRICING.event.halfDay;
         else if (hrs <= 8) est = PRICING.event.fullDay;
         else est = PRICING.event.fullDay + (hrs - 8) * PRICING.event.extraHour;
-
         quoteText.textContent = `${money(est)} (based on ${hrs} hour${hrs === 1 ? "" : "s"})`;
         return;
       }
@@ -144,22 +143,19 @@
 
       if (eng === "municipal") {
         quoteText.textContent =
-          `${money(PRICING.consulting.municipalMin)}–${money(PRICING.consulting.municipalMax)} / month ` +
-          `(≈ ${money(PRICING.consulting.municipalMin * m)}–${money(PRICING.consulting.municipalMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
+          `${money(PRICING.consulting.municipalMin)}–${money(PRICING.consulting.municipalMax)} / month (≈ ${money(PRICING.consulting.municipalMin * m)}–${money(PRICING.consulting.municipalMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
         return;
       }
 
       if (eng === "state") {
         quoteText.textContent =
-          `${money(PRICING.consulting.stateMin)}–${money(PRICING.consulting.stateMax)} / month ` +
-          `(≈ ${money(PRICING.consulting.stateMin * m)}–${money(PRICING.consulting.stateMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
+          `${money(PRICING.consulting.stateMin)}–${money(PRICING.consulting.stateMax)} / month (≈ ${money(PRICING.consulting.stateMin * m)}–${money(PRICING.consulting.stateMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
         return;
       }
 
       if (eng === "congress") {
         quoteText.textContent =
-          `${money(PRICING.consulting.congressMin)}–${money(PRICING.consulting.congressMax)}+ / month ` +
-          `(≈ ${money(PRICING.consulting.congressMin * m)}–${money(PRICING.consulting.congressMax * m)}+ total for ${m} month${m === 1 ? "" : "s"})`;
+          `${money(PRICING.consulting.congressMin)}–${money(PRICING.consulting.congressMax)}+ / month (≈ ${money(PRICING.consulting.congressMin * m)}–${money(PRICING.consulting.congressMax * m)}+ total for ${m} month${m === 1 ? "" : "s"})`;
         return;
       }
 
@@ -173,35 +169,40 @@
   const syncVisibilityAndRequirements = () => {
     const pt = projectType?.value || "";
 
+    // show/hide primary blocks
     setHidden(mediaFields, pt !== "media");
     setHidden(consultingFields, pt !== "consulting");
     setHidden(otherDetailsWrap, pt !== "other");
 
+    // base required rules
     setRequired(mediaType, pt === "media");
     setRequired(mediaDate, pt === "media");
     setRequired(consultingEngagement, pt === "consulting");
     setRequired(otherDetails, pt === "other");
 
-    setRequired(weddingPackage, false);
+    // reset sub-visibility
     setHidden(weddingPackageWrap, true);
+    setRequired(weddingPackage, false);
     setHidden(coverageHoursWrap, true);
 
     setHidden(monthsWrap, true);
     setRequired(months, false);
 
+    // media sub-rules
     const mt = mediaType?.value || "";
-    if (pt === "media" && mt) {
+    if (pt === "media") {
       if (mt === "wedding") {
         setHidden(weddingPackageWrap, false);
         setRequired(weddingPackage, true);
         setHidden(coverageHoursWrap, false);
       } else if (mt === "event") {
         setHidden(coverageHoursWrap, false);
-      } else {
-        setHidden(coverageHoursWrap, mt === "editing");
+      } else if (mt === "editing") {
+        setHidden(coverageHoursWrap, true);
       }
     }
 
+    // consulting sub-rules
     const eng = consultingEngagement?.value || "";
     if (pt === "consulting" && eng && eng !== "strategy" && eng !== "other") {
       setHidden(monthsWrap, false);
@@ -211,21 +212,23 @@
     updateQuote();
   };
 
+  // anti-spam timing
   form.dataset.startedAt = String(Date.now());
 
   projectType?.addEventListener("change", syncVisibilityAndRequirements);
   mediaType?.addEventListener("change", syncVisibilityAndRequirements);
   weddingPackage?.addEventListener("change", updateQuote);
   coverageHours?.addEventListener("input", updateQuote);
+  deliverables?.addEventListener("change", updateQuote);
   consultingEngagement?.addEventListener("change", syncVisibilityAndRequirements);
   months?.addEventListener("input", updateQuote);
-  deliverables?.addEventListener("change", updateQuote);
 
   syncVisibilityAndRequirements();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    // validate required fields
     const requiredEls = form.querySelectorAll("[required]");
     for (const el of requiredEls) {
       if (!String(el.value || "").trim()) {
@@ -235,6 +238,7 @@
       }
     }
 
+    // honeypot
     const gotcha = form.querySelector('input[name="_gotcha"]');
     if (gotcha && gotcha.value.trim()) {
       form.reset();
@@ -243,6 +247,7 @@
       return;
     }
 
+    // time-to-submit check
     const start = form.dataset.startedAt ? Number(form.dataset.startedAt) : Date.now();
     if (Date.now() - start < 2500) {
       setStatus("Please take a moment to review your details, then submit again.", "info");
@@ -270,7 +275,7 @@
       try {
         const json = await res.json();
         if (json && json.errors && json.errors.length) {
-          errMsg = json.errors.map((e) => e.message).join(" ");
+          errMsg = json.errors.map((x) => x.message).join(" ");
         }
       } catch (_) {}
 
