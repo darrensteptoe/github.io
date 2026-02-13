@@ -1,9 +1,3 @@
-/* Minimal, controlled service worker.
-   - Caches core assets for faster repeat visits.
-   - Network-first for HTML, CSS, and JS so edits show quickly.
-   - Does NOT cache third-party iframes/scripts.
-*/
-
 const VERSION = "v2";
 const CACHE_NAME = `ds-static-${VERSION}`;
 
@@ -30,9 +24,7 @@ const CORE_ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(CORE_ASSETS)));
   self.skipWaiting();
 });
 
@@ -49,7 +41,7 @@ function networkFirst(req) {
   return fetch(req)
     .then((res) => {
       const copy = res.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+      caches.open(CACHE_NAME).then((c) => c.put(req, copy));
       return res;
     })
     .catch(() => caches.match(req));
@@ -59,9 +51,7 @@ function staleWhileRevalidate(req) {
   return caches.match(req).then((cached) => {
     const fetcher = fetch(req)
       .then((res) => {
-        if (res && res.ok) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
-        }
+        if (res && res.ok) caches.open(CACHE_NAME).then((c) => c.put(req, res.clone()));
         return res;
       })
       .catch(() => null);
