@@ -1,13 +1,65 @@
 (() => {
+  "use strict";
+
   const form = document.getElementById("contactForm");
   const statusEl = document.getElementById("formStatus");
   const btn = document.getElementById("submitBtn");
 
   if (!form || !statusEl || !btn) return;
 
-  const eventTypeSelect = document.getElementById("eventTypeSelect");
-  const eventTypeOtherWrap = document.getElementById("eventTypeOtherWrap");
-  const eventTypeOther = document.getElementById("eventTypeOther");
+  const projectType = document.getElementById("projectType");
+
+  const mediaFields = document.getElementById("mediaFields");
+  const consultingFields = document.getElementById("consultingFields");
+
+  const mediaType = document.getElementById("mediaType");
+  const mediaDate = document.getElementById("mediaDate");
+  const weddingPackageWrap = document.getElementById("weddingPackageWrap");
+  const weddingPackage = document.getElementById("weddingPackage");
+  const coverageHoursWrap = document.getElementById("coverageHoursWrap");
+  const coverageHours = document.getElementById("coverageHours");
+  const deliverables = document.getElementById("deliverables");
+
+  const consultingEngagement = document.getElementById("consultingEngagement");
+  const monthsWrap = document.getElementById("monthsWrap");
+  const months = document.getElementById("months");
+
+  const otherDetailsWrap = document.getElementById("otherDetailsWrap");
+  const otherDetails = document.getElementById("otherDetails");
+
+  const quoteText = document.getElementById("quoteText");
+
+  const PRICING = {
+    wedding: { bronze: 2400, silver: 3200, gold: 4200, platinum: 5200, extraHour: 125 },
+    event: { halfDay: 600, fullDay: 1000, extraHour: 125 },
+    consulting: {
+      strategy: 250,
+      municipalMin: 3000, municipalMax: 6000,
+      stateMin: 5000, stateMax: 10000,
+      congressMin: 10000, congressMax: 20000,
+    },
+    editingHourly: 85,
+  };
+
+  const money = (n) =>
+    n.toLocaleString(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+  const num = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  const setHidden = (el, hidden) => {
+    if (!el) return;
+    el.classList.toggle("hidden", !!hidden);
+    el.setAttribute("aria-hidden", hidden ? "true" : "false");
+  };
+
+  const setRequired = (el, required) => {
+    if (!el) return;
+    if (required) el.setAttribute("required", "required");
+    else el.removeAttribute("required");
+  };
 
   const setStatus = (msg, kind) => {
     statusEl.textContent = msg || "";
@@ -22,33 +74,161 @@
     });
   };
 
-  const hideOther = () => {
-    if (!eventTypeOtherWrap || !eventTypeOther) return;
-    eventTypeOtherWrap.classList.add("hidden");
-    eventTypeOther.removeAttribute("required");
-    eventTypeOther.value = "";
+  const updateQuote = () => {
+    if (!quoteText) return;
+
+    const pt = projectType?.value || "";
+    if (!pt) {
+      quoteText.textContent = "Select a project type to see a rough estimate.";
+      return;
+    }
+
+    if (pt === "media") {
+      const mt = mediaType?.value || "";
+      if (!mt) {
+        quoteText.textContent = "Choose a media type to see a rough estimate.";
+        return;
+      }
+
+      if (mt === "wedding") {
+        const pkg = weddingPackage?.value || "";
+        if (!pkg) {
+          quoteText.textContent = "Pick a wedding package to see a rough estimate.";
+          return;
+        }
+        const base = PRICING.wedding[pkg] || 0;
+        const hrs = num(coverageHours?.value);
+        const included = { bronze: 6, silver: 8, gold: 10, platinum: 12 }[pkg] || 0;
+        const extra = hrs > included ? (hrs - included) * PRICING.wedding.extraHour : 0;
+        quoteText.textContent = `${money(base + extra)} (base ${money(base)}${extra ? ` + ${money(extra)} estimated overage` : ""})`;
+        return;
+      }
+
+      if (mt === "event") {
+        const hrs = num(coverageHours?.value);
+        if (!hrs) {
+          quoteText.textContent = `Typical ranges: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for a rough estimate.`;
+          return;
+        }
+        let est = 0;
+        if (hrs <= 4) est = PRICING.event.halfDay;
+        else if (hrs <= 8) est = PRICING.event.fullDay;
+        else est = PRICING.event.fullDay + (hrs - 8) * PRICING.event.extraHour;
+        quoteText.textContent = `${money(est)} (based on ${hrs} hour${hrs === 1 ? "" : "s"})`;
+        return;
+      }
+
+      if (mt === "editing") {
+        quoteText.textContent = `${money(PRICING.editingHourly)} / hour (5-hour minimum per project phase)`;
+        return;
+      }
+
+      quoteText.textContent = "Quote required — share scope, deliverables, and timeline for an accurate estimate.";
+      return;
+    }
+
+    if (pt === "consulting") {
+      const eng = consultingEngagement?.value || "";
+      if (!eng) {
+        quoteText.textContent = "Choose an engagement type to see a rough estimate.";
+        return;
+      }
+
+      if (eng === "strategy") {
+        quoteText.textContent = money(PRICING.consulting.strategy);
+        return;
+      }
+
+      const m = Math.max(1, num(months?.value) || 1);
+
+      if (eng === "municipal") {
+        quoteText.textContent =
+          `${money(PRICING.consulting.municipalMin)}–${money(PRICING.consulting.municipalMax)} / month (≈ ${money(PRICING.consulting.municipalMin * m)}–${money(PRICING.consulting.municipalMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
+        return;
+      }
+
+      if (eng === "state") {
+        quoteText.textContent =
+          `${money(PRICING.consulting.stateMin)}–${money(PRICING.consulting.stateMax)} / month (≈ ${money(PRICING.consulting.stateMin * m)}–${money(PRICING.consulting.stateMax * m)} total for ${m} month${m === 1 ? "" : "s"})`;
+        return;
+      }
+
+      if (eng === "congress") {
+        quoteText.textContent =
+          `${money(PRICING.consulting.congressMin)}–${money(PRICING.consulting.congressMax)}+ / month (≈ ${money(PRICING.consulting.congressMin * m)}–${money(PRICING.consulting.congressMax * m)}+ total for ${m} month${m === 1 ? "" : "s"})`;
+        return;
+      }
+
+      quoteText.textContent = "Quote required — share the race, timeline, and the help you need.";
+      return;
+    }
+
+    quoteText.textContent = "Quote required — share scope, deadline, and what success looks like.";
   };
 
-  const showOther = () => {
-    if (!eventTypeOtherWrap || !eventTypeOther) return;
-    eventTypeOtherWrap.classList.remove("hidden");
-    eventTypeOther.setAttribute("required", "required");
+  const syncVisibilityAndRequirements = () => {
+    const pt = projectType?.value || "";
+
+    // show/hide primary blocks
+    setHidden(mediaFields, pt !== "media");
+    setHidden(consultingFields, pt !== "consulting");
+    setHidden(otherDetailsWrap, pt !== "other");
+
+    // base required rules
+    setRequired(mediaType, pt === "media");
+    setRequired(mediaDate, pt === "media");
+    setRequired(consultingEngagement, pt === "consulting");
+    setRequired(otherDetails, pt === "other");
+
+    // reset sub-visibility
+    setHidden(weddingPackageWrap, true);
+    setRequired(weddingPackage, false);
+    setHidden(coverageHoursWrap, true);
+
+    setHidden(monthsWrap, true);
+    setRequired(months, false);
+
+    // media sub-rules
+    const mt = mediaType?.value || "";
+    if (pt === "media") {
+      if (mt === "wedding") {
+        setHidden(weddingPackageWrap, false);
+        setRequired(weddingPackage, true);
+        setHidden(coverageHoursWrap, false);
+      } else if (mt === "event") {
+        setHidden(coverageHoursWrap, false);
+      } else if (mt === "editing") {
+        setHidden(coverageHoursWrap, true);
+      }
+    }
+
+    // consulting sub-rules
+    const eng = consultingEngagement?.value || "";
+    if (pt === "consulting" && eng && eng !== "strategy" && eng !== "other") {
+      setHidden(monthsWrap, false);
+      setRequired(months, true);
+    }
+
+    updateQuote();
   };
 
-  if (eventTypeSelect && eventTypeOtherWrap && eventTypeOther) {
-    // Ensure initial state
-    hideOther();
+  // anti-spam timing
+  form.dataset.startedAt = String(Date.now());
 
-    eventTypeSelect.addEventListener("change", () => {
-      if (eventTypeSelect.value === "Other") showOther();
-      else hideOther();
-    });
-  }
+  projectType?.addEventListener("change", syncVisibilityAndRequirements);
+  mediaType?.addEventListener("change", syncVisibilityAndRequirements);
+  weddingPackage?.addEventListener("change", updateQuote);
+  coverageHours?.addEventListener("input", updateQuote);
+  deliverables?.addEventListener("change", updateQuote);
+  consultingEngagement?.addEventListener("change", syncVisibilityAndRequirements);
+  months?.addEventListener("input", updateQuote);
+
+  syncVisibilityAndRequirements();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // Basic required-field check (Formspree still validates server-side)
+    // validate required fields
     const requiredEls = form.querySelectorAll("[required]");
     for (const el of requiredEls) {
       if (!String(el.value || "").trim()) {
@@ -58,25 +238,18 @@
       }
     }
 
-    if (eventTypeSelect && eventTypeOther && eventTypeSelect.value === "Other" && !eventTypeOther.value.trim()) {
-      setStatus("Please specify your event type.", "error");
-      eventTypeOther.focus();
-      return;
-    }
-
-    // Honeypot (bots will fill this)
+    // honeypot
     const gotcha = form.querySelector('input[name="_gotcha"]');
     if (gotcha && gotcha.value.trim()) {
       form.reset();
-      hideOther();
+      syncVisibilityAndRequirements();
       setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
       return;
     }
 
-    // Time-to-submit guard (simple bot filter)
+    // time-to-submit check
     const start = form.dataset.startedAt ? Number(form.dataset.startedAt) : Date.now();
-    const elapsedMs = Date.now() - start;
-    if (elapsedMs < 2500) {
+    if (Date.now() - start < 2500) {
       setStatus("Please take a moment to review your details, then submit again.", "info");
       return;
     }
@@ -87,13 +260,13 @@
     try {
       const res = await fetch(form.action, {
         method: "POST",
-        headers: { "Accept": "application/json" },
+        headers: { Accept: "application/json" },
         body: new FormData(form),
       });
 
       if (res.ok) {
         form.reset();
-        hideOther();
+        syncVisibilityAndRequirements();
         setStatus("✅ Submitted. I’ll follow up within 48 hours.", "success");
         return;
       }
@@ -102,7 +275,7 @@
       try {
         const json = await res.json();
         if (json && json.errors && json.errors.length) {
-          errMsg = json.errors.map((e) => e.message).join(" ");
+          errMsg = json.errors.map((x) => x.message).join(" ");
         }
       } catch (_) {}
 
@@ -113,7 +286,4 @@
       disableForm(false);
     }
   });
-
-  // Start timer after the page is ready
-  form.dataset.startedAt = String(Date.now());
 })();
