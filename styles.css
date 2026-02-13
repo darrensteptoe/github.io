@@ -34,7 +34,7 @@
   --bg-grid:rgba(17,17,17,0.03);
   --bg-grain-1:rgba(17,17,17,0.018);
   --bg-grain-2:rgba(17,17,17,0.012);
-  --bg-texture-opacity:0.45;
+  --bg-texture-opacity:0.65;
 }
 
 *{box-sizing:border-box}
