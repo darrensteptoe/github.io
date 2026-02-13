@@ -1,37 +1,34 @@
-/* Minimal, controlled service worker.
-   - Caches core assets for faster repeat visits.
-   - Does NOT cache third-party iframes/scripts.
-*/
-
 const VERSION = "v1";
 const CACHE_NAME = `ds-static-${VERSION}`;
 
-const CORE_ASSETS = [
-  "/",
-  "/index.html",
-  "/services.html",
-  "/work.html",
-  "/writing.html",
-  "/projects.html",
-  "/more.html",
-  "/privacy.html",
-  "/terms.html",
-  "/refund.html",
-  "/404.html",
-  "/styles.css",
-  "/script.js",
-  "/nav.js",
-  "/site-index.json",
-  "/search.js",
-  "/manifest.webmanifest",
-  "/assets/img/icon-192.png",
-  "/assets/img/icon-512.png"
+const BASE = self.registration.scope;
+
+const ASSETS = [
+  "",
+  "index.html",
+  "services.html",
+  "work.html",
+  "writing.html",
+  "projects.html",
+  "more.html",
+  "privacy.html",
+  "terms.html",
+  "refund.html",
+  "404.html",
+  "styles.css",
+  "script.js",
+  "nav.js",
+  "site-index.json",
+  "search.js",
+  "manifest.webmanifest",
+  "assets/img/icon-192.png",
+  "assets/img/icon-512.png"
 ];
 
+const toURL = (p) => new URL(p, BASE).toString();
+
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS.map(toURL))));
   self.skipWaiting();
 });
 
@@ -48,10 +45,8 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Only handle same-origin GET requests.
   if (req.method !== "GET" || url.origin !== self.location.origin) return;
 
-  // HTML: network-first (fresh content), fallback to cache.
   const accept = req.headers.get("accept") || "";
   if (accept.includes("text/html")) {
     event.respondWith(
@@ -61,21 +56,26 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
           return res;
         })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("/404.html")))
+        .catch(() =>
+          caches
+            .match(req)
+            .then((cached) => cached || caches.match(toURL("404.html")))
+        )
     );
     return;
   }
 
-  // Assets: cache-first, update in background.
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) {
         event.waitUntil(
-          fetch(req).then((res) => {
-            if (res && res.ok) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
-            }
-          }).catch(() => {})
+          fetch(req)
+            .then((res) => {
+              if (res && res.ok) {
+                caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
+              }
+            })
+            .catch(() => {})
         );
         return cached;
       }
