@@ -4,12 +4,6 @@
   const resultsEl = document.getElementById("results");
   const countEl = document.getElementById("count");
 
-  // meta can be either #resultsMeta OR .resultsMeta (supports both)
-  const metaEl =
-    document.getElementById("resultsMeta") ||
-    document.querySelector(".resultsMeta") ||
-    null;
-
   if (!q || !clearBtn || !resultsEl || !countEl) return;
 
   let pages = [];
@@ -24,19 +18,6 @@
       .replace(/'/g, "&#039;");
 
   const normalize = (s) => String(s ?? "").toLowerCase();
-
-  const setVisible = (on) => {
-    // Works even if you don’t use .hidden in HTML
-    if (metaEl) metaEl.classList.toggle("hidden", !on);
-    resultsEl.classList.toggle("hidden", !on);
-  };
-
-  const clearResults = () => {
-    filtered = [];
-    resultsEl.innerHTML = "";
-    countEl.textContent = "0";
-    setVisible(false);
-  };
 
   const makeSnippet = (text, terms) => {
     const t = String(text ?? "").replace(/\s+/g, " ").trim();
@@ -61,6 +42,7 @@
 
   const highlight = (snippet, terms) => {
     if (!snippet || !terms.length) return escapeHtml(snippet);
+    // escape first, then highlight by splitting on escaped terms (safe)
     const escaped = escapeHtml(snippet);
     let out = escaped;
     for (const term of terms) {
@@ -90,18 +72,16 @@
         `;
       })
       .join("");
-
     countEl.textContent = String(filtered.length);
-    setVisible(true);
   };
 
   const applyFilter = () => {
     const termRaw = normalize(q.value).trim();
     const terms = termRaw ? termRaw.split(/\s+/).filter(Boolean) : [];
 
-    // ✅ Blank state when empty
     if (!terms.length) {
-      clearResults();
+      filtered = pages.filter((p) => !p.hidden);
+      renderResults();
       return;
     }
 
@@ -126,6 +106,7 @@
         score += scoreField(desc, 3);
         score += scoreField(content, 1);
 
+        // section-aware scoring + best section selection
         let bestSection = null;
         let bestSectionScore = 0;
 
@@ -180,8 +161,8 @@
       pages = [];
     }
 
-    // ✅ Force blank on refresh
-    clearResults();
+    filtered = pages.filter((p) => !p.hidden);
+    renderResults();
   };
 
   q.addEventListener("input", applyFilter);
@@ -193,14 +174,14 @@
     }
     if (e.key === "Escape") {
       q.value = "";
-      clearResults();
+      applyFilter();
     }
   });
 
   clearBtn.addEventListener("click", () => {
     q.value = "";
     q.focus();
-    clearResults();
+    applyFilter();
   });
 
   load();
