@@ -122,4 +122,86 @@
         };
 
         score += scoreField(title, 8);
-        score += scoreField(tags,
+        score += scoreField(tags, 6);
+        score += scoreField(desc, 3);
+        score += scoreField(content, 1);
+
+        let bestSection = null;
+        let bestSectionScore = 0;
+
+        const secs = Array.isArray(p.sections) ? p.sections : [];
+        for (const s of secs) {
+          const st = normalize(s.title);
+          const sx = normalize(s.text);
+          const secScore = scoreField(st, 6) + scoreField(sx, 2);
+          if (secScore > bestSectionScore) {
+            bestSectionScore = secScore;
+            bestSection = s;
+          }
+        }
+
+        score += bestSectionScore;
+
+        if (score <= 0) return null;
+
+        const snippetSource = bestSection?.text || p.content || p.desc || "";
+        const snippet = makeSnippet(snippetSource, terms);
+
+        return {
+          p,
+          score,
+          anchor: bestSection?.anchor || "",
+          sectionTitle: bestSection?.title || "",
+          snippet,
+          terms,
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 30);
+
+    renderResults();
+  };
+
+  const openTopResult = () => {
+    if (!filtered.length) return;
+    const top = filtered[0];
+    const p = top.p || top;
+    const url = (p?.url || "#") + (top.anchor ? `#${encodeURIComponent(top.anchor)}` : "");
+    if (url && url !== "#") window.location.href = url;
+  };
+
+  const load = async () => {
+    try {
+      const res = await fetch("./site-index.json", { cache: "no-store" });
+      const data = await res.json();
+      pages = Array.isArray(data) ? data : [];
+    } catch {
+      pages = [];
+    }
+
+    // ✅ Force blank on refresh
+    clearResults();
+  };
+
+  q.addEventListener("input", applyFilter);
+
+  q.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      openTopResult();
+    }
+    if (e.key === "Escape") {
+      q.value = "";
+      clearResults();
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    q.value = "";
+    q.focus();
+    clearResults();
+  });
+
+  load();
+})();
