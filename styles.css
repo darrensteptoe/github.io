@@ -1,7 +1,5 @@
 :root{
   --bg:#f5f5f5;
-  --bgTop:#fafafa;
-
   --fg:#111;
   --muted:#444;
   --rule:#d0d0d0;
@@ -13,17 +11,20 @@
   --radius-sm:10px;
 
   --panel-border:rgba(17,17,17,0.12);
-  --panel-shadow:0 10px 26px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+
+  /* Slightly stronger, fuzzier lift (light mode) */
+  --panel-shadow:0 18px 44px rgba(0,0,0,0.10), 0 3px 10px rgba(0,0,0,0.06);
+
   --panel-highlight:inset 0 1px 0 rgba(255,255,255,0.75);
 
-  --focusRing:rgba(17,17,17,0.92);
+  --focus-ring:rgba(17,17,17,0.90);
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 
 body{
-  background:linear-gradient(180deg, var(--bgTop) 0%, var(--bg) 72%);
+  background:var(--bg);
   color:var(--fg);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   line-height:1.5;
@@ -32,23 +33,16 @@ body{
 
 .wrap{max-width:860px;margin:0 auto;padding:20px}
 
-.header{
-  margin:10px 0 16px;
-  padding-bottom:12px;
-  border-bottom:1px solid rgba(0,0,0,0.08);
-}
+.header{margin:10px 0 16px}
 
 .title{
   margin:0 0 4px;
   font-size:2rem;
-  font-weight:800;
+  font-weight:850;
   letter-spacing:.01em;
 }
 
-.sub{
-  margin:0;
-  color:var(--muted);
-}
+.sub{margin:0;color:var(--muted)}
 
 .panel{
   position:relative;
@@ -57,7 +51,7 @@ body{
   padding:16px;
   margin:14px 0;
   border-radius:var(--radius);
-  box-shadow:var(--panel-shadow);
+  box-shadow:var(--panel-shadow), var(--panel-highlight);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
 }
@@ -79,39 +73,30 @@ body{
 .h2{
   margin:0 0 10px;
   font-size:1.1rem;
+  font-weight:800;
   letter-spacing:.01em;
 }
 
-/* Calm line length for direct prose inside panels */
-.panel > p{ max-width:68ch; }
-
-/* Links: keep classic underline, refine hover */
 a{
   color:var(--link);
   text-decoration:underline;
   text-underline-offset:2px;
   text-decoration-thickness:1px;
-  transition:text-decoration-thickness .12s ease, text-underline-offset .12s ease, opacity .12s ease;
 }
-
 a:visited{color:var(--visited)}
-
 a:hover{
   text-decoration-thickness:2px;
   text-underline-offset:3px;
 }
 
-/* Focus: keyboard-only ring (cleaner, more “adult”) */
-a:focus,button:focus,input:focus,textarea:focus,select:focus{
-  outline:none;
-}
-
+/* Focus: show rings only for keyboard navigation */
+a:focus,button:focus,input:focus,textarea:focus,select:focus{ outline:none; }
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible{
-  outline:2px solid var(--focusRing);
+  outline:2px solid var(--focus-ring);
   outline-offset:2px;
 }
 
@@ -138,7 +123,6 @@ button{
 }
 
 button:hover{border-color:#999}
-
 button:active{transform:translateY(1px)}
 
 .button{
@@ -149,7 +133,7 @@ button:active{transform:translateY(1px)}
   background:#fff;
   color:var(--fg);
   text-decoration:none;
-  font-weight:600;
+  font-weight:650;
   border-radius:10px;
   transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,background-color .12s ease;
 }
@@ -157,7 +141,7 @@ button:active{transform:translateY(1px)}
 .button:hover{
   border-color:#999;
   transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+  box-shadow:0 12px 28px rgba(0,0,0,0.12);
 }
 
 .button:active{transform:translateY(0px)}
@@ -251,8 +235,6 @@ button:active{transform:translateY(1px)}
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#0f0f10;
-    --bgTop:#131316;
-
     --fg:#f3f3f3;
     --muted:#b6b6b6;
     --rule:#2a2a2a;
@@ -261,14 +243,12 @@ button:active{transform:translateY(1px)}
     --visited:#c58af9;
 
     --panel-border:rgba(255,255,255,0.10);
+
+    /* Keep dark mode conservative (avoid “glow” or muddy haze) */
     --panel-shadow:0 14px 30px rgba(0,0,0,0.38), 0 2px 8px rgba(0,0,0,0.28);
+
     --panel-highlight:inset 0 1px 0 rgba(255,255,255,0.06);
-
-    --focusRing:rgba(243,243,243,0.92);
-  }
-
-  .header{
-    border-bottom:1px solid rgba(255,255,255,0.10);
+    --focus-ring:rgba(255,255,255,0.90);
   }
 
   input[type="search"],
@@ -311,13 +291,6 @@ button:active{transform:translateY(1px)}
   .contactForm select{
     color-scheme:dark;
   }
-}
-
-/* Reduce motion without changing layout */
-@media (prefers-reduced-motion: reduce){
-  *{ scroll-behavior:auto !important; }
-  button, .button, a{ transition:none !important; }
-  .button:hover, button:active, .button:active{ transform:none !important; }
 }
 
 /* =========================
