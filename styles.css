@@ -29,6 +29,12 @@
   --pricing-corporate-dark:rgba(36,31,28,0.72);
   --pricing-doc-dark:rgba(34,30,40,0.72);
   --pricing-political-dark:rgba(28,36,32,0.72);
+
+  --bg-dots:rgba(17,17,17,0.055);
+  --bg-grid:rgba(17,17,17,0.03);
+  --bg-grain-1:rgba(17,17,17,0.018);
+  --bg-grain-2:rgba(17,17,17,0.012);
+  --bg-texture-opacity:0.30;
 }
 
 *{box-sizing:border-box}
@@ -40,6 +46,34 @@ body{
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   line-height:1.5;
   -webkit-text-size-adjust:100%;
+  position:relative;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:var(--bg-texture-opacity);
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--bg-dots) 1px, transparent 1.6px),
+    linear-gradient(to right, var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--bg-grid) 1px, transparent 1px),
+    repeating-linear-gradient(35deg, transparent 0 7px, var(--bg-grain-1) 7px 8px, transparent 8px 15px),
+    repeating-linear-gradient(-35deg, transparent 0 9px, var(--bg-grain-2) 9px 10px, transparent 10px 19px);
+  background-size:
+    26px 26px,
+    104px 104px,
+    104px 104px,
+    240px 240px,
+    280px 280px;
+  background-position:
+    0 0,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
 }
 
 .wrap{max-width:860px;margin:0 auto;padding:20px}
@@ -244,6 +278,12 @@ button:active{transform:translateY(1px)}
     --panel-shadow:0 14px 30px rgba(0,0,0,0.38), 0 2px 8px rgba(0,0,0,0.28);
     --panel-highlight:inset 0 1px 0 rgba(255,255,255,0.06);
     --focus-ring:rgba(255,255,255,0.90);
+
+    --bg-dots:rgba(255,255,255,0.05);
+    --bg-grid:rgba(255,255,255,0.028);
+    --bg-grain-1:rgba(255,255,255,0.018);
+    --bg-grain-2:rgba(255,255,255,0.012);
+    --bg-texture-opacity:0.22;
   }
 
   input[type="search"],
