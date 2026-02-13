@@ -3,8 +3,9 @@
   const clearBtn = document.getElementById("clear");
   const resultsEl = document.getElementById("results");
   const countEl = document.getElementById("count");
+  const metaEl = document.getElementById("resultsMeta");
 
-  if (!q || !clearBtn || !resultsEl || !countEl) return;
+  if (!q || !clearBtn || !resultsEl || !countEl || !metaEl) return;
 
   let pages = [];
   let filtered = [];
@@ -18,6 +19,18 @@
       .replace(/'/g, "&#039;");
 
   const normalize = (s) => String(s ?? "").toLowerCase();
+
+  const setVisible = (on) => {
+    metaEl.classList.toggle("hidden", !on);
+    resultsEl.classList.toggle("hidden", !on);
+  };
+
+  const clearResults = () => {
+    filtered = [];
+    resultsEl.innerHTML = "";
+    countEl.textContent = "0";
+    setVisible(false);
+  };
 
   const makeSnippet = (text, terms) => {
     const t = String(text ?? "").replace(/\s+/g, " ").trim();
@@ -42,7 +55,6 @@
 
   const highlight = (snippet, terms) => {
     if (!snippet || !terms.length) return escapeHtml(snippet);
-    // escape first, then highlight by splitting on escaped terms (safe)
     const escaped = escapeHtml(snippet);
     let out = escaped;
     for (const term of terms) {
@@ -72,7 +84,9 @@
         `;
       })
       .join("");
+
     countEl.textContent = String(filtered.length);
+    setVisible(true);
   };
 
   const applyFilter = () => {
@@ -80,8 +94,7 @@
     const terms = termRaw ? termRaw.split(/\s+/).filter(Boolean) : [];
 
     if (!terms.length) {
-      filtered = pages.filter((p) => !p.hidden);
-      renderResults();
+      clearResults();
       return;
     }
 
@@ -106,7 +119,6 @@
         score += scoreField(desc, 3);
         score += scoreField(content, 1);
 
-        // section-aware scoring + best section selection
         let bestSection = null;
         let bestSectionScore = 0;
 
@@ -161,8 +173,7 @@
       pages = [];
     }
 
-    filtered = pages.filter((p) => !p.hidden);
-    renderResults();
+    clearResults(); // ✅ blank state on refresh
   };
 
   q.addEventListener("input", applyFilter);
@@ -174,14 +185,14 @@
     }
     if (e.key === "Escape") {
       q.value = "";
-      applyFilter();
+      clearResults();
     }
   });
 
   clearBtn.addEventListener("click", () => {
     q.value = "";
     q.focus();
-    applyFilter();
+    clearResults();
   });
 
   load();
