@@ -283,7 +283,7 @@ button:active{transform:translateY(1px)}
     --bg-grid:rgba(255,255,255,0.028);
     --bg-grain-1:rgba(255,255,255,0.018);
     --bg-grain-2:rgba(255,255,255,0.012);
-    --bg-texture-opacity:0.32;
+    --bg-texture-opacity:0.52;
   }
 
   input[type="search"],
