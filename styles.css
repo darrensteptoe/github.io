@@ -1,4 +1,4 @@
-:root{
+:root {
   --bg:#f5f5f5;
   --fg:#111;
   --muted:#444;
@@ -510,12 +510,20 @@ body.page-services .pricingGrid{
 body.page-services .pricingGrid.twoCol{
   grid-template-columns:repeat(2, minmax(0, 1fr));
 }
+
 body.page-services .pricingCard{
   border:1px solid rgba(0,0,0,.10);
   border-radius:10px;
   padding:12px 12px 10px;
   background:rgba(248,248,250,0.90);
 }
+
+/* Subtle chic variation (light mode) */
+body.page-services .pricingGrid .pricingCard:nth-child(4n+1){ background:#f7f7f9; }
+body.page-services .pricingGrid .pricingCard:nth-child(4n+2){ background:#f4f6f9; }
+body.page-services .pricingGrid .pricingCard:nth-child(4n+3){ background:#f6f5f9; }
+body.page-services .pricingGrid .pricingCard:nth-child(4n+4){ background:#f5f8f6; }
+
 body.page-services .pricingCard h4{
   margin:0 0 6px;
   font-size:0.82rem;
@@ -607,6 +615,13 @@ body.page-services .formStatus[data-kind="info"]{ opacity:.8; }
     border:1px solid rgba(255,255,255,0.14);
     color:rgba(255,255,255,0.92);
   }
+
+  /* Subtle chic variation (dark mode) */
+  body.page-services .pricingGrid .pricingCard:nth-child(4n+1){ background:rgba(28,28,32,0.75); }
+  body.page-services .pricingGrid .pricingCard:nth-child(4n+2){ background:rgba(32,34,40,0.75); }
+  body.page-services .pricingGrid .pricingCard:nth-child(4n+3){ background:rgba(34,30,40,0.75); }
+  body.page-services .pricingGrid .pricingCard:nth-child(4n+4){ background:rgba(30,36,34,0.75); }
+
   body.page-services .pricingCard h4{ color:rgba(255,255,255,0.94); }
   body.page-services .pricingCard p{ color:rgba(255,255,255,0.88); }
   body.page-services .pricingCard li{ color:rgba(255,255,255,0.88); }
@@ -836,6 +851,7 @@ body.page-writing .testimonial span{
 @media (max-width: 560px){
   :root{ --radius:10px; }
 }
+
 .featured-image-container {
   width: 100%;
   height: 360px; /* controls vertical crop */
