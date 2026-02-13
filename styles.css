@@ -441,10 +441,30 @@ body.page-services .sectionRule{
   margin:18px 0;
   width:100%;
 }
+
+body.page-services .panelHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 10px;
+}
+body.page-services .panelHeaderRow .h2{ margin:0; }
+
+body.page-services .panelLogoHorizontal{
+  height:20px;
+  width:auto;
+  max-width:40%;
+  object-fit:contain;
+  flex:0 0 auto;
+  pointer-events:none;
+}
+
 body.page-services .pricingWrap h3{
-  margin:22px 0 8px;
-  font-size:15px;
-  letter-spacing:.3px;
+  margin:18px 0 10px;
+  font-size:1.1rem;
+  font-weight:800;
+  letter-spacing:0;
 }
 body.page-services .pricingGrid{
   display:grid;
@@ -461,17 +481,17 @@ body.page-services .pricingCard{
 }
 body.page-services .pricingCard h4{
   margin:0 0 6px;
-  font-size:13px;
+  font-size:0.82rem;
   font-weight:700;
 }
 body.page-services .pricingCard ul{
   margin:0 0 6px 16px;
-  font-size:12px;
+  font-size:0.78rem;
   line-height:1.5;
 }
 body.page-services .pricingCard p{
   margin:0;
-  font-size:12px;
+  font-size:0.78rem;
   line-height:1.5;
 }
 body.page-services .miniNote{
@@ -490,18 +510,6 @@ body.page-services .videoWrap iframe{
   width:100%;
   height:100%;
   border:0;
-}
-body.page-services .panelLogo{
-  position:absolute;
-  top:16px;
-  right:16px;
-  height:20px;
-  width:auto;
-  max-width:40%;
-}
-body.page-services .panelHasCornerLogo{
-  position:relative;
-  padding-right:64px;
 }
 body.page-services .contactForm{
   display:grid;
@@ -555,8 +563,6 @@ body.page-services .formStatus[data-kind="info"]{ opacity:.8; }
   body.page-services .pricingGrid.twoCol{ grid-template-columns:1fr;}
 }
 @media (max-width: 520px){
-  body.page-services .panelHasCornerLogo{ padding-right:54px;}
-  body.page-services .panelLogo{ height:18px;}
 }
 @media (prefers-color-scheme: dark){
   body.page-services .pricingCard{
