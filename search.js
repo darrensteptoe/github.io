@@ -22,7 +22,7 @@
   const makeSnippet = (text, terms) => {
     const t = String(text ?? "").replace(/\s+/g, " ").trim();
     if (!t) return "";
-    if (!terms.length) return t.slice(0, 180) + (t.length > 180 ? "…" : "");
+    if (!terms.length) return "";
 
     const low = t.toLowerCase();
     let idx = -1;
@@ -42,7 +42,6 @@
 
   const highlight = (snippet, terms) => {
     if (!snippet || !terms.length) return escapeHtml(snippet);
-    // escape first, then highlight by splitting on escaped terms (safe)
     const escaped = escapeHtml(snippet);
     let out = escaped;
     for (const term of terms) {
@@ -72,18 +71,21 @@
         `;
       })
       .join("");
+
     countEl.textContent = String(filtered.length);
   };
 
   const applyFilter = () => {
     const termRaw = normalize(q.value).trim();
-    const terms = termRaw ? termRaw.split(/\s+/).filter(Boolean) : [];
 
-    if (!terms.length) {
-      filtered = pages.filter((p) => !p.hidden);
+    // IMPORTANT: keep blank on load and for short queries (prevents “Pages menu preview” feeling)
+    if (!termRaw || termRaw.length < 2) {
+      filtered = [];
       renderResults();
       return;
     }
+
+    const terms = termRaw.split(/\s+/).filter(Boolean);
 
     filtered = pages
       .filter((p) => !p.hidden)
@@ -106,7 +108,6 @@
         score += scoreField(desc, 3);
         score += scoreField(content, 1);
 
-        // section-aware scoring + best section selection
         let bestSection = null;
         let bestSectionScore = 0;
 
@@ -122,7 +123,6 @@
         }
 
         score += bestSectionScore;
-
         if (score <= 0) return null;
 
         const snippetSource = bestSection?.text || p.content || p.desc || "";
@@ -161,7 +161,8 @@
       pages = [];
     }
 
-    filtered = pages.filter((p) => !p.hidden);
+    // Blank on load
+    filtered = [];
     renderResults();
   };
 
