@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Services — Darren Steptoe</title>
-  <meta name="description" content="Media production services and political consulting." />
+  <meta name="description" content="Media production services and campaign consulting." />
   <link rel="stylesheet" href="./styles.css" />
 
   <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -13,17 +13,28 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./assets/img/icon-192.png" />
   <link rel="apple-touch-icon" href="./assets/img/icon-192.png" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self'; script-src 'self' https://assets.calendly.com; connect-src 'self' https://formspree.io https://api.github.com https://raw.githubusercontent.com; frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com; form-action 'self' https://formspree.io; upgrade-insecure-requests" />
+
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self';
+    base-uri 'self';
+    object-src 'none';
+    frame-ancestors 'none';
+    img-src 'self' data: https:;
+    style-src 'self';
+    script-src 'self' https://assets.calendly.com;
+    connect-src 'self' https://formspree.io https://api.github.com https://raw.githubusercontent.com;
+    frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
+    form-action 'self' https://formspree.io;
+    upgrade-insecure-requests" />
 </head>
 
 <body class="page-services">
-  
   <a class="skip-link" href="#main">Skip to content</a>
-<main class="wrap" id="main">
 
+  <main class="wrap" id="main">
     <header class="header">
       <h1 class="title">Services</h1>
-      <p class="sub">Media production • Consulting</p>
+      <p class="sub">Media production • Campaign consulting</p>
     </header>
 
     <section class="panel" aria-label="Navigation">
@@ -33,10 +44,37 @@
 
     <hr class="sectionRule" aria-hidden="true">
 
-    <!-- ORDER STARTS HERE -->
+    <section class="panel" aria-label="Media Production">
+      <h2 class="h2">Media Production</h2>
+      <p>
+        Weddings, events, interviews, and documentary-style work. My focus is clean storytelling, strong audio,
+        and reliable delivery — with clear expectations up front and no surprises later.
+      </p>
+      <ul class="links">
+        <li>Wedding &amp; pre-wedding coverage (packages + add-ons)</li>
+        <li>Event videography (half-day / full-day coverage)</li>
+        <li>Interviews (single-cam or multi-cam)</li>
+        <li>Brand/product/commercial work</li>
+        <li>Editing &amp; post-production support</li>
+      </ul>
+    </section>
 
-    <section class="panel" aria-label="Media Production Services">
-      <h2 class="h2">Media Production Services</h2>
+    <section class="panel" aria-label="Media Production Example Video">
+      <h2 class="h2">Example</h2>
+      <div class="videoWrap">
+        <iframe
+          title="YouTube video"
+          src="https://www.youtube.com/embed/ycHys4e6s3Q"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Campaign Consulting">
+      <h2 class="h2">Campaign Consulting</h2>
 
       <div class="openRow" aria-label="Availability">
         <span class="openDot" aria-hidden="true"></span>
@@ -44,31 +82,27 @@
       </div>
 
       <p>
-        I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.
+        Practical, field-tested campaign support — from the numbers to the turf to the daily execution.
+        If you need a clean plan, strong infrastructure, and someone who can train a team and run a program,
+        I can help.
       </p>
 
       <ul class="links">
-        <li>Documentary filmmaking (development, production, post)</li>
-        <li>Video production and editing (short-form, long-form)</li>
-        <li>Event, interview, and field production</li>
-        <li>Script development and story consulting</li>
-        <li>Post-production workflows, color, and delivery</li>
+        <li>Win number + targeting (what it takes to win and who to talk to)</li>
+        <li>Field plan (persuasion → GOTV), universes, turf cutting, staging locations</li>
+        <li>Volunteer &amp; staff training (canvass, phones, packets, data)</li>
+        <li>Scripts, QA, and reporting for each phase</li>
+        <li>Operational support (timeline, staffing, weekly goals)</li>
       </ul>
     </section>
 
-    <section class="panel" aria-label="YouTube video">
-      <div class="videoWrap">
-        <iframe
-          src="https://www.youtube.com/embed/ycHys4e6s3Q"
-          title="YouTube video"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </section>
+    <hr class="sectionRule" aria-hidden="true">
 
-    <section class="panel" aria-label="Media Production Intake form">
-      <h2 class="h2">Media Production Intake Form</h2>
+    <section class="panel" aria-label="Smart Intake Form">
+      <h2 class="h2">Smart Intake Form</h2>
+      <p class="muted">
+        Pick a project type and you’ll see the right questions — plus a rough estimate / breakdown.
+      </p>
 
       <form
         id="contactForm"
@@ -78,53 +112,127 @@
         novalidate
       >
         <label>
-          Name *
-          <input type="text" name="name" autocomplete="name" required>
-        </label>
-
-        <label>
-          Telephone *
-          <input type="tel" name="telephone" autocomplete="tel" inputmode="tel" required>
-        </label>
-
-        <label>
-          Email *
-          <input type="email" name="email" autocomplete="email" required>
-        </label>
-
-        <label>
-          Date of Event *
-          <input type="date" name="date_of_event" required>
-        </label>
-
-        <label>
-          Event Type *
-          <select id="eventTypeSelect" name="event_type" required>
+          Project Type *
+          <select id="projectType" name="project_type" required>
             <option value="" selected disabled>Select one…</option>
-            <option>Wedding &amp; Pre-Wedding</option>
-            <option>Interview</option>
-            <option>Event Videography</option>
-            <option>Product &amp; Commercial</option>
-            <option>Architectural &amp; Interior</option>
-            <option>Birthday &amp; Anniversary</option>
-            <option value="Other">Other</option>
+            <option value="media">Media Production</option>
+            <option value="consulting">Campaign Consulting</option>
           </select>
         </label>
 
-        <label id="eventTypeOtherWrap" class="hidden">
-          Please specify *
-          <input
-            type="text"
-            id="eventTypeOther"
-            name="event_type_other"
-            placeholder="Type here…"
-            autocomplete="off"
-          >
-        </label>
+        <div class="formGrid">
+          <label>
+            Name *
+            <input type="text" name="name" autocomplete="name" required>
+          </label>
+
+          <label>
+            Email *
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+
+          <label>
+            Phone *
+            <input type="tel" name="telephone" autocomplete="tel" inputmode="tel" required>
+          </label>
+
+          <label>
+            Location (City/State)
+            <input type="text" name="location" autocomplete="address-level2">
+          </label>
+        </div>
+
+        <div id="mediaFields" class="subPanel hidden" aria-hidden="true">
+          <h3 class="h3">Media Details</h3>
+
+          <label>
+            Media Type *
+            <select id="mediaType" name="media_type">
+              <option value="" selected disabled>Select one…</option>
+              <option value="wedding">Wedding &amp; Pre-Wedding</option>
+              <option value="event">Event Videography</option>
+              <option value="interview">Interview</option>
+              <option value="commercial">Product &amp; Commercial</option>
+              <option value="architecture">Architectural &amp; Interior</option>
+              <option value="editing">Editing / Post-production</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <div class="formGrid">
+            <label>
+              Date (or target date) *
+              <input id="mediaDate" type="date" name="media_date">
+            </label>
+
+            <label id="coverageHoursWrap" class="hidden">
+              Coverage Hours (estimate)
+              <input id="coverageHours" type="number" name="coverage_hours" inputmode="numeric" min="1" step="1" placeholder="e.g., 6">
+            </label>
+          </div>
+
+          <label id="weddingPackageWrap" class="hidden">
+            Wedding Package *
+            <select id="weddingPackage" name="wedding_package">
+              <option value="" selected disabled>Select one…</option>
+              <option value="bronze">Bronze</option>
+              <option value="silver">Silver</option>
+              <option value="gold">Gold</option>
+              <option value="platinum">Platinum</option>
+            </select>
+          </label>
+
+          <label>
+            Deliverables / What you want
+            <textarea id="deliverables" name="deliverables" rows="4" placeholder="What should the final deliverable look like? (length, style, number of videos, audio needs, etc.)"></textarea>
+          </label>
+
+          <label id="otherDetailsWrap" class="hidden">
+            Describe what you’re looking for *
+            <textarea id="otherDetails" name="other_details" rows="4" placeholder="Type here…"></textarea>
+          </label>
+        </div>
+
+        <div id="consultingFields" class="subPanel hidden" aria-hidden="true">
+          <h3 class="h3">Consulting Details</h3>
+
+          <label>
+            Engagement Type *
+            <select id="consultingEngagement" name="consulting_engagement">
+              <option value="" selected disabled>Select one…</option>
+              <option value="one_hour">1-hour strategy call</option>
+              <option value="project">Project support (specific deliverables)</option>
+              <option value="retainer">Monthly support / retainer</option>
+              <option value="training">Training (staff/volunteers)</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <div class="formGrid">
+            <label id="monthsWrap" class="hidden">
+              How many months?
+              <input id="months" type="number" name="months" inputmode="numeric" min="1" step="1" placeholder="e.g., 3">
+            </label>
+          </div>
+
+          <label>
+            What do you need help with? *
+            <textarea name="consulting_needs" rows="5" placeholder="Win number, targeting, field plan, turf cutting, training, scripts, ops, timeline, etc."></textarea>
+          </label>
+        </div>
+
+        <div class="subPanel" aria-label="Rough estimate">
+          <h3 class="h3">Rough estimate / breakdown</h3>
+          <p id="quoteText" class="quoteText">Select a project type to see a rough estimate.</p>
+          <p class="muted small">
+            This is a quick directional estimate based on what you select here. Final pricing depends on scope,
+            travel, deliverables, and timeline.
+          </p>
+        </div>
 
         <label>
-          Details *
-          <textarea name="details" rows="6" required placeholder="Share the key details (location, hours needed, deliverables, vibe, etc.)"></textarea>
+          Anything else to share?
+          <textarea name="notes" rows="4" placeholder="Timeline, constraints, links, references, preferred style, etc."></textarea>
         </label>
 
         <label>
@@ -140,219 +248,52 @@
         </div>
 
         <button id="submitBtn" type="submit">Send</button>
-
         <p id="formStatus" class="formStatus" role="status" aria-live="polite"></p>
       </form>
     </section>
 
     <hr class="sectionRule" aria-hidden="true">
 
-    <section class="panel" aria-label="Political Consulting">
-      <h2 class="h2">Political Consulting</h2>
-
-      <div class="openRow" aria-label="Availability">
-        <span class="openDot" aria-hidden="true"></span>
-        <span>Open to work</span>
-      </div>
-
-      <p>
-        I support campaigns, committees, and independent candidates with practical, field-tested strategy. If you need a clean plan, strong execution, and someone who can build the infrastructure and train the team, I can help.
-      </p>
-
-      <ul class="links">
-        <li>Win number + targeting (what it takes to win, who to talk to, and how often)</li>
-        <li>Field plan (persuasion → GOTV), universes, turf cutting, and staging locations</li>
-        <li>Volunteer &amp; staff training (canvass, phones, data entry, packet build)</li>
-        <li>Scripts and message discipline (doors, phones, texts, digital)</li>
-        <li>GOTV operations (chase, visibility, poll coverage planning)</li>
-        <li>Basic comms support (social content guidance, rapid response structure)</li>
-        <li>Office systems (weekly goals, pipeline, reporting, and accountability)</li>
-      </ul>
-    </section>
-
-    <hr class="sectionRule" aria-hidden="true">
-
-    <section class="panel pricingWrap" aria-label="Pricing">
-      <h2 class="h2">Pricing</h2>
-
-      <h3>Wedding Films</h3>
-      <div class="pricingGrid twoCol" aria-label="Wedding tiers">
-        <div class="pricingCard">
-          <h4>Bronze — $2,400</h4>
-          <ul>
-            <li>Up to 6 hours</li>
-            <li>5–7 min highlight film</li>
-            <li>14-day turnaround</li>
-          </ul>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Silver — $3,200</h4>
-          <ul>
-            <li>Up to 8 hours</li>
-            <li>Full speeches edit</li>
-            <li>6–8 min cinematic film</li>
-          </ul>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Gold — $4,200</h4>
-          <ul>
-            <li>Up to 10 hours</li>
-            <li>Multi-cam ceremony</li>
-            <li>Drone + social teaser</li>
-          </ul>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Platinum — $5,200</h4>
-          <ul>
-            <li>Up to 12 hours</li>
-            <li>Immersive specialty cameras</li>
-            <li>Full ceremony + speeches</li>
-            <li>48-hr teaser • 7-day delivery</li>
-          </ul>
-        </div>
-      </div>
-
-      <h3>Event &amp; Promotional</h3>
-      <div class="pricingGrid twoCol" aria-label="Event and promotional">
-        <div class="pricingCard">
-          <h4>Half Day — $600</h4>
-          <p>Up to 4 hrs • 60–90 sec highlight</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Full Day — $1,000</h4>
-          <p>Up to 8 hrs • 2–3 min highlight</p>
-        </div>
-      </div>
-
-      <div class="pricingGrid mt-14" aria-label="Add-ons">
-        <div class="pricingCard">
-          <h4>Additional Hour — $125</h4>
-          <p>Applied when coverage runs beyond the booked package.</p>
-        </div>
-      </div>
-
-      <h3>Corporate &amp; Small Business</h3>
-      <div class="pricingGrid twoCol" aria-label="Corporate and small business">
-        <div class="pricingCard">
-          <h4>Brand Promo — $1,200</h4>
-          <p>Interview + b-roll • 2–3 min film • Social cut</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Executive Interview — $850</h4>
-          <p>Up to 2 hrs • 1–2 min polished edit</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Monthly Content — From $2,500</h4>
-          <p>1 filming day • 3–5 edited videos</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Custom Package — Quote</h4>
-          <p>For recurring work, multi-day shoots, or multi-location coverage.</p>
-        </div>
-      </div>
-
-      <h3>Documentary &amp; Editing</h3>
-      <div class="pricingGrid twoCol" aria-label="Documentary and editing">
-        <div class="pricingCard">
-          <h4>Editing — $85/hr</h4>
-          <p>5-hour minimum per project phase.</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Full Documentary Support — Quote</h4>
-          <p>Development → post-production support, tailored to scope and deadlines.</p>
-        </div>
-      </div>
-
-      <h3>Political Consulting</h3>
-      <div class="pricingGrid twoCol" aria-label="Political consulting pricing">
-        <div class="pricingCard">
-          <h4>Strategy Intensive (1 Hour) — $250</h4>
-          <p>Win number, targeting, field plan, and next steps.</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Municipal Campaign Retainer — $3,000–6,000 / month</h4>
-          <p>Field plan + execution support, training, reporting cadence.</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>State Legislative Retainer — $5,000–10,000 / month</h4>
-          <p>Field ops buildout, universes, weekly goals, GOTV structure.</p>
-        </div>
-
-        <div class="pricingCard">
-          <h4>Congressional Retainer — $10,000–20,000+ / month</h4>
-          <p>Full-scale field + ops systems, staffing support, and performance tracking.</p>
-        </div>
-      </div>
-
-    </section>
-
-    <hr class="sectionRule" aria-hidden="true">
-
-    <section class="panel panelHasCornerLogo" aria-label="Schedule">
+    <section class="panel" aria-label="Schedule">
       <h2 class="h2">Schedule</h2>
-
-      <img
-        src="./assets/Calendly_logo.png"
-        alt="Calendly"
-        class="panelLogo"
-      />
+      <p class="muted">
+        Pick a time that works. If you’re booking consulting, include the race/organization and a short note on what you need.
+      </p>
 
       <div
-        class="calendly-inline-widget"
+        class="calendly-inline-widget calendly-frame"
         data-url="https://calendly.com/me--ujg"
-        class="calendly-frame"
+        style="min-width:320px;height:720px;"
       ></div>
+      <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
     </section>
 
     <hr class="sectionRule" aria-hidden="true">
 
-    <section class="panel panelHasCornerLogo" aria-label="Payment">
+    <section class="panel" aria-label="Payment">
       <h2 class="h2">Payment</h2>
-
-      <img
-        src="./assets/Stripe_Logo,_revised_2016.svg.png"
-        alt="Stripe"
-        class="panelLogo"
-      />
-
+      <p class="muted">If you already have an invoice or agreement, you can pay here.</p>
       <p>
-        For invoices, deposits, or project payments, you can securely pay online using card, Apple Pay, or Google Pay.
-      </p>
-      <p>
-        <a
-          href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00"
-          target="_blank"
-          rel="noopener"
-        >
-          Pay Invoice ↗
-        </a>
+        <a class="button" href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00" rel="noopener">Pay Now</a>
       </p>
     </section>
 
-    <footer class="footer footer-center">
-      <p>© <span id="year"></span> Darren Steptoe</p>
-      <p class="footer-links">
-        <a href="./privacy.html">Privacy</a> |
-        <a href="./terms.html">Terms</a> |
-        <a href="./refund.html">Refund</a>
+    <footer class="footer">
+      <p class="copyright">
+        © <span id="year"></span> Darren Steptoe
+      </p>
+      <p class="fineprint">
+        <a href="./privacy.html">Privacy</a>
+        <span aria-hidden="true"> · </span>
+        <a href="./terms.html">Terms</a>
+        <span aria-hidden="true"> · </span>
+        <a href="./refund.html">Refunds</a>
       </p>
     </footer>
-
   </main>
-  <script src="./services-form.js" defer></script>
 
-  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
   <script src="./nav.js"></script>
-  <script src="./script.js" defer></script>
+  <script src="./services-form.js"></script>
+  <script src="./script.js"></script>
 </body>
 </html>
