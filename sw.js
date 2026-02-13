@@ -1,9 +1,10 @@
 /* Minimal, controlled service worker.
    - Caches core assets for faster repeat visits.
+   - Network-first for HTML, CSS, and JS so edits show quickly.
    - Does NOT cache third-party iframes/scripts.
 */
 
-const VERSION = "v1";
+const VERSION = "v2";
 const CACHE_NAME = `ds-static-${VERSION}`;
 
 const CORE_ASSETS = [
@@ -44,47 +45,46 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const url = new URL(req.url);
+function networkFirst(req) {
+  return fetch(req)
+    .then((res) => {
+      const copy = res.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+      return res;
+    })
+    .catch(() => caches.match(req));
+}
 
-  // Only handle same-origin GET requests.
-  if (req.method !== "GET" || url.origin !== self.location.origin) return;
-
-  // HTML: network-first (fresh content), fallback to cache.
-  const accept = req.headers.get("accept") || "";
-  if (accept.includes("text/html")) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("/404.html")))
-    );
-    return;
-  }
-
-  // Assets: cache-first, update in background.
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) {
-        event.waitUntil(
-          fetch(req).then((res) => {
-            if (res && res.ok) {
-              caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
-            }
-          }).catch(() => {})
-        );
-        return cached;
-      }
-      return fetch(req).then((res) => {
+function staleWhileRevalidate(req) {
+  return caches.match(req).then((cached) => {
+    const fetcher = fetch(req)
+      .then((res) => {
         if (res && res.ok) {
           caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
         }
         return res;
-      });
-    })
-  );
+      })
+      .catch(() => null);
+
+    return cached || fetcher;
+  });
+}
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (req.method !== "GET" || url.origin !== self.location.origin) return;
+
+  const accept = req.headers.get("accept") || "";
+  const isHTML = accept.includes("text/html");
+  const isCSS = url.pathname.endsWith(".css");
+  const isJS = url.pathname.endsWith(".js");
+
+  if (isHTML || isCSS || isJS) {
+    event.respondWith(networkFirst(req));
+    return;
+  }
+
+  event.respondWith(staleWhileRevalidate(req));
 });
