@@ -18,29 +18,27 @@
   const weddingPackage = document.getElementById("weddingPackage");
   const coverageHoursWrap = document.getElementById("coverageHoursWrap");
   const coverageHours = document.getElementById("coverageHours");
-  const deliverables = document.getElementById("deliverables");
+  const otherDetailsWrap = document.getElementById("otherDetailsWrap");
+  const otherDetails = document.getElementById("otherDetails");
 
   const consultingEngagement = document.getElementById("consultingEngagement");
   const monthsWrap = document.getElementById("monthsWrap");
   const months = document.getElementById("months");
 
-  const otherDetailsWrap = document.getElementById("otherDetailsWrap");
-  const otherDetails = document.getElementById("otherDetails");
-
   const quoteText = document.getElementById("quoteText");
 
   const PRICING = {
-    wedding: { bronze: 2400, silver: 3200, gold: 4200, platinum: 5200, extraHour: 125 },
-    event: { halfDay: 600, fullDay: 1000, extraHour: 150 },
-    interview: { base: 450, extraHour: 125 },
-    commercial: { base: 900, extraHour: 200 },
-    architecture: { base: 650, extraHour: 150 },
-    editing: { hourly: 95 },
+    wedding: { bronze: 2400, silver: 3200, gold: 4200, platinum: 5200, extraHour: 125, includedHours: { bronze: 6, silver: 8, gold: 10, platinum: 12 } },
+    event: { halfDay: 600, fullDay: 1000, extraHour: 125 },
+    interview: { base: 850, baseHours: 2, extraHour: 125 },
+    commercial: { base: 1200, baseHours: 3, extraHour: 200 },
+    architecture: { base: 650, baseHours: 3, extraHour: 150 },
+    editing: { hourly: 85 },
     consulting: {
-      one_hour: 175,
+      one_hour: 250,
       project: { min: 450, typical: 900 },
-      retainer: { min: 1200, typical: 2400 },
-      training: { min: 350, typical: 750 }
+      training: { min: 350, typical: 750 },
+      retainer: { min: 3000, typical: 6000 }
     }
   };
 
@@ -109,7 +107,6 @@
       resetMediaSubfields();
       if (mediaType) mediaType.value = "";
       if (mediaDate) mediaDate.value = "";
-      if (deliverables) deliverables.value = "";
     }
 
     if (pt !== "consulting") {
@@ -131,7 +128,6 @@
     if (pt !== "media") return;
 
     const mt = mediaType?.value || "";
-
     resetMediaSubfields();
 
     if (!mt) {
@@ -143,11 +139,7 @@
       show(weddingPackageWrap, true);
       show(coverageHoursWrap, true);
       setRequired(weddingPackage, true);
-    } else if (mt === "event") {
-      show(coverageHoursWrap, true);
-    } else if (mt === "interview" || mt === "commercial" || mt === "architecture") {
-      show(coverageHoursWrap, true);
-    } else if (mt === "editing") {
+    } else if (mt === "event" || mt === "interview" || mt === "commercial" || mt === "architecture" || mt === "editing") {
       show(coverageHoursWrap, true);
     } else if (mt === "other") {
       show(otherDetailsWrap, true);
@@ -162,7 +154,6 @@
     if (pt !== "consulting") return;
 
     const ce = consultingEngagement?.value || "";
-
     resetConsultingSubfields();
 
     if (ce === "retainer") {
@@ -197,7 +188,7 @@
         }
         const base = PRICING.wedding[pkg] || 0;
         const hrs = num(coverageHours?.value);
-        const included = { bronze: 6, silver: 8, gold: 10, platinum: 12 }[pkg] || 0;
+        const included = PRICING.wedding.includedHours[pkg] || 0;
         const extra = hrs > included ? (hrs - included) * PRICING.wedding.extraHour : 0;
         quoteText.textContent = `${money(base + extra)} (base ${money(base)}${extra ? ` + ${money(extra)} estimated overage` : ""})`;
         return;
@@ -206,7 +197,7 @@
       if (mt === "event") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent = `Typical ranges: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for a rough estimate.`;
+          quoteText.textContent = `Typical: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for an estimate.`;
           return;
         }
         let est = 0;
@@ -220,40 +211,40 @@
       if (mt === "interview") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent = `Typical starting point: ${money(PRICING.interview.base)}. Enter hours for a rough estimate.`;
+          quoteText.textContent = `Typical starting point: ${money(PRICING.interview.base)}. Enter hours for an estimate.`;
           return;
         }
-        const est = PRICING.interview.base + Math.max(0, hrs - 2) * PRICING.interview.extraHour;
-        quoteText.textContent = `${money(est)} (base ${money(PRICING.interview.base)} for ~2 hours, then hourly)`;
+        const est = PRICING.interview.base + Math.max(0, hrs - PRICING.interview.baseHours) * PRICING.interview.extraHour;
+        quoteText.textContent = `${money(est)} (base ${money(PRICING.interview.base)} for ~${PRICING.interview.baseHours} hours, then hourly)`;
         return;
       }
 
       if (mt === "commercial") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent = `Typical starting point: ${money(PRICING.commercial.base)}. Enter hours for a rough estimate.`;
+          quoteText.textContent = `Typical starting point: ${money(PRICING.commercial.base)}. Enter hours for an estimate.`;
           return;
         }
-        const est = PRICING.commercial.base + Math.max(0, hrs - 3) * PRICING.commercial.extraHour;
-        quoteText.textContent = `${money(est)} (base ${money(PRICING.commercial.base)} for ~3 hours, then hourly)`;
+        const est = PRICING.commercial.base + Math.max(0, hrs - PRICING.commercial.baseHours) * PRICING.commercial.extraHour;
+        quoteText.textContent = `${money(est)} (base ${money(PRICING.commercial.base)} for ~${PRICING.commercial.baseHours} hours, then hourly)`;
         return;
       }
 
       if (mt === "architecture") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent = `Typical starting point: ${money(PRICING.architecture.base)}. Enter hours for a rough estimate.`;
+          quoteText.textContent = `Typical starting point: ${money(PRICING.architecture.base)}. Enter hours for an estimate.`;
           return;
         }
-        const est = PRICING.architecture.base + Math.max(0, hrs - 3) * PRICING.architecture.extraHour;
-        quoteText.textContent = `${money(est)} (base ${money(PRICING.architecture.base)} for ~3 hours, then hourly)`;
+        const est = PRICING.architecture.base + Math.max(0, hrs - PRICING.architecture.baseHours) * PRICING.architecture.extraHour;
+        quoteText.textContent = `${money(est)} (base ${money(PRICING.architecture.base)} for ~${PRICING.architecture.baseHours} hours, then hourly)`;
         return;
       }
 
       if (mt === "editing") {
         const hrs = num(coverageHours?.value);
         if (!hrs) {
-          quoteText.textContent = `Editing typically starts around ${money(PRICING.editing.hourly)} / hour. Enter hours for a rough estimate.`;
+          quoteText.textContent = `Editing: ${money(PRICING.editing.hourly)} / hour. Enter hours for an estimate.`;
           return;
         }
         quoteText.textContent = `${money(hrs * PRICING.editing.hourly)} (~${hrs} hours at ${money(PRICING.editing.hourly)}/hr)`;
@@ -277,7 +268,7 @@
       }
 
       if (ce === "one_hour") {
-        quoteText.textContent = `${money(PRICING.consulting.one_hour)} (1-hour strategy call)`;
+        quoteText.textContent = `${money(PRICING.consulting.one_hour)} (strategy intensive — 1 hour)`;
         return;
       }
 
@@ -295,7 +286,7 @@
         const m = num(months?.value);
         const monthly = PRICING.consulting.retainer.typical;
         if (!m) {
-          quoteText.textContent = `${money(PRICING.consulting.retainer.min)}–${money(PRICING.consulting.retainer.typical)} per month. Enter months for a rough estimate.`;
+          quoteText.textContent = `${money(PRICING.consulting.retainer.min)}–${money(PRICING.consulting.retainer.typical)} per month. Enter months for an estimate.`;
           return;
         }
         quoteText.textContent = `${money(m * monthly)} (~${m} months at ${money(monthly)}/mo typical)`;
