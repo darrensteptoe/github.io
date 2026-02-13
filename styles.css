@@ -35,21 +35,29 @@
   --bg-grain-1:rgba(17,17,17,0.018);
   --bg-grain-2:rgba(17,17,17,0.012);
   --bg-texture-opacity:0.70;
+  --bg-vignette:rgba(0,0,0,0.10);
 }
 
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 
-body{
+html{
   background:var(--bg);
+  min-height:100%;
+}
+
+body{
+  background:transparent;
   color:var(--fg);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   line-height:1.5;
   -webkit-text-size-adjust:100%;
+  min-height:100%;
   position:relative;
+  z-index:0;
 }
 
-body::before{
+html::before{
   content:"";
   position:fixed;
   inset:0;
@@ -61,19 +69,29 @@ body::before{
     linear-gradient(to right, var(--bg-grid) 1px, transparent 1px),
     linear-gradient(to bottom, var(--bg-grid) 1px, transparent 1px),
     repeating-linear-gradient(35deg, transparent 0 7px, var(--bg-grain-1) 7px 8px, transparent 8px 15px),
-    repeating-linear-gradient(-35deg, transparent 0 9px, var(--bg-grain-2) 9px 10px, transparent 10px 19px);
+    repeating-linear-gradient(-35deg, transparent 0 9px, var(--bg-grain-2) 9px 10px, transparent 10px 19px),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 70%, var(--bg-vignette) 100%);
   background-size:
     26px 26px,
     104px 104px,
     104px 104px,
     240px 240px,
-    280px 280px;
+    280px 280px,
+    100% 100%;
   background-position:
     0 0,
     0 0,
     0 0,
     0 0,
-    0 0;
+    0 0,
+    center;
+  background-repeat:
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    repeat,
+    no-repeat;
 }
 
 .wrap{max-width:860px;margin:0 auto;padding:20px}
@@ -284,6 +302,7 @@ button:active{transform:translateY(1px)}
     --bg-grain-1:rgba(255,255,255,0.018);
     --bg-grain-2:rgba(255,255,255,0.012);
     --bg-texture-opacity:0.52;
+    --bg-vignette:rgba(0,0,0,0.38);
   }
 
   input[type="search"],
