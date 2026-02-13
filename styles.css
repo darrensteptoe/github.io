@@ -1,4 +1,4 @@
-:root{
+:root {
   --bg:#f5f5f5;
   --fg:#111;
   --muted:#444;
@@ -11,42 +11,48 @@
   --radius-sm:10px;
 
   --panel-border:rgba(17,17,17,0.12);
-  --panel-shadow:0 10px 26px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+
+  --panel-shadow:0 2px 10px rgba(0,0,0,0.02), 0 3px 10px rgba(0,0,0,0.06);
+
   --panel-highlight:inset 0 1px 0 rgba(255,255,255,0.75);
+
+  --focus-ring:rgba(17,17,17,0.90);
+
+  --pricing-wedding:#f6f4ef;
+  --pricing-event:#f1f4f8;
+  --pricing-corporate:#f5f2ee;
+  --pricing-doc:#f3f1f7;
+  --pricing-political:#f1f5f2;
+
+  --pricing-wedding-dark:rgba(34,32,28,0.72);
+  --pricing-event-dark:rgba(28,32,40,0.72);
+  --pricing-corporate-dark:rgba(36,31,28,0.72);
+  --pricing-doc-dark:rgba(34,30,40,0.72);
+  --pricing-political-dark:rgba(28,36,32,0.72);
 }
 
 *{box-sizing:border-box}
-html,body{
-  background-color:var(--bg);
-  background-image:url("./assets/20CB5C93-70D4-473C-9740-F676F91732EA.jpeg");
-  background-repeat:no-repeat;
-  background-position:center center;
-  background-size:cover;
-  background-attachment:scroll;
-margin:0;padding:0
-}
+html,body{margin:0;padding:0}
 
-
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  background:rgba(255,255,255,0.60);
-  z-index:-1;
-}
 body{
   background:var(--bg);
   color:var(--fg);
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   line-height:1.5;
+  -webkit-text-size-adjust:100%;
 }
 
 .wrap{max-width:860px;margin:0 auto;padding:20px}
 
 .header{margin:10px 0 16px}
-.title{margin:0 0 4px;font-size:2rem;font-weight:800}
+
+.title{
+  margin:0 0 4px;
+  font-size:2rem;
+  font-weight:850;
+  letter-spacing:.01em;
+}
+
 .sub{margin:0;color:var(--muted)}
 
 .panel{
@@ -56,12 +62,11 @@ body{
   padding:16px;
   margin:14px 0;
   border-radius:var(--radius);
-  box-shadow:var(--panel-shadow);
+  box-shadow:var(--panel-shadow), var(--panel-highlight);
   -webkit-font-smoothing:antialiased;
   overflow:hidden;
 }
 
-/* Panels with corner logos */
 .panel-has-logo{ padding-right:84px; }
 
 .panel-logo{
@@ -75,13 +80,33 @@ body{
 
 .panel-logo-lg{ width:40px; }
 
-.h2{margin:0 0 10px;font-size:1.1rem}
+.h2{
+  margin:0 0 10px;
+  font-size:1.1rem;
+  font-weight:800;
+  letter-spacing:.01em;
+}
 
-a{color:var(--link);text-decoration:underline;text-underline-offset:2px}
+a{
+  color:var(--link);
+  text-decoration:underline;
+  text-underline-offset:2px;
+  text-decoration-thickness:1px;
+}
 a:visited{color:var(--visited)}
-a:focus,button:focus,input:focus,textarea:focus,select:focus{
-  outline:2px solid var(--fg);
-  outline-offset:2px
+a:hover{
+  text-decoration-thickness:2px;
+  text-underline-offset:3px;
+}
+
+a:focus,button:focus,input:focus,textarea:focus,select:focus{ outline:none; }
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible{
+  outline:2px solid var(--focus-ring);
+  outline-offset:2px;
 }
 
 .searchRow{display:flex;gap:10px}
@@ -107,7 +132,6 @@ button{
 }
 
 button:hover{border-color:#999}
-
 button:active{transform:translateY(1px)}
 
 .button{
@@ -118,7 +142,7 @@ button:active{transform:translateY(1px)}
   background:#fff;
   color:var(--fg);
   text-decoration:none;
-  font-weight:600;
+  font-weight:650;
   border-radius:10px;
   transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,background-color .12s ease;
 }
@@ -126,7 +150,7 @@ button:active{transform:translateY(1px)}
 .button:hover{
   border-color:#999;
   transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(0,0,0,0.08);
+  box-shadow:0 12px 28px rgba(0,0,0,0.12);
 }
 
 .button:active{transform:translateY(0px)}
@@ -145,17 +169,12 @@ button:active{transform:translateY(1px)}
   white-space:nowrap;border:0;
 }
 
-/* Horizontal section rule (same feel as Services) */
 .sectionRule{
   border:0;
   border-top:1px solid rgba(0,0,0,.14);
   margin:18px 0;
   width:100%;
 }
-
-/* =========================
-   Contact / Inquiry Form
-   ========================= */
 
 .contactForm{
   display:flex;
@@ -194,7 +213,6 @@ button:active{transform:translateY(1px)}
   cursor:not-allowed;
 }
 
-/* Honeypot */
 .hp{
   position:absolute;
   left:-9999px;
@@ -203,7 +221,6 @@ button:active{transform:translateY(1px)}
   overflow:hidden;
 }
 
-/* Status message */
 .formStatus{
   margin:0;
   color:var(--muted);
@@ -212,10 +229,6 @@ button:active{transform:translateY(1px)}
 .formStatus[data-kind="success"]{color:var(--fg)}
 .formStatus[data-kind="error"]{color:var(--fg)}
 .formStatus[data-kind="info"]{color:var(--muted)}
-
-/* =========================
-   Dark Mode
-   ========================= */
 
 @media (prefers-color-scheme:dark){
   :root{
@@ -230,6 +243,7 @@ button:active{transform:translateY(1px)}
     --panel-border:rgba(255,255,255,0.10);
     --panel-shadow:0 14px 30px rgba(0,0,0,0.38), 0 2px 8px rgba(0,0,0,0.28);
     --panel-highlight:inset 0 1px 0 rgba(255,255,255,0.06);
+    --focus-ring:rgba(255,255,255,0.90);
   }
 
   input[type="search"],
@@ -253,7 +267,6 @@ button:active{transform:translateY(1px)}
     border-top:1px solid rgba(255,255,255,0.14);
   }
 
-  /* Form fields — FULL override for iOS */
   .contactForm input,
   .contactForm textarea,
   .contactForm select{
@@ -272,15 +285,7 @@ button:active{transform:translateY(1px)}
   .contactForm select{
     color-scheme:dark;
   }
-
-  body::before{
-    background:rgba(0,0,0,0.35);
-  }
 }
-
-/* =========================
-   Global panel typography
-   ========================= */
 
 .panel p{
   margin:0 0 14px;
@@ -296,7 +301,6 @@ button:active{transform:translateY(1px)}
 
 .panel ul li{ margin:8px 0; }
 
-/* Skip link (accessibility) */
 .skipLink{
   position:absolute;
   left:-9999px;
@@ -317,15 +321,7 @@ button:active{transform:translateY(1px)}
   z-index:9999;
 }
 
-/* =========================
-   Page CSS extracted from index.html
-   ========================= */
-
 body.page-index .panel{ overflow:hidden; }
-
-/* =========================
-   Page CSS extracted from more.html
-   ========================= */
 
 body.page-more .fantasyBig{ padding:0; overflow:hidden;}
 body.page-more .fantasyHead{
@@ -427,10 +423,6 @@ body.page-more .moneyCtaWrap{
   body.page-more .fantasyTitle{ font-size:19px;}
 }
 
-/* =========================
-   Page CSS extracted from services.html
-   ========================= */
-
 body.page-services .panel{ overflow:hidden;}
 body.page-services .openRow{
   display:flex;
@@ -456,17 +448,36 @@ body.page-services .openDot{
   100%{box-shadow:0 0 0 0 rgba(46,204,113,0);}
 }
 
-/* keep for backward-compat: services page uses the same class */
 body.page-services .sectionRule{
   border:0;
   border-top:1px solid rgba(0,0,0,.14);
   margin:18px 0;
   width:100%;
 }
+
+body.page-services .panelHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 10px;
+}
+body.page-services .panelHeaderRow .h2{ margin:0; }
+
+body.page-services .panelLogoHorizontal{
+  height:20px;
+  width:auto;
+  max-width:40%;
+  object-fit:contain;
+  flex:0 0 auto;
+  pointer-events:none;
+}
+
 body.page-services .pricingWrap h3{
-  margin:22px 0 8px;
-  font-size:15px;
-  letter-spacing:.3px;
+  margin:18px 0 10px;
+  font-size:1.1rem;
+  font-weight:800;
+  letter-spacing:0;
 }
 body.page-services .pricingGrid{
   display:grid;
@@ -481,19 +492,27 @@ body.page-services .pricingCard{
   padding:12px 12px 10px;
   background:rgba(248,248,250,0.90);
 }
+
+body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political); }
+
 body.page-services .pricingCard h4{
   margin:0 0 6px;
-  font-size:13px;
+  font-size:0.82rem;
   font-weight:700;
 }
 body.page-services .pricingCard ul{
   margin:0 0 6px 16px;
-  font-size:12px;
+  font-size:0.78rem;
   line-height:1.5;
 }
 body.page-services .pricingCard p{
   margin:0;
-  font-size:12px;
+  font-size:0.78rem;
   line-height:1.5;
 }
 body.page-services .miniNote{
@@ -512,18 +531,6 @@ body.page-services .videoWrap iframe{
   width:100%;
   height:100%;
   border:0;
-}
-body.page-services .panelLogo{
-  position:absolute;
-  top:16px;
-  right:16px;
-  height:20px;
-  width:auto;
-  max-width:40%;
-}
-body.page-services .panelHasCornerLogo{
-  position:relative;
-  padding-right:64px;
 }
 body.page-services .contactForm{
   display:grid;
@@ -573,27 +580,28 @@ body.page-services .formStatus{
 body.page-services .formStatus[data-kind="success"]{ color:#0a7a31; }
 body.page-services .formStatus[data-kind="error"]{ color:#b00020; }
 body.page-services .formStatus[data-kind="info"]{ opacity:.8; }
+
 @media (max-width: 760px){
   body.page-services .pricingGrid.twoCol{ grid-template-columns:1fr;}
 }
-@media (max-width: 520px){
-  body.page-services .panelHasCornerLogo{ padding-right:54px;}
-  body.page-services .panelLogo{ height:18px;}
-}
+
 @media (prefers-color-scheme: dark){
   body.page-services .pricingCard{
-    background:rgba(28,28,32,0.70);
     border:1px solid rgba(255,255,255,0.14);
     color:rgba(255,255,255,0.92);
   }
+
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political-dark); }
+
   body.page-services .pricingCard h4{ color:rgba(255,255,255,0.94); }
   body.page-services .pricingCard p{ color:rgba(255,255,255,0.88); }
   body.page-services .pricingCard li{ color:rgba(255,255,255,0.88); }
 }
-
-/* =========================
-   Page CSS extracted from work.html
-   ========================= */
 
 body.page-work .sectionHeader{ padding-bottom:4px; }
 body.page-work .imdbLink{
@@ -688,10 +696,6 @@ body.page-work .videoWrap iframe{
   border:0;
 }
 
-/* =========================
-   Page CSS extracted from writing.html
-   ========================= */
-
 body.page-writing .bookGroup{
   border-radius:var(--radius);
   overflow:hidden;
@@ -755,10 +759,6 @@ body.page-writing .testimonial span{
   body.page-writing .coverPh{ width:190px; justify-self:start; }
 }
 
-/* =========================
-   Global polish
-   ========================= */
-
 .panel{ box-shadow:var(--panel-shadow), var(--panel-highlight); }
 
 .skip-link{
@@ -788,9 +788,6 @@ body.page-writing .testimonial span{
 
 .calendly-frame{ min-width:320px; height:700px; }
 
-/* =========================
-   Search results (index only)
-   ========================= */
 .resultTitle a{
   font-weight:800;
   text-decoration:underline;
@@ -814,4 +811,19 @@ body.page-writing .testimonial span{
 
 @media (max-width: 560px){
   :root{ --radius:10px; }
+}
+
+.featured-image-container {
+  width: 100%;
+  height: 360px;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.featured-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 65%;
+  display: block;
 }
