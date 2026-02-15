@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Darren Steptoe</title>
+  <meta name="description" content="Contact details, office hours, and scheduling." />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f5f5f5" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./assets/img/icon-192.png" />
+  <link rel="apple-touch-icon" href="./assets/img/icon-192.png" />
+
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    base-uri 'self';
+    object-src 'none';
+    frame-ancestors 'none';
+    upgrade-insecure-requests;
+
+    img-src 'self' data: https:;
+    style-src 'self' 'unsafe-inline' https://assets.calendly.com;
+    script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://calendly.com https://*.calendly.com https://assets.calendly.com;
+    frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
+    form-action 'self' https://formspree.io;
+  " />
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-4NQ7BSG9G5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-4NQ7BSG9G5');
+
+    function trackEvent(name, params){
+      try{
+        if (typeof gtag === 'function') { gtag('event', name, params || {}); }
+      }catch(e){}
+    }
+  </script>
+
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
+</head>
+
+<body class="page-contact">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main class="wrap" id="main">
+    <header class="header">
+      <h1 class="title">Contact</h1>
+      <p class="sub">Email • Office hours • Scheduling</p>
+    </header>
+
+    <section class="panel" aria-label="Navigation">
+      <h2 class="h2">Pages</h2>
+      <ul id="site-pages" class="links" aria-label="Site pages"></ul>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Contact Email">
+      <h2 class="h2" id="email">Email</h2>
+      <p>
+        <a href="mailto:hello@darrensteptoe.com" onclick="trackEvent('contact_email_click');">hello@darrensteptoe.com</a>
+      </p>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Office Hours">
+      <h2 class="h2" id="hours">Office Hours</h2>
+      <p class="muted small">Monday–Friday • 9:00am–5:00pm</p>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Mailing Address">
+      <h2 class="h2" id="mailing-address">Mailing Address</h2>
+      <p class="muted small">[Add mailing address here]</p>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Schedule">
+      <div class="panelHeaderRow">
+        <h2 class="h2" id="schedule">Schedule</h2>
+        <img src="./assets/Calendly_logo.png" alt="Calendly" class="panelLogoHorizontal" />
+      </div>
+
+      <p class="muted small">
+        Prefer a new tab? <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener" onclick="trackEvent('schedule_click');">Open Calendly ↗</a>
+      </p>
+
+      <div
+        class="calendly-inline-widget calendly-frame"
+        data-url="https://calendly.com/me--ujg"
+        style="min-width:320px;height:720px;"
+      ></div>
+
+      <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
+    </section>
+
+    <footer class="footer footer-center">
+      <p>© <span id="year"></span> Darren Steptoe</p>
+      <p class="footer-links">
+        <a href="./privacy.html">Privacy</a> |
+        <a href="./terms.html">Terms</a> |
+        <a href="./refund.html">Refund</a>
+      </p>
+    </footer>
+  </main>
+
+  <script src="./nav.js" defer></script>
+  <script src="./script.js" defer></script>
+</body>
+</html>

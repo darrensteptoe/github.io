@@ -1,4 +1,4 @@
-const VERSION = "v1-ga1";
+const VERSION = "v1-contact1";
 const CACHE_NAME = `ds-static-${VERSION}`;
 
 const BASE = self.registration.scope;
@@ -7,6 +7,7 @@ const ASSETS = [
   "",
   "index.html",
   "services.html",
+  "contact.html",
   "work.html",
   "writing.html",
   "projects.html",
