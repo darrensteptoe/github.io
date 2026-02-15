@@ -398,7 +398,7 @@
           });
         }
       } else {
-        setStatus("Something went wrong. Please try again, or email me directly.", "error");
+        setStatus("Something went wrong. Please try again, or email me directly at me@darrensteptoe.com.", "error");
       }
     } catch {
       setStatus("Network error. Please try again.", "error");
