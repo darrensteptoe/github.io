@@ -130,7 +130,10 @@
     const mt = mediaType?.value || "";
     resetMediaSubfields();
 
-    if (!mt) { updateQuote(); return; }
+    if (!mt) {
+      updateQuote();
+      return;
+    }
 
     if (mt === "wedding") {
       show(weddingPackageWrap, true);
@@ -165,15 +168,24 @@
     if (!quoteText) return;
 
     const pt = projectType?.value || "";
-    if (!pt) { quoteText.textContent = "Select a project type to see a rough estimate."; return; }
+    if (!pt) {
+      quoteText.textContent = "Select a project type to see a rough estimate.";
+      return;
+    }
 
     if (pt === "media") {
       const mt = mediaType?.value || "";
-      if (!mt) { quoteText.textContent = "Choose a media type to see a rough estimate."; return; }
+      if (!mt) {
+        quoteText.textContent = "Choose a media type to see a rough estimate.";
+        return;
+      }
 
       if (mt === "wedding") {
         const pkg = weddingPackage?.value || "";
-        if (!pkg) { quoteText.textContent = "Pick a wedding package to see a rough estimate."; return; }
+        if (!pkg) {
+          quoteText.textContent = "Pick a wedding package to see a rough estimate.";
+          return;
+        }
         const base = PRICING.wedding[pkg] || 0;
         const hrs = num(coverageHours?.value);
         const included = PRICING.wedding.includedHours[pkg] || 0;
@@ -184,7 +196,10 @@
 
       if (mt === "event") {
         const hrs = num(coverageHours?.value);
-        if (!hrs) { quoteText.textContent = `Typical: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for an estimate.`; return; }
+        if (!hrs) {
+          quoteText.textContent = `Typical: ${money(PRICING.event.halfDay)} (half day) or ${money(PRICING.event.fullDay)} (full day). Enter hours for an estimate.`;
+          return;
+        }
         let est = 0;
         if (hrs <= 4) est = PRICING.event.halfDay;
         else if (hrs <= 8) est = PRICING.event.fullDay;
@@ -195,7 +210,10 @@
 
       if (mt === "interview") {
         const hrs = num(coverageHours?.value);
-        if (!hrs) { quoteText.textContent = `Typical starting point: ${money(PRICING.interview.base)}. Enter hours for an estimate.`; return; }
+        if (!hrs) {
+          quoteText.textContent = `Typical starting point: ${money(PRICING.interview.base)}. Enter hours for an estimate.`;
+          return;
+        }
         const est = PRICING.interview.base + Math.max(0, hrs - PRICING.interview.baseHours) * PRICING.interview.extraHour;
         quoteText.textContent = `${money(est)} (base ${money(PRICING.interview.base)} for ~${PRICING.interview.baseHours} hours, then hourly)`;
         return;
@@ -203,7 +221,10 @@
 
       if (mt === "commercial") {
         const hrs = num(coverageHours?.value);
-        if (!hrs) { quoteText.textContent = `Typical starting point: ${money(PRICING.commercial.base)}. Enter hours for an estimate.`; return; }
+        if (!hrs) {
+          quoteText.textContent = `Typical starting point: ${money(PRICING.commercial.base)}. Enter hours for an estimate.`;
+          return;
+        }
         const est = PRICING.commercial.base + Math.max(0, hrs - PRICING.commercial.baseHours) * PRICING.commercial.extraHour;
         quoteText.textContent = `${money(est)} (base ${money(PRICING.commercial.base)} for ~${PRICING.commercial.baseHours} hours, then hourly)`;
         return;
@@ -211,7 +232,10 @@
 
       if (mt === "architecture") {
         const hrs = num(coverageHours?.value);
-        if (!hrs) { quoteText.textContent = `Typical starting point: ${money(PRICING.architecture.base)}. Enter hours for an estimate.`; return; }
+        if (!hrs) {
+          quoteText.textContent = `Typical starting point: ${money(PRICING.architecture.base)}. Enter hours for an estimate.`;
+          return;
+        }
         const est = PRICING.architecture.base + Math.max(0, hrs - PRICING.architecture.baseHours) * PRICING.architecture.extraHour;
         quoteText.textContent = `${money(est)} (base ${money(PRICING.architecture.base)} for ~${PRICING.architecture.baseHours} hours, then hourly)`;
         return;
@@ -219,12 +243,18 @@
 
       if (mt === "editing") {
         const hrs = num(coverageHours?.value);
-        if (!hrs) { quoteText.textContent = `Editing: ${money(PRICING.editing.hourly)} / hour. Enter hours for an estimate.`; return; }
+        if (!hrs) {
+          quoteText.textContent = `Editing: ${money(PRICING.editing.hourly)} / hour. Enter hours for an estimate.`;
+          return;
+        }
         quoteText.textContent = `${money(hrs * PRICING.editing.hourly)} (~${hrs} hours at ${money(PRICING.editing.hourly)}/hr)`;
         return;
       }
 
-      if (mt === "other") { quoteText.textContent = "Describe what you need and I’ll reply with a clean scope + estimate."; return; }
+      if (mt === "other") {
+        quoteText.textContent = "Describe what you need and I’ll reply with a clean scope + estimate.";
+        return;
+      }
 
       quoteText.textContent = "Select options above to see a rough estimate.";
       return;
@@ -232,22 +262,83 @@
 
     if (pt === "consulting") {
       const ce = consultingEngagement?.value || "";
-      if (!ce) { quoteText.textContent = "Choose an engagement type to see a rough estimate."; return; }
+      if (!ce) {
+        quoteText.textContent = "Choose an engagement type to see a rough estimate.";
+        return;
+      }
 
-      if (ce === "one_hour") { quoteText.textContent = `${money(PRICING.consulting.one_hour)} (strategy intensive — 1 hour)`; return; }
-      if (ce === "project") { quoteText.textContent = `${money(PRICING.consulting.project.min)}–${money(PRICING.consulting.project.typical)} (typical range for scoped deliverables)`; return; }
-      if (ce === "training") { quoteText.textContent = `${money(PRICING.consulting.training.min)}–${money(PRICING.consulting.training.typical)} (training session range)`; return; }
+      if (ce === "one_hour") {
+        quoteText.textContent = `${money(PRICING.consulting.one_hour)} (strategy intensive — 1 hour)`;
+        return;
+      }
+
+      if (ce === "project") {
+        quoteText.textContent = `${money(PRICING.consulting.project.min)}–${money(PRICING.consulting.project.typical)} (typical range for scoped deliverables)`;
+        return;
+      }
+
+      if (ce === "training") {
+        quoteText.textContent = `${money(PRICING.consulting.training.min)}–${money(PRICING.consulting.training.typical)} (training session range)`;
+        return;
+      }
 
       if (ce === "retainer") {
         const m = num(months?.value);
         const monthly = PRICING.consulting.retainer.typical;
-        if (!m) { quoteText.textContent = `${money(PRICING.consulting.retainer.min)}–${money(PRICING.consulting.retainer.typical)} per month. Enter months for an estimate.`; return; }
+        if (!m) {
+          quoteText.textContent = `${money(PRICING.consulting.retainer.min)}–${money(PRICING.consulting.retainer.typical)} per month. Enter months for an estimate.`;
+          return;
+        }
         quoteText.textContent = `${money(m * monthly)} (~${m} months at ${money(monthly)}/mo typical)`;
         return;
       }
 
       quoteText.textContent = "Describe what you need and I’ll reply with a clean scope + estimate.";
     }
+  };
+
+  const valid = () => {
+    setStatus("", "");
+    const pt = projectType?.value || "";
+    if (!pt) {
+      setStatus("Choose a project type first.", "error");
+      return false;
+    }
+
+    if (pt === "media") {
+      if (!mediaType?.value) {
+        setStatus("Choose a media type.", "error");
+        return false;
+      }
+      if (!mediaDate?.value) {
+        setStatus("Add a date (or target date).", "error");
+        return false;
+      }
+      if (mediaType.value === "wedding" && !weddingPackage?.value) {
+        setStatus("Pick a wedding package.", "error");
+        return false;
+      }
+      if (mediaType.value === "other" && !String(otherDetails?.value || "").trim()) {
+        setStatus("Please describe what you’re looking for.", "error");
+        return false;
+      }
+    }
+
+    if (pt === "consulting") {
+      if (!consultingEngagement?.value) {
+        setStatus("Choose an engagement type.", "error");
+        return false;
+      }
+      if (consultingEngagement.value === "retainer") {
+        const m = num(months?.value);
+        if (!m) {
+          setStatus("Enter how many months for a retainer.", "error");
+          return false;
+        }
+      }
+    }
+
+    return true;
   };
 
   projectType?.addEventListener("change", updateVisibility);
@@ -262,22 +353,28 @@
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!valid()) return;
 
-    // ✅ CRITICAL FIX: enforce required fields + valid email/phone before POST
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      setStatus("Please complete the required fields above.", "error");
-      return;
-    }
+    // IMPORTANT: capture form data BEFORE disabling inputs
+    const data = new FormData(form);
 
     disableForm(true);
     setStatus("Sending…", "info");
 
     try {
+      // GA4: track submission attempts (fires when user submits, before network request)
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "contact_submit_attempt", {
+          form_id: "services_contactForm",
+          project_type: (projectType && projectType.value) ? projectType.value : "",
+          page_path: window.location.pathname
+        });
+      }
+
       const res = await fetch(form.action, {
         method: "POST",
-        headers: { "Accept": "application/json" },
-        body: new FormData(form),
+        headers: { Accept: "application/json" },
+        body: data
       });
 
       if (res.ok) {
@@ -285,6 +382,7 @@
         updateVisibility();
         setStatus("Sent. I’ll get back to you soon.", "ok");
 
+        // GA4: precise form submission tracking (fires only on successful Formspree response)
         if (typeof window.gtag === "function") {
           window.gtag("event", "contact_submit", {
             form_id: "services_contactForm",
@@ -292,25 +390,39 @@
             page_path: window.location.pathname
           });
         }
-        return;
-      }
+      } else {
+        let msg = "Oops! There was a problem submitting your form.";
+        try {
+          const data = await res.json();
+          if (data && Object.hasOwn(data, "errors")) {
+            msg = data.errors.map(e => e.message).join(", ");
+          }
+        } catch(e) {}
 
-      let detail = "";
-      try {
-        const data = await res.json();
-        if (data && data.errors && data.errors.length) {
-          detail = data.errors.map(x => x.message).filter(Boolean).join(" ");
-        } else if (data && data.error) {
-          detail = String(data.error);
+        setStatus(msg, "error");
+
+        // GA4: track failed submissions (fires when Formspree returns a non-OK response)
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "contact_submit_error", {
+            form_id: "services_contactForm",
+            project_type: (projectType && projectType.value) ? projectType.value : "",
+            page_path: window.location.pathname,
+            error_type: "non_ok_response",
+            status_code: res.status
+          });
         }
-      } catch (_) {}
-
-      setStatus(
-        detail ? `Form error (${res.status}). ${detail}` : `Form error (${res.status}). Bad form post request.`,
-        "error"
-      );
+      }
     } catch {
       setStatus("Network error. Please try again.", "error");
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "contact_submit_error", {
+          form_id: "services_contactForm",
+          project_type: (projectType && projectType.value) ? projectType.value : "",
+          page_path: window.location.pathname,
+          error_type: "network_error"
+        });
+      }
     } finally {
       disableForm(false);
     }
