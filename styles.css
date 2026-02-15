@@ -493,12 +493,12 @@ body.page-services .pricingCard{
   background:rgba(248,248,250,0.90);
 }
 
-body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding); }
-body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event); }
-body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event); }
-body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate); }
-body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc); }
-body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political); }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding) !important; }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event) !important; }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event) !important; }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate) !important; }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc) !important; }
+body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political) !important; }
 
 body.page-services .pricingCard h4{
   margin:0 0 6px;
@@ -591,12 +591,12 @@ body.page-services .formStatus[data-kind="info"]{ opacity:.8; }
     color:rgba(255,255,255,0.92);
   }
 
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding-dark); }
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event-dark); }
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event-dark); }
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate-dark); }
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc-dark); }
-  body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political-dark); }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(1) .pricingCard{ background:var(--pricing-wedding-dark) !important; }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(2) .pricingCard{ background:var(--pricing-event-dark) !important; }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(3) .pricingCard{ background:var(--pricing-event-dark) !important; }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(4) .pricingCard{ background:var(--pricing-corporate-dark) !important; }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(5) .pricingCard{ background:var(--pricing-doc-dark) !important; }
+  body.page-services .pricingWrap .pricingGrid:nth-of-type(6) .pricingCard{ background:var(--pricing-political-dark) !important; }
 
   body.page-services .pricingCard h4{ color:rgba(255,255,255,0.94); }
   body.page-services .pricingCard p{ color:rgba(255,255,255,0.88); }
