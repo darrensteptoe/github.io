@@ -20,27 +20,21 @@
     object-src 'none';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-
     img-src 'self' data: https:;
     style-src 'self' 'unsafe-inline' https://assets.calendly.com;
     script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
-    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://calendly.com https://*.calendly.com https://assets.calendly.com;
-    frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://calendly.com https://*.calendly.com https://assets.calendly.com;
+    frame-src https://calendly.com https://assets.calendly.com https://www.youtube.com;
     form-action 'self' https://formspree.io;
   " />
 
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4NQ7BSG9G5"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-4NQ7BSG9G5');
-
-    function trackEvent(name, params){
-      try{
-        if (typeof gtag === 'function') { gtag('event', name, params || {}); }
-      }catch(e){}
-    }
   </script>
 
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
@@ -55,49 +49,58 @@
       <p class="sub">Email • Office hours • Scheduling</p>
     </header>
 
-    <section class="panel" aria-label="Navigation">
+    <section class="panel">
       <h2 class="h2">Pages</h2>
-      <ul id="site-pages" class="links" aria-label="Site pages"></ul>
+      <ul id="site-pages" class="links"></ul>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Contact Email">
-      <h2 class="h2" id="email">Email</h2>
+    <section class="panel">
+      <h2 class="h2">Email</h2>
       <p>
-        <a href="mailto:hello@darrensteptoe.com" onclick="trackEvent('contact_email_click');">hello@darrensteptoe.com</a>
+        <a href="mailto:hello@darrensteptoe.com">hello@darrensteptoe.com</a>
       </p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Office Hours">
-      <h2 class="h2" id="hours">Office Hours</h2>
+    <section class="panel">
+      <h2 class="h2">Office Hours</h2>
       <p class="muted small">Monday–Friday • 9:00am–5:00pm</p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Mailing Address">
-      <h2 class="h2" id="mailing-address">Mailing Address</h2>
+    <section class="panel">
+      <h2 class="h2">Mailing Address</h2>
       <p class="muted small">[Add mailing address here]</p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel panel-has-logo" aria-label="Schedule">
-      <img src="./assets/Calendly_logo.png" alt="Calendly" class="panel-logo" />
-      <h2 class="h2" id="schedule">Schedule</h2>
+    <!-- Schedule (matches Payment box layout) -->
+    <section class="panel">
+      <div class="panel-logo-wrap">
+        <img src="./assets/Calendly_logo.png" alt="Calendly" class="panel-logo-horizontal">
+      </div>
+
+      <h2 class="h2">Schedule</h2>
+
+      <hr class="logoRule">
 
       <p class="muted small">
-        Prefer a new tab? <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener" onclick="trackEvent('schedule_click');">Open Calendly ↗</a>
+        Prefer a new tab?
+        <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener">
+          Open Calendly ↗
+        </a>
       </p>
 
       <div
         class="calendly-inline-widget calendly-frame"
         data-url="https://calendly.com/me--ujg"
-        style="min-width:320px;height:720px;"
-      ></div>
+        style="min-width:320px;height:720px;">
+      </div>
 
       <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
     </section>
