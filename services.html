@@ -24,7 +24,7 @@
     img-src 'self' data: https:;
     style-src 'self' 'unsafe-inline' https://assets.calendly.com;
     script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
-    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://assets.calendly.com https://calendly.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://calendly.com https://assets.calendly.com https://*.calendly.com;
     frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
     form-action 'self' https://formspree.io;
   " />
@@ -37,7 +37,6 @@
     gtag('js', new Date());
     gtag('config', 'G-4NQ7BSG9G5');
 
-    // Lightweight GA4 event helper (safe if gtag isn't ready)
     function trackEvent(name, params){
       try{
         if (typeof gtag === 'function') { gtag('event', name, params || {}); }
@@ -45,7 +44,6 @@
     }
   </script>
 
-  <!-- Calendly CSS (needed for inline embed styling) -->
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
 </head>
 
@@ -124,11 +122,11 @@
 
     <hr class="sectionRule" aria-hidden="true">
 
-    <section class="panel pricingWrap" aria-label="Pricing">
+    <section class="panel" aria-label="Pricing">
       <h2 class="h2">Pricing</h2>
 
       <h3>Wedding Films</h3>
-      <div class="pricingGrid twoCol" aria-label="Wedding tiers">
+      <div class="pricingGrid twoCol" aria-label="Wedding pricing">
         <div class="pricingCard">
           <h4>Bronze — $2,400</h4>
           <ul>
@@ -176,7 +174,7 @@
       </div>
 
       <h3>Event &amp; Promotional</h3>
-      <div class="pricingGrid twoCol" aria-label="Event pricing">
+      <div class="pricingGrid twoCol" aria-label="Event and promotional pricing">
         <div class="pricingCard">
           <h4>Half Day — $600</h4>
           <ul>
@@ -195,7 +193,7 @@
       </div>
 
       <h3>Corporate &amp; Small Business</h3>
-      <div class="pricingGrid twoCol" aria-label="Business pricing">
+      <div class="pricingGrid twoCol" aria-label="Corporate pricing">
         <div class="pricingCard">
           <h4>Brand Promo — $1,200</h4>
           <ul>
@@ -471,7 +469,8 @@
           href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00"
           target="_blank"
           rel="noopener"
-          onclick="trackEvent('payment_click');">
+          onclick="trackEvent('payment_click');"
+        >
           Pay Invoice ↗
         </a>
       </p>
@@ -487,8 +486,8 @@
     </footer>
   </main>
 
-  <script src="./services-form.js" defer></script>
   <script src="./nav.js" defer></script>
   <script src="./script.js" defer></script>
+  <script src="./services-form.js" defer></script>
 </body>
 </html>
