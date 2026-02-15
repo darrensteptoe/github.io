@@ -29,7 +29,6 @@
     form-action 'self' https://formspree.io;
   " />
 
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4NQ7BSG9G5"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -37,7 +36,6 @@
     gtag('js', new Date());
     gtag('config', 'G-4NQ7BSG9G5');
 
-    // Lightweight GA4 event helper (safe if gtag isn't ready)
     function trackEvent(name, params){
       try{
         if (typeof gtag === 'function') { gtag('event', name, params || {}); }
@@ -45,7 +43,6 @@
     }
   </script>
 
-  <!-- Calendly CSS (needed for inline embed styling) -->
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
 </head>
 
@@ -124,7 +121,8 @@
 
     <hr class="sectionRule" aria-hidden="true">
 
-    <section class="panel" aria-label="Pricing">
+    <!-- ONLY CHANGE: added pricingWrap to the class list -->
+    <section class="panel pricingWrap" aria-label="Pricing">
       <h2 class="h2">Pricing</h2>
 
       <h3>Wedding Films</h3>
