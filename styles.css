@@ -323,104 +323,127 @@ button:active{transform:translateY(1px)}
 
 body.page-index .panel{ overflow:hidden; }
 
-body.page-more .fantasyBig{ padding:0; overflow:hidden;}
-body.page-more .fantasyHead{
+/* ========================================================================== 
+   MORE — FANTASY FOOTBALL (compact ESPN-style layout)
+   ========================================================================== */
+
+body.page-more .fantasyBody{ padding:14px 14px 16px; gap:14px; }
+body.page-more .fantasyLevel{ gap:14px; }
+body.page-more .fantasySection{ padding:12px 12px; }
+body.page-more .fantasyH3{ margin:0 0 10px; font-size:13px; letter-spacing:.12em; }
+body.page-more .fantasySection p{ margin:0 0 8px; line-height:1.35; font-size:13px; }
+
+body.page-more .fantasySectionHead{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+body.page-more .podiumGrid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:10px;
+}
+body.page-more .podiumCard{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.025);
+  border-radius:10px;
+  padding:10px 10px;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  padding:18px 16px 14px;
-  border-bottom:1px solid rgba(255,255,255,.08);
+  text-align:center;
+  gap:6px;
 }
-body.page-more .fantasyTitleWrap{ min-width:0;}
-body.page-more .fantasyTitle{
-  margin:0;
-  font-size:20px;
+body.page-more .podiumPlace{
+  font-size:12px;
   font-weight:900;
-  line-height:1.12;
-  letter-spacing:.01em;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:.9;
 }
-body.page-more .fantasySub{
-  margin:8px 0 0;
-  font-size:14px;
-  opacity:.86;
-  line-height:1.35;
-}
-body.page-more .fantasyLogoTop{
-  height:30px;
-  width:auto;
-  display:block;
-  flex:0 0 auto;
-  opacity:.95;
-}
-body.page-more .fantasyBody{
-  padding:18px 16px 18px;
+body.page-more .podiumMedal{ font-size:18px; line-height:1; }
+body.page-more .podiumTeam{ font-size:11px; font-weight:900; line-height:1.12; }
+
+body.page-more .fantasyMainGrid{
   display:grid;
-  gap:18px;
-}
-body.page-more .fantasyLevel{
-  display:grid;
-  gap:18px;
-}
-body.page-more .fantasyRow3{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:16px;
+  grid-template-columns:1.15fr .85fr;
+  gap:14px;
   align-items:start;
 }
-body.page-more .fantasyRow2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  align-items:start;
-}
-body.page-more .fantasySection{
-  padding:16px 16px;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.03);
+
+body.page-more .fantasyMetaGrid{ grid-template-columns:1fr 1fr; gap:6px 10px; }
+body.page-more .kv{ font-size:12px; line-height:1.25; gap:6px; }
+
+body.page-more .fantasyInfoBox{
+  margin-top:10px;
+  padding:10px 10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.06);
   border-radius:10px;
 }
-body.page-more .fantasyH3{
-  margin:0 0 12px;
-  font-size:16px;
+body.page-more .fantasyInfoTitle{
+  font-size:12px;
   font-weight:900;
   letter-spacing:.10em;
   text-transform:uppercase;
-  opacity:.92;
+  margin:0 0 6px;
+  opacity:.9;
 }
-body.page-more .fantasySection p{ margin:0 0 10px; line-height:1.55;}
-body.page-more .fantasySection p:last-child{ margin-bottom:0;}
-body.page-more .fantasyList{
-  margin:0;
-  padding-left:18px;
-}
-body.page-more .fantasyList li{
-  margin:7px 0;
-  line-height:1.5;
-}
-body.page-more .fantasyMetaGrid{
-  display:grid;
-  grid-template-columns:1fr;
+body.page-more .fantasyInfoLine{ margin:0 0 6px; font-size:12px; line-height:1.25; }
+body.page-more .fantasyInfoLine:last-child{ margin-bottom:0; }
+
+body.page-more .rosterGrid{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+body.page-more .miniStat{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.02);
+  border-radius:10px;
+  padding:10px 10px;
+  display:flex;
+  justify-content:space-between;
   gap:10px;
+  align-items:baseline;
+  line-height:1.15;
 }
-body.page-more .kv{
-  margin:0;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  line-height:1.5;
+body.page-more .miniStat b{ font-weight:900; letter-spacing:.02em; }
+body.page-more .miniStat span{ opacity:.9; font-size:12px; }
+
+body.page-more .fantasySpacer{ height:10px; }
+body.page-more .fantasyListTight{ padding-left:16px; }
+body.page-more .fantasyListTight li{ margin:6px 0; line-height:1.35; font-size:13px; }
+
+body.page-more .moneyGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 12px;
+  margin:0 0 10px;
 }
-body.page-more .kv b{ font-weight:900;}
-body.page-more .moneyCtaWrap{
-  margin-top:14px;
-  display:flex;
-  justify-content:center;
-}
+
+/* Keep the Top 3 tiles side-by-side on mobile like ESPN (horizontal scroll if needed). */
 @media (max-width: 980px){
-  body.page-more .fantasyRow3{ grid-template-columns:1fr;}
-  body.page-more .fantasyRow2{ grid-template-columns:1fr;}
-  body.page-more .fantasyLogoTop{ height:28px;}
-  body.page-more .fantasyTitle{ font-size:19px;}
+  body.page-more .fantasyMainGrid{ grid-template-columns:1fr; }
+
+  body.page-more .podiumGrid{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding-bottom:4px;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+  }
+  body.page-more .podiumCard{
+    flex:0 0 120px;
+    scroll-snap-align:start;
+  }
+
+  /* Snapshot stays dense: 2 columns on most phones; 1 column only when truly narrow. */
+  body.page-more .fantasyMetaGrid{ grid-template-columns:1fr 1fr; }
+  body.page-more .moneyGrid{ grid-template-columns:1fr 1fr; }
+}
+
+@media (max-width: 560px){
+  body.page-more .fantasyMetaGrid{ grid-template-columns:1fr; }
+  body.page-more .moneyGrid{ grid-template-columns:1fr; }
+}
+
+@media (max-width: 420px){
+  body.page-more .rosterGrid{ grid-template-columns:1fr; }
 }
 
 body.page-services .panel{ overflow:hidden;}
