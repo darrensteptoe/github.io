@@ -473,6 +473,25 @@ body.page-services .panelLogoHorizontal{
   pointer-events:none;
 }
 
+/* Contact page: match the exact Services header-row logo sizing behavior */
+body.page-contact .panelHeaderRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 10px;
+}
+body.page-contact .panelHeaderRow .h2{ margin:0; }
+
+body.page-contact .panelLogoHorizontal{
+  height:20px;
+  width:auto;
+  max-width:40%;
+  object-fit:contain;
+  flex:0 0 auto;
+  pointer-events:none;
+}
+
 body.page-services .pricingWrap h3{
   margin:18px 0 10px;
   font-size:1.1rem;
