@@ -14,18 +14,20 @@
   <link rel="icon" href="./assets/img/icon-192.png" />
   <link rel="apple-touch-icon" href="./assets/img/icon-192.png" />
 
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src; script-src 'unsafe-inline' 'self' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net'self';
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
     base-uri 'self';
     object-src 'none';
     frame-ancestors 'none';
+    upgrade-insecure-requests;
+
     img-src 'self' data: https:;
-    style-src 'self';
-    script-src 'self' https://assets.calendly.com;
-    connect-src 'self' https://formspree.io https://api.github.com https://raw.githubusercontent.com;
+    style-src 'self' 'unsafe-inline' https://assets.calendly.com;
+    script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com;
     frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
     form-action 'self' https://formspree.io;
-    upgrade-insecure-requests" />
+  " />
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4NQ7BSG9G5"></script>
@@ -41,8 +43,10 @@
         if (typeof gtag === 'function') { gtag('event', name, params || {}); }
       }catch(e){}
     }
-
   </script>
+
+  <!-- Calendly CSS (needed for inline embed styling) -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
 </head>
 
 <body class="page-services">
@@ -288,7 +292,7 @@
         method="POST"
         class="contactForm"
         novalidate
-       onsubmit=\"trackEvent('contact_submit');\">
+        onsubmit="trackEvent('contact_submit');">
 
         <label>
           Project Type *
@@ -438,11 +442,11 @@
         <img src="./assets/Calendly_logo.png" alt="Calendly" class="panelLogoHorizontal" />
       </div>
 
-      
       <p class="muted small">
         Prefer a new tab? <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener" onclick="trackEvent('schedule_click');">Open Calendly ↗</a>
       </p>
-<div
+
+      <div
         class="calendly-inline-widget calendly-frame"
         data-url="https://calendly.com/me--ujg"
         style="min-width:320px;height:720px;"
@@ -467,7 +471,7 @@
           href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00"
           target="_blank"
           rel="noopener"
-         onclick=\"trackEvent('payment_click');\">
+          onclick="trackEvent('payment_click');">
           Pay Invoice ↗
         </a>
       </p>
