@@ -24,7 +24,7 @@
     img-src 'self' data: https:;
     style-src 'self' 'unsafe-inline' https://assets.calendly.com;
     script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
-    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://calendly.com https://assets.calendly.com https://*.calendly.com;
+    connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://formspree.io https://api.github.com https://raw.githubusercontent.com https://calendly.com https://*.calendly.com https://assets.calendly.com;
     frame-src https://www.youtube.com https://calendly.com https://assets.calendly.com;
     form-action 'self' https://formspree.io;
   " />
@@ -37,6 +37,7 @@
     gtag('js', new Date());
     gtag('config', 'G-4NQ7BSG9G5');
 
+    // Lightweight GA4 event helper (safe if gtag isn't ready)
     function trackEvent(name, params){
       try{
         if (typeof gtag === 'function') { gtag('event', name, params || {}); }
@@ -44,6 +45,7 @@
     }
   </script>
 
+  <!-- Calendly CSS (needed for inline embed styling) -->
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
 </head>
 
@@ -126,7 +128,7 @@
       <h2 class="h2">Pricing</h2>
 
       <h3>Wedding Films</h3>
-      <div class="pricingGrid twoCol" aria-label="Wedding pricing">
+      <div class="pricingGrid twoCol" aria-label="Wedding film pricing">
         <div class="pricingCard">
           <h4>Bronze — $2,400</h4>
           <ul>
@@ -164,13 +166,13 @@
             <li>7-day delivery</li>
           </ul>
         </div>
+      </div>
 
-        <div class="pricingCard">
-          <h4>Additional Hour — $125</h4>
-          <ul>
-            <li>Applies beyond the booked package</li>
-          </ul>
-        </div>
+      <div class="pricingCard" style="margin-top:12px;">
+        <h4>Additional Hour — $125</h4>
+        <ul>
+          <li>Applies beyond the booked package</li>
+        </ul>
       </div>
 
       <h3>Event &amp; Promotional</h3>
@@ -289,6 +291,7 @@
         action="https://formspree.io/f/xdalazpw"
         method="POST"
         class="contactForm"
+        novalidate
         onsubmit="trackEvent('contact_submit');">
 
         <label>
@@ -347,20 +350,20 @@
 
             <label id="coverageHoursWrap" class="hidden">
               Coverage Hours (estimate)
-              <input id="coverageHours" type="number" name="coverage_hours" inputmode="numeric" min="1" step="1" placeholder="e.g., 6">
+              <input id="coverageHours" type="number" name="coverage_hours" inputmode="numeric" min="1" step="1" placeholder="e.g., 8">
+            </label>
+
+            <label id="weddingPackageWrap" class="hidden">
+              Wedding Package *
+              <select id="weddingPackage" name="wedding_package">
+                <option value="" selected disabled>Select one…</option>
+                <option value="bronze">Bronze</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+                <option value="platinum">Platinum</option>
+              </select>
             </label>
           </div>
-
-          <label id="weddingPackageWrap" class="hidden">
-            Wedding Package *
-            <select id="weddingPackage" name="wedding_package">
-              <option value="" selected disabled>Select one…</option>
-              <option value="bronze">Bronze</option>
-              <option value="silver">Silver</option>
-              <option value="gold">Gold</option>
-              <option value="platinum">Platinum</option>
-            </select>
-          </label>
 
           <label>
             Details / Deliverables
@@ -485,8 +488,8 @@
     </footer>
   </main>
 
+  <script src="./services-form.js" defer></script>
   <script src="./nav.js" defer></script>
   <script src="./script.js" defer></script>
-  <script src="./services-form.js" defer></script>
 </body>
 </html>
