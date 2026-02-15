@@ -300,17 +300,7 @@
   const valid = () => {
     setStatus("", "");
     const pt = projectType?.value || "";
-    if (!pt) {        // GA4: track failed submissions (fires when Formspree returns a non-OK response)
-        if (typeof window.gtag === "function") {
-          window.gtag("event", "contact_submit_error", {
-            form_id: "services_contactForm",
-            project_type: (projectType && projectType.value) ? projectType.value : "",
-            page_path: window.location.pathname,
-            error_type: "non_ok_response"
-          });
-        }
-
-
+    if (!pt) {
       setStatus("Choose a project type first.", "error");
       return false;
     }
@@ -368,15 +358,14 @@
     disableForm(true);
     setStatus("Sending…", "info");
 
-    try {        // GA4: track submission attempts (fires when user submits, before network request)
-        if (typeof window.gtag === "function") {
-          window.gtag("event", "contact_submit_attempt", {
-            form_id: "services_contactForm",
-            project_type: (projectType && projectType.value) ? projectType.value : "",
-            page_path: window.location.pathname
-          });
-        }
-
+    try {
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "contact_submit_attempt", {
+          form_id: "services_contactForm",
+          project_type: (projectType && projectType.value) ? projectType.value : "",
+          page_path: window.location.pathname
+        });
+      }
 
       const res = await fetch(form.action, {
         method: "POST",
@@ -389,7 +378,6 @@
         updateVisibility();
         setStatus("Sent. I’ll get back to you soon.", "ok");
 
-        // GA4: precise form submission tracking (fires only on successful Formspree response)
         if (typeof window.gtag === "function") {
           window.gtag("event", "contact_submit", {
             form_id: "services_contactForm",
@@ -398,10 +386,44 @@
           });
         }
       } else {
-        setStatus("Something went wrong. Please try again, or email me directly at me@darrensteptoe.com.", "error");
+        let detail = "";
+        try {
+          const data = await res.json();
+          if (data && data.errors && data.errors.length) {
+            detail = data.errors.map(e => e.message).filter(Boolean).join(" ");
+          } else if (data && data.error) {
+            detail = String(data.error);
+          }
+        } catch(_) {}
+
+        setStatus(
+          detail
+            ? `Form error (${res.status}). ${detail}`
+            : `Form error (${res.status}). Please try again, or email me directly.`,
+          "error"
+        );
+
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "contact_submit_error", {
+            form_id: "services_contactForm",
+            project_type: (projectType && projectType.value) ? projectType.value : "",
+            page_path: window.location.pathname,
+            error_type: "http_error",
+            http_status: res.status
+          });
+        }
       }
     } catch {
       setStatus("Network error. Please try again.", "error");
+
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "contact_submit_error", {
+          form_id: "services_contactForm",
+          project_type: (projectType && projectType.value) ? projectType.value : "",
+          page_path: window.location.pathname,
+          error_type: "network_error"
+        });
+      }
     } finally {
       disableForm(false);
     }
