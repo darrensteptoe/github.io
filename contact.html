@@ -20,7 +20,6 @@
     object-src 'none';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-
     img-src 'self' data: https:;
     style-src 'self' 'unsafe-inline' https://assets.calendly.com;
     script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://assets.calendly.com;
@@ -29,18 +28,13 @@
     form-action 'self' https://formspree.io;
   " />
 
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-4NQ7BSG9G5"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-4NQ7BSG9G5');
-
-    function trackEvent(name, params){
-      try{
-        if (typeof gtag === 'function') { gtag('event', name, params || {}); }
-      }catch(e){}
-    }
   </script>
 
   <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet" />
@@ -55,51 +49,54 @@
       <p class="sub">Email • Office hours • Scheduling</p>
     </header>
 
-    <section class="panel" aria-label="Navigation">
+    <section class="panel">
       <h2 class="h2">Pages</h2>
-      <ul id="site-pages" class="links" aria-label="Site pages"></ul>
+      <ul id="site-pages" class="links"></ul>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Contact Email">
+    <section class="panel">
       <h2 class="h2">Email</h2>
       <p>
-        <a href="mailto:hello@darrensteptoe.com" onclick="trackEvent('contact_email_click');">hello@darrensteptoe.com</a>
+        <a href="mailto:hello@darrensteptoe.com">hello@darrensteptoe.com</a>
       </p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Office Hours">
+    <section class="panel">
       <h2 class="h2">Office Hours</h2>
       <p class="muted small">Monday–Friday • 9:00am–5:00pm</p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Mailing Address">
+    <section class="panel">
       <h2 class="h2">Mailing Address</h2>
       <p class="muted small">[Add mailing address here]</p>
     </section>
 
-    <hr class="sectionRule" aria-hidden="true">
+    <hr class="sectionRule">
 
-    <section class="panel" aria-label="Schedule">
+    <section class="panel">
       <div class="panelHeaderRow">
         <h2 class="h2">Schedule</h2>
-        <img src="./assets/Calendly_logo.png" alt="Calendly" class="panelLogoHorizontal" />
+        <img src="./assets/Calendly_logo.png" alt="Calendly" class="panelLogo">
       </div>
 
       <p class="muted small">
-        Prefer a new tab? <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener" onclick="trackEvent('schedule_click');">Open Calendly ↗</a>
+        Prefer a new tab?
+        <a href="https://calendly.com/me--ujg" target="_blank" rel="noopener">
+          Open Calendly ↗
+        </a>
       </p>
 
       <div
         class="calendly-inline-widget calendly-frame"
         data-url="https://calendly.com/me--ujg"
-        style="min-width:320px;height:720px;"
-      ></div>
+        style="min-width:320px;height:720px;">
+      </div>
 
       <script async src="https://assets.calendly.com/assets/external/widget.js"></script>
     </section>
