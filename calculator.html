@@ -1,0 +1,1327 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Campaign Probability Calculator — Non-Indexed — Darren Steptoe</title>
+  <meta name="description" content="Campaign Probability & Risk Model." />
+
+  <!-- Keep this page out of search engines -->
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="color-scheme" content="light dark" />
+
+  <!-- Optional: keep your global site CSS loaded -->
+  <link rel="stylesheet" href="./styles.css" />
+
+  <style>
+    /* ==========================================================================
+      Campaign Calculator — page-scoped styles (won’t affect the rest of your site)
+      ========================================================================== */
+
+    :root{
+      --calc-bg: #f3f6fb;
+      --calc-grid: rgba(20, 40, 70, 0.04);
+
+      --card: #ffffff;
+      --card-border: rgba(17,17,17,0.10);
+      --shadow: 0 18px 40px rgba(16, 35, 70, 0.10);
+      --shadow-soft: 0 10px 24px rgba(16, 35, 70, 0.08);
+
+      --text: #0f172a;
+      --muted: rgba(15, 23, 42, 0.65);
+
+      --blue: #1f86ff;
+      --blue-deep: #176fe0;
+
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+
+      --gap-lg: 18px;     /* section spacing */
+      --gap-md: 14px;     /* internal spacing */
+      --gap-input: 16px;  /* space between input boxes */
+    }
+
+    body{
+      margin: 0;
+      color: var(--text);
+      background:
+        linear-gradient(transparent 39px, var(--calc-grid) 40px),
+        linear-gradient(90deg, transparent 39px, var(--calc-grid) 40px),
+        var(--calc-bg);
+      background-size: 40px 40px;
+    }
+
+    .calc-page{
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 34px 16px 18px;
+    }
+
+    .calc-shell{
+      width: min(620px, 100%);
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(17,17,17,0.06);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 16px;
+      backdrop-filter: blur(6px);
+    }
+
+    .calc-header-pill{
+      background: linear-gradient(180deg, var(--blue), var(--blue-deep));
+      color: #fff;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+      text-align: center;
+      box-shadow: 0 14px 30px rgba(31, 134, 255, 0.22);
+      margin: 4px 6px 14px;
+    }
+
+    .quickstart{
+      background: #f6f8fc;
+      border: 1px solid rgba(17,17,17,0.06);
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin: 0 6px var(--gap-lg);
+    }
+    .quickstart b{ color: var(--text); }
+
+    .section{
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 14px;
+      margin: 0 6px var(--gap-lg);
+    }
+
+    .section-title{
+      font-size: 10px;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      color: rgba(15,23,42,0.55);
+      font-weight: 900;
+      margin: 2px 0 12px;
+    }
+
+    /* MODE CONTROLS */
+    .mode-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mode-item{
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 10px;
+      align-items: start;
+      background: #f4f7fb;
+      border: 1px solid rgba(17,17,17,0.06);
+      border-radius: 14px;
+      padding: 10px 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mode-item input{
+      margin-top: 2px;
+      width: 14px;
+      height: 14px;
+      accent-color: var(--blue);
+    }
+
+    .mode-item .label{
+      font-weight: 800;
+      font-size: 12px;
+      margin: 0 0 2px;
+    }
+
+    .mode-item .desc{
+      margin: 0;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .mode-note{
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+    .mode-note b{ color: var(--text); }
+
+    /* INPUTS */
+    .inputs-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap-input);
+      align-items: start;
+    }
+
+    .field{
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .field label{
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(15,23,42,0.85);
+      line-height: 1.15;
+    }
+
+    .field input{
+      width: 100%;
+      box-sizing: border-box;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(17,17,17,0.10);
+      background: #f5f8fc;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      outline: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .field input::placeholder{
+      color: rgba(15,23,42,0.35);
+      font-weight: 600;
+    }
+
+    .field input:focus{
+      border-color: rgba(31,134,255,0.55);
+      box-shadow:
+        0 0 0 3px rgba(31,134,255,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.9);
+      background: #f7faff;
+    }
+
+    .helper{
+      margin: 0 0 10px;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .run-wrap{
+      display: grid;
+      place-items: center;
+      padding: 8px 6px 4px;
+      gap: 10px;
+    }
+
+    .run-actions{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .run-btn{
+      border: 0;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 12px 26px;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      color: #fff;
+      background: linear-gradient(180deg, var(--blue), var(--blue-deep));
+      box-shadow: 0 16px 34px rgba(31,134,255,0.28);
+      transition: transform 0.08s ease, box-shadow 0.12s ease;
+    }
+
+    .run-btn:active{
+      transform: translateY(1px);
+      box-shadow: 0 12px 26px rgba(31,134,255,0.24);
+    }
+
+    .ghost-btn{
+      border: 1px solid rgba(17,17,17,0.10);
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      color: rgba(15,23,42,0.85);
+      background: #f6f8fc;
+      box-shadow: 0 12px 22px rgba(16, 35, 70, 0.07);
+      transition: transform 0.08s ease, box-shadow 0.12s ease;
+    }
+
+    .ghost-btn:active{
+      transform: translateY(1px);
+      box-shadow: 0 9px 18px rgba(16, 35, 70, 0.06);
+    }
+
+    .subnote{
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.25;
+      max-width: 540px;
+    }
+
+    .seed-row{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .seed-chip{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f4f7fb;
+      border: 1px solid rgba(17,17,17,0.06);
+      border-radius: 999px;
+      padding: 8px 10px;
+    }
+
+    .seed-chip input[type="checkbox"]{
+      width: 14px;
+      height: 14px;
+      accent-color: var(--blue);
+      margin: 0;
+    }
+
+    .seed-chip input[type="text"]{
+      width: 140px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(17,17,17,0.10);
+      background: #fff;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+      outline: none;
+      color: rgba(15,23,42,0.9);
+    }
+
+    .seed-chip input[type="text"]:focus{
+      border-color: rgba(31,134,255,0.55);
+      box-shadow: 0 0 0 3px rgba(31,134,255,0.16);
+    }
+
+    .status-line{
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      min-height: 16px;
+    }
+
+    /* RESULTS */
+    .results{
+      display: none;
+    }
+
+    .kpi-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .kpi{
+      background: #f4f7fb;
+      border: 1px solid rgba(17,17,17,0.06);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+
+    .kpi .k{
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: rgba(15,23,42,0.55);
+      font-weight: 900;
+      margin: 0 0 6px;
+    }
+
+    .kpi .v{
+      font-weight: 950;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .kpi .s{
+      margin: 6px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+
+    .table{
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(17,17,17,0.08);
+      background: #fff;
+    }
+
+    .table th, .table td{
+      padding: 10px 10px;
+      font-size: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(17,17,17,0.06);
+      vertical-align: top;
+    }
+
+    .table th{
+      background: #f6f8fc;
+      font-size: 10px;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: rgba(15,23,42,0.55);
+      font-weight: 900;
+    }
+
+    .table tr:last-child td{
+      border-bottom: 0;
+    }
+
+    .pill{
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 11px;
+      border: 1px solid rgba(17,17,17,0.10);
+      background: #f6f8fc;
+      color: rgba(15,23,42,0.85);
+    }
+
+    .pill.good{ background: rgba(79, 208, 107, 0.16); border-color: rgba(79, 208, 107, 0.30); }
+    .pill.warn{ background: rgba(255, 195, 0, 0.16); border-color: rgba(255, 195, 0, 0.30); }
+    .pill.bad{  background: rgba(255, 59, 92, 0.14); border-color: rgba(255, 59, 92, 0.28); }
+
+    .diag-list{
+      display: grid;
+      gap: 10px;
+    }
+
+    .diag-item{
+      background: #f6f8fc;
+      border: 1px solid rgba(17,17,17,0.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: rgba(15,23,42,0.85);
+      line-height: 1.35;
+    }
+
+    .diag-item b{
+      color: var(--text);
+    }
+
+    .collapse-row{
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+      margin-bottom: 2px;
+    }
+
+    .copyright{
+      text-align: center;
+      font-size: 12px;
+      color: rgba(15,23,42,0.55);
+      margin-top: 10px;
+      padding-top: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 560px){
+      .mode-grid{ grid-template-columns: 1fr; }
+      .inputs-grid{ grid-template-columns: 1fr; gap: 14px; }
+      .kpi-grid{ grid-template-columns: 1fr; }
+      .calc-shell{ padding: 16px 14px 14px; }
+      .section{ margin-left: 0; margin-right: 0; }
+      .quickstart{ margin-left: 0; margin-right: 0; }
+      .calc-header-pill{ margin-left: 0; margin-right: 0; }
+      .seed-chip input[type="text"]{ width: 150px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="calc-page">
+    <div class="calc-shell">
+      <div class="calc-header-pill">Campaign Probability &amp; Risk Model</div>
+
+      <div class="quickstart">
+        <b>Quick start:</b> Use your best baseline assumptions, then stress test by raising volatility.
+        If persuasion lists feel inflated, enable <b>Institutional Anchoring</b> and set a Movable Share.
+        Reference: DEFAULTS.md and EXAMPLES.md.
+      </div>
+
+      <section class="section" aria-label="Mode Controls">
+        <div class="section-title">Mode Controls</div>
+
+        <div class="mode-grid">
+          <label class="mode-item">
+            <input id="m_sim" type="checkbox" checked />
+            <div>
+              <p class="label">Probability Simulation</p>
+              <p class="desc">Runs thousands of simulated elections to estimate win probability.</p>
+            </div>
+          </label>
+
+          <label class="mode-item">
+            <input id="m_dist" type="checkbox" checked />
+            <div>
+              <p class="label">Margin Distribution</p>
+              <p class="desc">Shows average margin, worst case, best case, and volatility.</p>
+            </div>
+          </label>
+
+          <label class="mode-item">
+            <input id="m_sens" type="checkbox" checked />
+            <div>
+              <p class="label">Sensitivity Analysis</p>
+              <p class="desc">Shows which variable moves probability most (+1% test).</p>
+            </div>
+          </label>
+
+          <label class="mode-item">
+            <input id="m_diag" type="checkbox" checked />
+            <div>
+              <p class="label">Diagnostics</p>
+              <p class="desc">Flags aggressive assumptions or structural deficits.</p>
+            </div>
+          </label>
+
+          <label class="mode-item">
+            <input id="m_anchor" type="checkbox" />
+            <div>
+              <p class="label">Institutional Anchoring</p>
+              <p class="desc">Filters persuadables if “undecided” voters are socially locked in.</p>
+            </div>
+          </label>
+
+          <label class="mode-item">
+            <input id="m_vol" type="checkbox" checked />
+            <div>
+              <p class="label">Volatility Inputs</p>
+              <p class="desc">Controls uncertainty applied to each variable.</p>
+            </div>
+          </label>
+        </div>
+
+        <p class="mode-note">
+          Turn off <b>Probability Simulation</b> for deterministic-only math.
+          Distribution and sensitivity are disabled without simulation.
+        </p>
+      </section>
+
+      <section class="section" aria-label="Core Inputs">
+        <div class="section-title">Core Inputs</div>
+
+        <div class="inputs-grid">
+          <div class="field">
+            <label for="registered">Total Registered Voters</label>
+            <input id="registered" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="turnout">Expected Turnout %</label>
+            <input id="turnout" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="buffer">Safety Buffer % (added cushion)</label>
+            <input id="buffer" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="base">Base Vote Secured (committed votes)</label>
+            <input id="base" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Persuasion & GOTV">
+        <div class="section-title">Persuasion &amp; GOTV</div>
+
+        <div class="inputs-grid">
+          <div class="field" style="grid-column: 1 / -1;">
+            <label for="persuasion_universe">Persuasion Universe Size</label>
+            <input id="persuasion_universe" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="contact_rate">Contact Rate % (of persuasion universe reached)</label>
+            <input id="contact_rate" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="conversion">Persuasion Conversion % (of contacted, flipped)</label>
+            <input id="conversion" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="gotv_universe">GOTV Universe Size</label>
+            <input id="gotv_universe" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="gotv_conv">GOTV Conversion % (of GOTV universe turned out)</label>
+            <input id="gotv_conv" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field" style="grid-column: 1 / -1; display:none;" id="anchor_wrap">
+            <label for="movable_share">Movable Share % (Institutional Anchoring)</label>
+            <input id="movable_share" type="number" inputmode="decimal" placeholder="e.g., 25" />
+          </div>
+        </div>
+      </section>
+
+      <section class="section" aria-label="Volatility Inputs" id="vol_section">
+        <div class="section-title">Volatility Inputs</div>
+        <p class="helper">Standard deviation used in simulation. Higher = more uncertainty.</p>
+
+        <div class="inputs-grid">
+          <div class="field">
+            <label for="v_turnout">Turnout Volatility % (std dev)</label>
+            <input id="v_turnout" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="v_contact">Contact Volatility % (std dev)</label>
+            <input id="v_contact" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="v_persuasion">Persuasion Volatility % (std dev)</label>
+            <input id="v_persuasion" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+
+          <div class="field">
+            <label for="v_gotv">GOTV Volatility % (std dev)</label>
+            <input id="v_gotv" type="number" inputmode="decimal" placeholder="0" />
+          </div>
+        </div>
+      </section>
+
+      <div class="run-wrap">
+        <div class="run-actions">
+          <button class="run-btn" id="run" type="button">Run Model</button>
+          <button class="ghost-btn" id="selftest" type="button" title="Runs internal checks to catch silent math/code mistakes">Self‑Test</button>
+          <button class="ghost-btn" id="toggle_breakdown" type="button" aria-expanded="false">Show Breakdown</button>
+        </div>
+
+        <div class="seed-row" aria-label="Reproducibility">
+          <span class="seed-chip">
+            <input id="use_seed" type="checkbox" />
+            <span><b>Use Seed</b></span>
+            <input id="seed" type="text" placeholder="e.g., 2026-IL-001" />
+          </span>
+          <span>Seed makes simulation repeatable (same inputs + same seed = same outputs).</span>
+        </div>
+
+        <div class="subnote" id="run_note">
+          Uses a conservative win condition: <b>Projected Votes ≥ Win Number</b>, where Win Number is
+          <b>50% + 1</b> of expected turnout, plus your <b>Safety Buffer</b> (as a % of expected turnout).
+        </div>
+
+        <div class="status-line" id="status_line"></div>
+      </div>
+
+      <!-- RESULTS -->
+      <section class="section results" id="results" aria-label="Results">
+        <div class="section-title">Results</div>
+
+        <div class="kpi-grid" style="margin-bottom: 12px;">
+          <div class="kpi">
+            <p class="k">Win Probability</p>
+            <p class="v" id="k_win">—</p>
+            <p class="s" id="k_win_s">—</p>
+          </div>
+
+          <div class="kpi">
+            <p class="k">Expected Margin</p>
+            <p class="v" id="k_margin">—</p>
+            <p class="s" id="k_margin_s">—</p>
+          </div>
+
+          <div class="kpi">
+            <p class="k">Projected Votes</p>
+            <p class="v" id="k_proj">—</p>
+            <p class="s" id="k_proj_s">—</p>
+          </div>
+
+          <div class="kpi">
+            <p class="k">Win Number</p>
+            <p class="v" id="k_winno">—</p>
+            <p class="s" id="k_winno_s">—</p>
+          </div>
+        </div>
+
+        <div id="dist_block" style="display:none;">
+          <div class="section-title" style="margin-top: 6px;">Margin Distribution</div>
+          <table class="table" aria-label="Margin Distribution Table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Mean Margin</td><td id="d_mean">—</td><td>Average simulated margin</td></tr>
+              <tr><td>Median Margin</td><td id="d_med">—</td><td>50th percentile</td></tr>
+              <tr><td>Worst Case</td><td id="d_p05">—</td><td>5th percentile</td></tr>
+              <tr><td>Best Case</td><td id="d_p95">—</td><td>95th percentile</td></tr>
+              <tr><td>Volatility</td><td id="d_std">—</td><td>Std dev of margin</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="sens_block" style="display:none; margin-top: 14px;">
+          <div class="section-title">Sensitivity Analysis (+1 point test)</div>
+          <table class="table" aria-label="Sensitivity Table">
+            <thead>
+              <tr>
+                <th>Variable (+1 point)</th>
+                <th>Δ Win Prob</th>
+                <th>Comment</th>
+              </tr>
+            </thead>
+            <tbody id="sens_rows"></tbody>
+          </table>
+        </div>
+
+        <div id="diag_block" style="display:none; margin-top: 14px;">
+          <div class="section-title">Diagnostics</div>
+          <div class="diag-list" id="diag_list"></div>
+        </div>
+
+        <div class="collapse-row">
+          <div id="breakdown_block" style="display:none; width: 100%;">
+            <div class="section-title" style="margin-top: 10px;">Calculation Breakdown (Deterministic)</div>
+            <table class="table" aria-label="Calculation Breakdown Table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Value</th>
+                  <th>Formula / Note</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Expected Turnout Voters</td><td id="b_turnout_voters">—</td><td>registered × turnout%</td></tr>
+                <tr><td>Win Base</td><td id="b_win_base">—</td><td>floor(turnout/2) + 1</td></tr>
+                <tr><td>Buffer Votes</td><td id="b_buffer_votes">—</td><td>turnout × buffer%</td></tr>
+                <tr><td>Win Number</td><td id="b_win_number">—</td><td>win base + buffer votes</td></tr>
+                <tr><td>Persuasion Votes</td><td id="b_persuasion_votes">—</td><td>universe × contact% × conversion% (anchoring applies if enabled)</td></tr>
+                <tr><td>GOTV Votes</td><td id="b_gotv_votes">—</td><td>gotv universe × gotv conversion%</td></tr>
+                <tr><td>Projected Votes</td><td id="b_projected">—</td><td>base + persuasion + gotv</td></tr>
+                <tr><td>Margin</td><td id="b_margin">—</td><td>projected − win number</td></tr>
+                <tr><td>Win?</td><td id="b_win">—</td><td>projected ≥ win number</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="selftest_block" style="display:none; margin-top: 14px;">
+          <div class="section-title">Self‑Test</div>
+          <div class="diag-list" id="selftest_list"></div>
+        </div>
+      </section>
+
+      <div class="copyright">© <span id="year"></span> Darren Steptoe. All rights reserved.</div>
+    </div>
+  </main>
+
+  <script>
+    // footer year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // UI helpers
+    const el = (id) => document.getElementById(id);
+
+    const m_sim = el("m_sim");
+    const m_dist = el("m_dist");
+    const m_sens = el("m_sens");
+    const m_diag = el("m_diag");
+    const m_anchor = el("m_anchor");
+    const m_vol = el("m_vol");
+
+    const anchorWrap = el("anchor_wrap");
+    const volSection = el("vol_section");
+
+    const statusLine = el("status_line");
+
+    function setStatus(msg) {
+      statusLine.textContent = msg || "";
+    }
+
+    function syncToggles() {
+      anchorWrap.style.display = m_anchor.checked ? "block" : "none";
+      volSection.style.display = m_vol.checked ? "block" : "none";
+
+      // If simulation off, disable dependent outputs
+      const simOn = m_sim.checked;
+      m_dist.disabled = !simOn;
+      m_sens.disabled = !simOn;
+
+      if (!simOn) {
+        m_dist.checked = false;
+        m_sens.checked = false;
+      }
+    }
+
+    [m_sim, m_dist, m_sens, m_diag, m_anchor, m_vol].forEach(x => x.addEventListener("change", syncToggles));
+    syncToggles();
+
+    // Deterministic math helpers
+    const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+    const toNum = (v) => {
+      const n = Number(String(v ?? "").trim());
+      return Number.isFinite(n) ? n : 0;
+    };
+    const pctToRate = (p) => clamp(p / 100, 0, 1);
+
+    function fmtInt(n) {
+      const x = Math.round(n);
+      return x.toLocaleString("en-US");
+    }
+    function fmtSignedInt(n) {
+      const x = Math.round(n);
+      const sign = x >= 0 ? "+" : "−";
+      return sign + Math.abs(x).toLocaleString("en-US");
+    }
+    function fmtPct(p) {
+      return (p * 100).toFixed(1) + "%";
+    }
+
+    // Seeded RNG (Mulberry32) with string hashing
+    function hashStringToUint32(str) {
+      // FNV-1a
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+      let a = seed >>> 0;
+      return function() {
+        a += 0x6D2B79F5;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function getRng() {
+      const useSeed = el("use_seed").checked;
+      const seedStr = String(el("seed").value || "").trim();
+      if (!useSeed || seedStr.length === 0) return Math.random;
+      return mulberry32(hashStringToUint32(seedStr));
+    }
+
+    // Normal RNG (Box-Muller) with provided rng()
+    function randn(rng) {
+      let u = 0, v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function drawPct(meanPct, sdPct, rng) {
+      const x = meanPct + randn(rng) * sdPct;
+      return clamp(x, 0, 100);
+    }
+
+    // Core model:
+    // Expected turnout voters = registered * turnout%
+    // Win number = floor(turnoutVoters / 2) + 1 + (buffer% * turnoutVoters)
+    // Projected votes = base + (persuasionUniverse * contactRate% * conversion%) + (gotvUniverse * gotvConv%)
+    //
+    // Anchoring (if enabled): persuasion universe is multiplied by movableShare%
+    // (If movableShare empty/0, defaults to 25% as a conservative baseline.)
+    function computeOnce(inputs) {
+      const registered = inputs.registered;
+      const turnoutPct = inputs.turnoutPct;
+      const bufferPct = inputs.bufferPct;
+
+      const base = inputs.base;
+
+      let persuasionUniverse = inputs.persuasionUniverse;
+      const contactPct = inputs.contactPct;
+      const convPct = inputs.convPct;
+
+      const gotvUniverse = inputs.gotvUniverse;
+      const gotvConvPct = inputs.gotvConvPct;
+
+      let anchoringApplied = false;
+      let movableShareUsed = null;
+
+      if (inputs.anchoringOn) {
+        const ms = (inputs.movableSharePct > 0 ? inputs.movableSharePct : 25);
+        persuasionUniverse = persuasionUniverse * (ms / 100);
+        anchoringApplied = true;
+        movableShareUsed = ms;
+      }
+
+      const turnoutVoters = registered * pctToRate(turnoutPct);
+
+      const winBase = Math.floor(turnoutVoters / 2) + 1;
+      const bufferVotes = turnoutVoters * pctToRate(bufferPct);
+      const winNumber = winBase + bufferVotes;
+
+      const persuasionVotes = persuasionUniverse * pctToRate(contactPct) * pctToRate(convPct);
+      const gotvVotes = gotvUniverse * pctToRate(gotvConvPct);
+
+      const projected = base + persuasionVotes + gotvVotes;
+      const margin = projected - winNumber;
+      const win = projected >= winNumber;
+
+      return {
+        turnoutVoters,
+        winBase,
+        bufferVotes,
+        winNumber,
+        projected,
+        margin,
+        win,
+        persuasionVotes,
+        gotvVotes,
+        anchoringApplied,
+        movableShareUsed
+      };
+    }
+
+    function runSimulation(baseInputs, N, rng) {
+      let wins = 0;
+      const margins = [];
+
+      for (let i = 0; i < N; i++) {
+        const sim = {
+          ...baseInputs,
+          turnoutPct: drawPct(baseInputs.turnoutPct, baseInputs.v_turnout, rng),
+          contactPct: drawPct(baseInputs.contactPct, baseInputs.v_contact, rng),
+          convPct: drawPct(baseInputs.convPct, baseInputs.v_persuasion, rng),
+          gotvConvPct: drawPct(baseInputs.gotvConvPct, baseInputs.v_gotv, rng),
+        };
+
+        const r = computeOnce(sim);
+        if (r.win) wins++;
+        margins.push(r.margin);
+      }
+
+      margins.sort((a,b) => a-b);
+
+      const mean = margins.reduce((a,b)=>a+b,0) / margins.length;
+      const med = margins[Math.floor(margins.length * 0.50)];
+      const p05 = margins[Math.floor(margins.length * 0.05)];
+      const p95 = margins[Math.floor(margins.length * 0.95)];
+
+      const variance = margins.reduce((a,b)=>a+(b-mean)*(b-mean),0) / margins.length;
+      const std = Math.sqrt(variance);
+
+      return {
+        winProb: wins / N,
+        margins,
+        mean,
+        med,
+        p05,
+        p95,
+        std
+      };
+    }
+
+    function buildDiagnostics(inputs, deterministic) {
+      const out = [];
+
+      const turnoutVoters = deterministic.turnoutVoters;
+      const persuasionVotes = deterministic.persuasionVotes;
+      const gotvVotes = deterministic.gotvVotes;
+
+      // Basic validation flags
+      if (inputs.registered <= 0) out.push({lvl:"bad", msg:"Total Registered Voters is 0. Model can’t compute a real scenario."});
+      if (inputs.turnoutPct <= 0) out.push({lvl:"warn", msg:"Expected Turnout % is 0. Win number will be minimal and output will be meaningless."});
+
+      // Aggressive assumptions
+      if (inputs.turnoutPct > 75) out.push({lvl:"warn", msg:"Turnout above 75% is uncommon in many contests. Make sure that’s grounded in precinct history."});
+      if (inputs.contactPct > 60) out.push({lvl:"warn", msg:"Contact Rate above 60% is aggressive unless you have truly complete targeting + staffing."});
+      if (inputs.convPct > 25) out.push({lvl:"warn", msg:"Persuasion Conversion above 25% is aggressive. Make sure the universe is actually movable."});
+      if (inputs.gotvConvPct > 35) out.push({lvl:"warn", msg:"GOTV Conversion above 35% can be aggressive depending on your universe definition."});
+      if (inputs.bufferPct > 5) out.push({lvl:"warn", msg:"Safety Buffer above 5% is very conservative; it may mask actual persuasion/GOTV needs."});
+
+      // Structural checks
+      if (inputs.persuasionUniverse > turnoutVoters) {
+        out.push({lvl:"warn", msg:"Persuasion Universe exceeds expected turnout voters. That can be okay if universe includes low-propensity, but it’s a sign to double-check list sizing."});
+      }
+      if (inputs.gotvUniverse > turnoutVoters) {
+        out.push({lvl:"warn", msg:"GOTV Universe exceeds expected turnout voters. Double-check the universe definition."});
+      }
+
+      // Contribution sanity
+      if (inputs.base > deterministic.projected) {
+        out.push({lvl:"bad", msg:"Base Vote Secured is larger than total projected votes. Check your inputs (base should not exceed total)." });
+      }
+
+      // Anchoring reminder
+      if (!inputs.anchoringOn && inputs.convPct > 15) {
+        out.push({lvl:"warn", msg:"High persuasion conversion without Institutional Anchoring can overstate wins if your undecideds are socially locked in."});
+      }
+
+      // Helpful context
+      const note = `Projected adds: <b>${fmtInt(persuasionVotes)}</b> persuasion votes and <b>${fmtInt(gotvVotes)}</b> GOTV votes on top of base.`;
+      out.push({lvl:"good", msg: note});
+
+      if (deterministic.anchoringApplied) {
+        out.push({lvl:"good", msg: `Anchoring applied: persuasion universe scaled by <b>${deterministic.movableShareUsed}%</b> movable share.`});
+      }
+
+      return out;
+    }
+
+    function pillClassFromWinProb(p) {
+      if (p >= 0.70) return "good";
+      if (p >= 0.45) return "warn";
+      return "bad";
+    }
+
+    function showDiagItems(container, items) {
+      container.innerHTML = "";
+      for (const d of items) {
+        const div = document.createElement("div");
+        div.className = "diag-item";
+        const badge = d.lvl === "good" ? "good" : (d.lvl === "warn" ? "warn" : "bad");
+        const head = d.lvl === "good" ? "OK" : (d.lvl === "warn" ? "CHECK" : "FLAG");
+        div.innerHTML = `<span class="pill ${badge}">${head}</span> &nbsp; ${d.msg}`;
+        container.appendChild(div);
+      }
+    }
+
+    function setBreakdown(det) {
+      el("b_turnout_voters").textContent = fmtInt(det.turnoutVoters);
+      el("b_win_base").textContent = fmtInt(det.winBase);
+      el("b_buffer_votes").textContent = fmtInt(det.bufferVotes);
+      el("b_win_number").textContent = fmtInt(det.winNumber);
+      el("b_persuasion_votes").textContent = fmtInt(det.persuasionVotes);
+      el("b_gotv_votes").textContent = fmtInt(det.gotvVotes);
+      el("b_projected").textContent = fmtInt(det.projected);
+      el("b_margin").textContent = fmtSignedInt(det.margin);
+      el("b_win").innerHTML = det.win ? `<span class="pill good">YES</span>` : `<span class="pill bad">NO</span>`;
+    }
+
+    // Breakdown toggle
+    const breakdownBtn = el("toggle_breakdown");
+    const breakdownBlock = el("breakdown_block");
+    breakdownBtn.addEventListener("click", () => {
+      const isOpen = breakdownBlock.style.display === "block";
+      breakdownBlock.style.display = isOpen ? "none" : "block";
+      breakdownBtn.setAttribute("aria-expanded", String(!isOpen));
+      breakdownBtn.textContent = isOpen ? "Show Breakdown" : "Hide Breakdown";
+      if (!isOpen) {
+        breakdownBlock.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+
+    // Results toggles container ids
+    const resultsSection = el("results");
+
+    // Run handler
+    el("run").addEventListener("click", () => {
+      setStatus("");
+      syncToggles();
+
+      const inputs = {
+        registered: toNum(el("registered").value),
+        turnoutPct: toNum(el("turnout").value),
+        bufferPct: toNum(el("buffer").value),
+        base: toNum(el("base").value),
+
+        persuasionUniverse: toNum(el("persuasion_universe").value),
+        contactPct: toNum(el("contact_rate").value),
+        convPct: toNum(el("conversion").value),
+
+        gotvUniverse: toNum(el("gotv_universe").value),
+        gotvConvPct: toNum(el("gotv_conv").value),
+
+        anchoringOn: m_anchor.checked,
+        movableSharePct: toNum(el("movable_share")?.value),
+
+        v_turnout: m_vol.checked ? toNum(el("v_turnout").value) : 0,
+        v_contact: m_vol.checked ? toNum(el("v_contact").value) : 0,
+        v_persuasion: m_vol.checked ? toNum(el("v_persuasion").value) : 0,
+        v_gotv: m_vol.checked ? toNum(el("v_gotv").value) : 0
+      };
+
+      const det = computeOnce(inputs);
+
+      // decide RNG
+      const rng = getRng();
+
+      // Decide simulation N (snappy in-browser)
+      const simOn = m_sim.checked;
+      const N = simOn ? 9000 : 0;
+
+      let sim = null;
+      if (simOn) {
+        sim = runSimulation(inputs, N, rng);
+      }
+
+      // Show results section
+      resultsSection.style.display = "block";
+
+      // KPIs
+      const winProb = simOn ? sim.winProb : (det.win ? 1 : 0);
+      el("k_win").innerHTML = `<span class="pill ${pillClassFromWinProb(winProb)}">${fmtPct(winProb)}</span>`;
+      el("k_win_s").textContent = simOn ? `${fmtInt(N)} simulations` : "Deterministic (simulation off)";
+
+      el("k_margin").textContent = fmtSignedInt(det.margin);
+      el("k_margin_s").textContent = "Deterministic baseline margin";
+
+      el("k_proj").textContent = fmtInt(det.projected);
+      el("k_proj_s").textContent = "Base + Persuasion + GOTV";
+
+      el("k_winno").textContent = fmtInt(det.winNumber);
+      el("k_winno_s").textContent = "50% + 1 + buffer";
+
+      // Distribution
+      const distBlock = el("dist_block");
+      if (simOn && m_dist.checked) {
+        distBlock.style.display = "block";
+        el("d_mean").textContent = fmtSignedInt(sim.mean);
+        el("d_med").textContent  = fmtSignedInt(sim.med);
+        el("d_p05").textContent  = fmtSignedInt(sim.p05);
+        el("d_p95").textContent  = fmtSignedInt(sim.p95);
+        el("d_std").textContent  = fmtSignedInt(sim.std);
+      } else {
+        distBlock.style.display = "none";
+      }
+
+      // Sensitivity
+      const sensBlock = el("sens_block");
+      const sensRows = el("sens_rows");
+      if (simOn && m_sens.checked) {
+        sensBlock.style.display = "block";
+        sensRows.innerHTML = "";
+
+        const baseProb = sim.winProb;
+        const tests = [
+          { key: "turnoutPct", label: "Expected Turnout %", note: "Raises turnout and win number together" },
+          { key: "contactPct", label: "Contact Rate %", note: "More persuasion voters reached" },
+          { key: "convPct", label: "Persuasion Conversion %", note: "More flips from contacts" },
+          { key: "gotvConvPct", label: "GOTV Conversion %", note: "More turnout from GOTV list" }
+        ];
+
+        const N2 = 3500;
+
+        // For sensitivity, use the same RNG stream for repeatability when seeded
+        const rng2 = getRng();
+
+        for (const t of tests) {
+          const bumped = { ...inputs, [t.key]: inputs[t.key] + 1 };
+          const sim2 = runSimulation(bumped, N2, rng2);
+          const delta = sim2.winProb - baseProb;
+
+          const cls = delta >= 0.02 ? "good" : (delta >= 0.005 ? "warn" : "bad");
+          const sign = delta >= 0 ? "+" : "−";
+          const deltaStr = sign + Math.abs(delta * 100).toFixed(1) + " pts";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${t.label}</td>
+            <td><span class="pill ${cls}">${deltaStr}</span></td>
+            <td>${t.note}</td>
+          `;
+          sensRows.appendChild(tr);
+        }
+      } else {
+        sensBlock.style.display = "none";
+        sensRows.innerHTML = "";
+      }
+
+      // Diagnostics
+      const diagBlock = el("diag_block");
+      const diagList = el("diag_list");
+      if (m_diag.checked) {
+        diagBlock.style.display = "block";
+        const diags = buildDiagnostics(inputs, det);
+        showDiagItems(diagList, diags);
+      } else {
+        diagBlock.style.display = "none";
+        diagList.innerHTML = "";
+      }
+
+      // Breakdown (always compute, shown only if toggled open)
+      setBreakdown(det);
+
+      // Hide self-test results on normal run (keeps it clean)
+      el("selftest_block").style.display = "none";
+      el("selftest_list").innerHTML = "";
+
+      // Status
+      if (el("use_seed").checked && String(el("seed").value || "").trim().length > 0 && simOn) {
+        setStatus("Seeded run: results are reproducible (same seed + same inputs).");
+      } else if (simOn) {
+        setStatus("Unseeded run: small variation is normal between runs.");
+      } else {
+        setStatus("Deterministic run: simulation is off.");
+      }
+
+      // Scroll results into view
+      resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    // Self-Test
+    el("selftest").addEventListener("click", () => {
+      setStatus("");
+      syncToggles();
+
+      // Self-tests are designed to catch silent mistakes:
+      // - deterministic math identity checks
+      // - simulation collapses to deterministic when vol=0
+      // - seeded reproducibility (same seed => identical outputs)
+      const items = [];
+      const list = el("selftest_list");
+      const block = el("selftest_block");
+
+      function pass(msg) { items.push({lvl:"good", msg}); }
+      function warn(msg) { items.push({lvl:"warn", msg}); }
+      function fail(msg) { items.push({lvl:"bad", msg}); }
+
+      function approxEq(a,b,tol) { return Math.abs(a-b) <= tol; }
+
+      // Test 1: simple hand-check scenario
+      // Registered 1000, turnout 50% => turnout voters 500
+      // win base floor(250)+1=251, buffer 0 => win number 251
+      // base 251 => projected 251 => win true, margin 0
+      (function(){
+        const inp = {
+          registered: 1000,
+          turnoutPct: 50,
+          bufferPct: 0,
+          base: 251,
+          persuasionUniverse: 0,
+          contactPct: 0,
+          convPct: 0,
+          gotvUniverse: 0,
+          gotvConvPct: 0,
+          anchoringOn: false,
+          movableSharePct: 0,
+          v_turnout: 0, v_contact: 0, v_persuasion: 0, v_gotv: 0
+        };
+        const det = computeOnce(inp);
+        if (det.turnoutVoters !== 500) return fail("Self‑Test 1 failed: turnout voters should be 500.");
+        if (det.winBase !== 251) return fail("Self‑Test 1 failed: win base should be 251.");
+        if (det.winNumber !== 251) return fail("Self‑Test 1 failed: win number should be 251.");
+        if (det.projected !== 251) return fail("Self‑Test 1 failed: projected votes should be 251.");
+        if (det.margin !== 0) return fail("Self‑Test 1 failed: margin should be 0.");
+        if (!det.win) return fail("Self‑Test 1 failed: should be a win when projected equals win number.");
+        pass("Self‑Test 1: deterministic arithmetic (hand-check case) passes.");
+      })();
+
+      // Test 2: simulation with zero volatility should match deterministic win/loss
+      (function(){
+        const inp = {
+          registered: 20000,
+          turnoutPct: 40,
+          bufferPct: 1,
+          base: 3800,
+          persuasionUniverse: 4000,
+          contactPct: 40,
+          convPct: 10,
+          gotvUniverse: 2500,
+          gotvConvPct: 20,
+          anchoringOn: false,
+          movableSharePct: 0,
+          v_turnout: 0, v_contact: 0, v_persuasion: 0, v_gotv: 0
+        };
+        const det = computeOnce(inp);
+        const rng = mulberry32(hashStringToUint32("SELFTEST-ZERO-VOL"));
+        const sim = runSimulation(inp, 4000, rng);
+        const expected = det.win ? 1 : 0;
+        if (!approxEq(sim.winProb, expected, 0.0001)) {
+          return fail("Self‑Test 2 failed: with zero volatility, win probability should collapse to 0% or 100% matching deterministic win/loss.");
+        }
+        pass("Self‑Test 2: zero-volatility simulation collapses to deterministic win/loss.");
+      })();
+
+      // Test 3: seeded reproducibility (same seed => same output)
+      (function(){
+        const inp = {
+          registered: 50000,
+          turnoutPct: 35,
+          bufferPct: 2,
+          base: 9000,
+          persuasionUniverse: 12000,
+          contactPct: 35,
+          convPct: 12,
+          gotvUniverse: 9000,
+          gotvConvPct: 18,
+          anchoringOn: true,
+          movableSharePct: 25,
+          v_turnout: 2, v_contact: 3, v_persuasion: 2, v_gotv: 2
+        };
+
+        const rngA = mulberry32(hashStringToUint32("SEED-REPRO-TEST"));
+        const rngB = mulberry32(hashStringToUint32("SEED-REPRO-TEST"));
+
+        const simA = runSimulation(inp, 6000, rngA);
+        const simB = runSimulation(inp, 6000, rngB);
+
+        if (!approxEq(simA.winProb, simB.winProb, 0.0000001)) {
+          return fail("Self‑Test 3 failed: seeded runs did not match exactly (winProb differs).");
+        }
+        pass("Self‑Test 3: seeded simulation is reproducible (identical results for same seed).");
+      })();
+
+      // Test 4: basic input sanity (clamping)
+      (function(){
+        const rng = mulberry32(hashStringToUint32("CLAMP"));
+        const x = drawPct(10, 999, rng);
+        if (x < 0 || x > 100) return fail("Self‑Test 4 failed: drawPct should clamp values to 0–100.");
+        pass("Self‑Test 4: volatility draws are clamped to 0–100.");
+      })();
+
+      // Render
+      showDiagItems(list, items);
+      block.style.display = "block";
+
+      // Ensure results section visible
+      resultsSection.style.display = "block";
+
+      // Suggestion if any FAIL
+      const failed = items.some(i => i.lvl === "bad");
+      if (failed) {
+        setStatus("Self‑Test: FAIL. Do not rely on outputs until this is fixed.");
+      } else {
+        setStatus("Self‑Test: PASS. No internal consistency issues detected.");
+      }
+
+      block.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  </script>
+</body>
+</html>
