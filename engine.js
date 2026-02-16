@@ -84,3 +84,20 @@ function runMonteCarlo(inputs, simulations = 8000) {
 
   return (wins / simulations) * 100;
 }
+function sensitivityAnalysis(inputs, baseProbability) {
+
+  const bump = 1; // 1% bump
+
+  function testSensitivity(field) {
+    const modified = { ...inputs };
+    modified[field] += bump;
+    return runMonteCarlo(modified, 3000);
+  }
+
+  return {
+    turnoutImpact: testSensitivity("turnoutRate") - baseProbability,
+    contactImpact: testSensitivity("contactRate") - baseProbability,
+    persuasionImpact: testSensitivity("persuasionRate") - baseProbability,
+    gotvImpact: testSensitivity("gotvRate") - baseProbability
+  };
+}
