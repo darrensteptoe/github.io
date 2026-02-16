@@ -1,16 +1,19 @@
 function runCalculation() {
-  const inputs = {
-    totalVoters: parseFloat(document.getElementById("totalVoters").value),
-    turnoutRate: parseFloat(document.getElementById("turnoutRate").value),
-    turnoutVolatility: parseFloat(document.getElementById("turnoutVolatility").value),
-    buffer: parseFloat(document.getElementById("buffer").value),
-    baseVote: parseFloat(document.getElementById("baseVote").value),
-    persuasionUniverse: parseFloat(document.getElementById("persuasionUniverse").value),
-    contactRate: parseFloat(document.getElementById("contactRate").value),
-    persuasionRate: parseFloat(document.getElementById("persuasionRate").value),
-    gotvUniverse: parseFloat(document.getElementById("gotvUniverse").value),
-    gotvRate: parseFloat(document.getElementById("gotvRate").value)
-  };
+const inputs = {
+  totalVoters: parseFloat(document.getElementById("totalVoters").value),
+  turnoutRate: parseFloat(document.getElementById("turnoutRate").value),
+  turnoutVolatility: parseFloat(document.getElementById("turnoutVolatility").value),
+  buffer: parseFloat(document.getElementById("buffer").value),
+  baseVote: parseFloat(document.getElementById("baseVote").value),
+  persuasionUniverse: parseFloat(document.getElementById("persuasionUniverse").value),
+  contactRate: parseFloat(document.getElementById("contactRate").value),
+  contactVolatility: parseFloat(document.getElementById("contactVolatility").value),
+  persuasionRate: parseFloat(document.getElementById("persuasionRate").value),
+  persuasionVolatility: parseFloat(document.getElementById("persuasionVolatility").value),
+  gotvUniverse: parseFloat(document.getElementById("gotvUniverse").value),
+  gotvRate: parseFloat(document.getElementById("gotvRate").value),
+  gotvVolatility: parseFloat(document.getElementById("gotvVolatility").value)
+};
 
   const deterministic = calculateDeterministic(inputs);
   const winProbability = runMonteCarlo(inputs);
