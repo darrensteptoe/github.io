@@ -9,6 +9,14 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function quantile(sortedArr, p) {
+  // sortedArr must already be sorted ascending
+  if (!sortedArr.length) return 0;
+  const pp = clamp(p, 0, 1);
+  const idx = Math.floor((sortedArr.length - 1) * pp);
+  return sortedArr[idx];
+}
+
 function applyStructuralAdjustments(inputs) {
   const adjusted = { ...inputs };
 
@@ -25,9 +33,12 @@ function applyStructuralAdjustments(inputs) {
 function calculateDeterministic(inputsRaw) {
   const inputs = applyStructuralAdjustments(inputsRaw);
 
-  const projectedTurnout = inputs.totalVoters * (inputs.turnoutRate / 100);
+  // Turnout is an integer count of voters in reality, so we round.
+  const projectedTurnout = Math.round(inputs.totalVoters * (inputs.turnoutRate / 100));
   const winNumber = Math.floor(projectedTurnout / 2) + 1;
-  const bufferedWin = Math.floor(winNumber * (1 + inputs.buffer / 100));
+
+  // IMPORTANT: buffer should not round down. Use ceil.
+  const bufferedWin = Math.ceil(winNumber * (1 + inputs.buffer / 100));
 
   const persuasionYield =
     inputs.effectivePersuasionUniverse *
@@ -60,8 +71,8 @@ function runMonteCarlo(inputsRaw, simulations = 8000) {
   const inputs = applyStructuralAdjustments(inputsRaw);
 
   let wins = 0;
-  let margins = [];
-  let losses = [];
+  const margins = [];
+  const losses = [];
 
   for (let i = 0; i < simulations; i++) {
 
@@ -85,9 +96,11 @@ function runMonteCarlo(inputsRaw, simulations = 8000) {
       0, 100
     );
 
-    const simulatedTurnout = inputs.totalVoters * (turnoutRate / 100);
+    const simulatedTurnout = Math.round(inputs.totalVoters * (turnoutRate / 100));
     const winNumber = Math.floor(simulatedTurnout / 2) + 1;
-    const bufferedWin = Math.floor(winNumber * (1 + inputs.buffer / 100));
+
+    // IMPORTANT: buffer should not round down. Use ceil.
+    const bufferedWin = Math.ceil(winNumber * (1 + inputs.buffer / 100));
 
     const persuasionYield =
       inputs.effectivePersuasionUniverse *
@@ -116,10 +129,12 @@ function runMonteCarlo(inputsRaw, simulations = 8000) {
   const winProbability = (wins / simulations) * 100;
   const meanMargin = margins.reduce((a, b) => a + b, 0) / simulations;
 
-  const worstCase = margins[Math.floor(simulations * 0.05)];
-  const bestCase  = margins[Math.floor(simulations * 0.95)];
+  const worstCase = quantile(margins, 0.05);
+  const bestCase = quantile(margins, 0.95);
 
-  const variance = margins.reduce((sum, m) => sum + Math.pow(m - meanMargin, 2), 0) / simulations;
+  const variance =
+    margins.reduce((sum, m) => sum + Math.pow(m - meanMargin, 2), 0) / simulations;
+
   const stdDevMargin = Math.sqrt(variance);
 
   const averageLoss =
