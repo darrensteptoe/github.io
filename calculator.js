@@ -61,16 +61,21 @@ if (deterministic.totalCapacity < deterministic.bufferedWin) {
     riskLabel = "HIGH RISK";
   }
 
-  document.getElementById("results").innerHTML = `
-    <h2>Results</h2>
-    <p>Projected Turnout: ${deterministic.projectedTurnout.toFixed(0)}</p>
-    <p>Raw Win Number: ${deterministic.winNumber}</p>
-    <p>Buffered Win Target: ${deterministic.bufferedWin}</p>
-    <p>Votes Needed Beyond Base: ${deterministic.votesNeeded}</p>
-    <p>Persuasion Yield Capacity: ${deterministic.persuasionYield.toFixed(0)}</p>
-    <p>GOTV Yield Capacity: ${deterministic.gotvYield.toFixed(0)}</p>
-    <p>Total Vote Capacity: ${deterministic.totalCapacity.toFixed(0)}</p>
-    <p>Win Probability: ${winProbability.toFixed(2)}%</p>
-    <p class="${riskClass}">Risk Status: ${riskLabel}</p>
-  `;
-}
+document.getElementById("results").innerHTML = `
+  <h2>Results</h2>
+  <p>Projected Turnout: ${deterministic.projectedTurnout.toFixed(0)}</p>
+  <p>Raw Win Number: ${deterministic.winNumber}</p>
+  <p>Buffered Win Target: ${deterministic.bufferedWin}</p>
+  <p>Votes Needed Beyond Base: ${deterministic.votesNeeded}</p>
+  <p>Persuasion Yield Capacity: ${deterministic.persuasionYield.toFixed(0)}</p>
+  <p>GOTV Yield Capacity: ${deterministic.gotvYield.toFixed(0)}</p>
+  <p>Total Vote Capacity: ${deterministic.totalCapacity.toFixed(0)}</p>
+  <p>Win Probability: ${winProbability.toFixed(2)}%</p>
+  <p class="${riskClass}">Risk Status: ${riskLabel}</p>
+  ${warnings.length > 0 ? `
+    <h3>Diagnostics</h3>
+    <ul>
+      ${warnings.map(w => `<li>${w}</li>`).join("")}
+    </ul>
+  ` : ""}
+`;
