@@ -4,352 +4,463 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Campaign Probability Calculator</title>
- <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #e9ecf2;
-    background-image:
-      linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px);
-    background-size: 40px 40px;
-    margin: 0;
-    padding: 60px 20px;
-    color: #1a1a1a;
-  }
 
-  .container {
-    max-width: 920px;
-    margin: auto;
-    background: #f7f8fb;
-    padding: 40px;
-    border-radius: 28px;
-    box-shadow:
-      0 30px 60px rgba(0,0,0,0.08),
-      0 6px 18px rgba(0,0,0,0.04);
-  }
+  <style>
+    :root{
+      --bg:#eef2f8;
+      --grid:rgba(10,20,40,0.05);
 
-  .header-bar {
-    background: linear-gradient(135deg, #2f6edc, #3d8bff);
-    color: white;
-    padding: 22px 30px;
-    border-radius: 20px;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    margin-bottom: 32px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
-  }
+      --card:#ffffff;
+      --ink:#111827;
+      --muted:rgba(17,24,39,0.68);
 
-  h2 {
-    margin-top: 0;
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    text-transform: uppercase;
-    opacity: 0.75;
-  }
+      --shadowA:0 30px 60px rgba(17,24,39,0.10);
+      --shadowB:0 10px 24px rgba(17,24,39,0.08);
+      --inner:inset 0 1px 0 rgba(255,255,255,0.85);
 
-  .panel {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 22px 24px;
-    margin-top: 24px;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.8),
-      0 6px 18px rgba(0,0,0,0.05);
-  }
+      --radius-xl:28px;
+      --radius-lg:22px;
+      --radius-md:16px;
 
-  label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-top: 14px;
-    display: block;
-    opacity: 0.85;
-  }
+      --accent:#2b86ff;
+      --accent2:#1f6fff;
+    }
 
-  input[type="number"],
-  input[type="text"],
-  input[type="password"] {
-    width: 100%;
-    padding: 10px 12px;
-    margin-top: 6px;
-    border-radius: 12px;
-    border: 1px solid #d6dbe6;
-    background: #f4f6fb;
-    font-size: 14px;
-    transition: all 0.2s ease;
-  }
+    /* Background: grid + soft “bubbles” */
+    body{
+      margin:0;
+      padding:64px 18px 84px;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background-color:var(--bg);
 
-  input:focus {
-    outline: none;
-    border-color: #3d8bff;
-    box-shadow: 0 0 0 3px rgba(61,139,255,0.15);
-  }
+      background-image:
+        /* soft bubble highlights */
+        radial-gradient(circle at 22% 18%,
+          rgba(255,255,255,0.70) 0px,
+          rgba(255,255,255,0.55) 28px,
+          rgba(255,255,255,0.00) 64px
+        ),
+        radial-gradient(circle at 78% 30%,
+          rgba(255,255,255,0.60) 0px,
+          rgba(255,255,255,0.42) 26px,
+          rgba(255,255,255,0.00) 60px
+        ),
+        radial-gradient(circle at 35% 78%,
+          rgba(255,255,255,0.55) 0px,
+          rgba(255,255,255,0.35) 30px,
+          rgba(255,255,255,0.00) 72px
+        ),
+        /* grid */
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
 
-  .row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-  }
+      background-size:
+        420px 420px,
+        460px 460px,
+        520px 520px,
+        44px 44px,
+        44px 44px;
 
-  .toggle {
-    background: #f4f6fb;
-    padding: 12px 14px;
-    border-radius: 14px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
-  }
+      background-position:
+        0 0,
+        0 0,
+        0 0,
+        0 0,
+        0 0;
+    }
 
-  .toggle input {
-    margin-top: 3px;
-  }
+    /* Login card stays simple */
+    #loginSection{
+      max-width:420px;
+      margin:0 auto;
+      background:var(--card);
+      padding:28px;
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadowA);
+    }
 
-  .mini {
-    font-size: 12px;
-    opacity: 0.7;
-  }
+    /* Main “calculator” card */
+    .container{
+      max-width:760px;
+      margin:0 auto;
 
-  button {
-    margin-top: 28px;
-    padding: 12px 20px;
-    border-radius: 16px;
-    border: none;
-    background: linear-gradient(135deg, #2f6edc, #3d8bff);
-    color: white;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    cursor: pointer;
-    box-shadow:
-      0 8px 20px rgba(61,139,255,0.25);
-    transition: all 0.2s ease;
-  }
+      /* IMPORTANT: no big off-white wrapper */
+      background:transparent;
+      padding:0;
+    }
 
-  button:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 12px 26px rgba(61,139,255,0.35);
-  }
+    .card{
+      background:var(--card);
+      border-radius:34px;
+      box-shadow:var(--shadowA);
+      padding:26px 26px 30px;
+    }
 
-  .results {
-    margin-top: 30px;
-    background: #ffffff;
-    border-radius: 20px;
-    padding: 26px;
-    box-shadow:
-      0 20px 40px rgba(0,0,0,0.06);
-  }
+    /* Title bar like calculator display */
+    .header-bar{
+      border-radius:22px;
+      padding:18px 22px;
+      color:#fff;
+      text-align:center; /* centered title */
+      font-weight:800;
+      letter-spacing:0.4px;
+      font-size:20px;
 
-  .risk-safe { color: #2bb673; font-weight: 700; }
-  .risk-tight { color: #f5a623; font-weight: 700; }
-  .risk-danger { color: #e74c3c; font-weight: 700; }
+      background:linear-gradient(135deg,var(--accent2),var(--accent));
+      box-shadow:
+        0 16px 28px rgba(43,134,255,0.28),
+        var(--inner);
+    }
 
-  .hint {
-    font-size: 12px;
-    opacity: 0.65;
-    margin-top: 10px;
-  }
+    /* Tip box above Mode Controls */
+    .tip-box{
+      margin-top:18px;
+      background:#f7f9ff;
+      border-radius:22px;
+      padding:16px 18px;
+      box-shadow:
+        0 10px 22px rgba(17,24,39,0.06),
+        var(--inner);
+      border:1px solid rgba(31,111,255,0.08);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
 
-  .hidden { display: none; }
-</style>
+    .tip-box b{ color:rgba(17,24,39,0.85); }
 
+    /* Panels: add breathing room so they don’t touch */
+    .panel{
+      margin-top:22px; /* proper space between boxes */
+      background:#ffffff;
+      border-radius:26px;
+      padding:18px 18px 16px;
+      box-shadow:var(--shadowB);
+    }
+
+    .panel h2{
+      margin:0 0 8px 0;
+      font-size:13px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+      color:rgba(17,24,39,0.55);
+      font-weight:800;
+    }
+
+    label{
+      display:block;
+      margin-top:12px;
+      font-size:13px;
+      font-weight:800;
+      color:rgba(17,24,39,0.78);
+    }
+
+    input[type="number"], input[type="text"], input[type="password"]{
+      width:100%;
+      margin-top:6px;
+      padding:12px 12px;
+      border-radius:18px;
+      border:1px solid rgba(17,24,39,0.10);
+      background:#f2f5fb;
+      box-shadow: var(--inner);
+      font-size:14px;
+      color:var(--ink);
+    }
+
+    input:focus{
+      outline:none;
+      border-color:rgba(31,111,255,0.35);
+      box-shadow:
+        0 0 0 4px rgba(31,111,255,0.14),
+        var(--inner);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .toggles{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:10px;
+    }
+
+    .toggle{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px 14px;
+      border-radius:22px;
+      background:#f2f5fb;
+      box-shadow: var(--inner);
+      border:1px solid rgba(17,24,39,0.08);
+    }
+
+    .toggle input{
+      margin-top:3px;
+      transform:scale(1.1);
+    }
+
+    .mini{
+      font-size:12px;
+      color:rgba(17,24,39,0.62);
+      line-height:1.35;
+      margin-top:4px;
+    }
+
+    .hint{
+      font-size:12px;
+      color:rgba(17,24,39,0.60);
+      margin-top:8px;
+      line-height:1.35;
+    }
+
+    /* Center bottom: run button centered */
+    .actions{
+      margin-top:22px;
+      display:flex;
+      justify-content:center;
+    }
+
+    button{
+      border:none;
+      border-radius:999px;
+      padding:14px 28px;
+      font-weight:900;
+      letter-spacing:0.03em;
+      font-size:15px;
+      color:#fff;
+      cursor:pointer;
+      background:linear-gradient(135deg,var(--accent2),var(--accent));
+      box-shadow:
+        0 18px 30px rgba(43,134,255,0.28),
+        var(--inner);
+      transition:transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover{
+      transform:translateY(-1px);
+      box-shadow:
+        0 22px 36px rgba(43,134,255,0.34),
+        var(--inner);
+    }
+
+    .results{
+      margin-top:22px;
+      background:#ffffff;
+      border-radius:26px;
+      padding:18px;
+      box-shadow:var(--shadowB);
+    }
+
+    .risk-safe{ color:#19b36b; font-weight:900; }
+    .risk-tight{ color:#f39c12; font-weight:900; }
+    .risk-danger{ color:#e74c3c; font-weight:900; }
+
+    .hidden{ display:none; }
+
+    /* Mobile */
+    @media (max-width:720px){
+      .row{ grid-template-columns:1fr; }
+      .toggles{ grid-template-columns:1fr; }
+      .card{ padding:20px 18px 22px; }
+      .panel{ padding:16px 14px 14px; border-radius:22px; }
+      .header-bar{ border-radius:20px; }
+    }
+  </style>
 </head>
 <body>
 
 <div id="loginSection">
-  <h2>Login</h2>
+  <h2 style="margin:0 0 12px 0;">Login</h2>
   <label>Username</label>
   <input type="text" id="username" />
   <label>Password</label>
   <input type="password" id="password" />
-  <button onclick="login()">Enter</button>
-  <p id="loginError" style="color:red;"></p>
+  <div class="actions" style="margin-top:16px;">
+    <button onclick="login()">Enter</button>
+  </div>
+  <p id="loginError" style="color:#e74c3c; margin-top:12px;"></p>
 </div>
 
 <div id="app" style="display:none;">
   <div class="container">
-    <div class="header-bar">
-  Campaign Probability & Risk Model
-</div>
+    <div class="card">
 
-    <div class="panel">
-      <h2>Mode Controls</h2>
-
-<div class="toggles">
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleSimulation" checked />
-    <div>
-      <div><b>Probability Simulation</b></div>
-      <div class="mini">Runs thousands of simulated elections to estimate win probability.</div>
-    </div>
-  </div>
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleDistribution" checked />
-    <div>
-      <div><b>Margin Distribution</b></div>
-      <div class="mini">Shows average margin, worst case, best case, and volatility.</div>
-    </div>
-  </div>
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleSensitivity" checked />
-    <div>
-      <div><b>Sensitivity Analysis</b></div>
-      <div class="mini">Shows which variable (turnout, contact, persuasion, GOTV) moves probability most.</div>
-    </div>
-  </div>
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleDiagnostics" checked />
-    <div>
-      <div><b>Diagnostics</b></div>
-      <div class="mini">Flags aggressive assumptions or structural deficits.</div>
-    </div>
-  </div>
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleMovableShare" />
-    <div>
-      <div><b>Institutional Anchoring Adjustment</b></div>
-      <div class="mini">Applies a structural filter if part of your persuasion universe isn’t truly movable.</div>
-    </div>
-  </div>
-
-  <div class="toggle">
-    <input type="checkbox" id="toggleVolatilityInputs" checked />
-    <div>
-      <div><b>Volatility Inputs</b></div>
-      <div class="mini">Controls how much uncertainty the simulation applies to each variable.</div>
-    </div>
-  </div>
-
-</div>
-
-      <div class="hint">
-        If you uncheck <b>Probability Simulation</b>, the tool becomes deterministic-only (no randomness).
-        Distribution and sensitivity are disabled because they require simulation.
+      <div class="header-bar">
+        Campaign Probability & Risk Model
       </div>
-    </div>
 
-    <div class="panel">
-      <h2>Core Inputs</h2>
+      <!-- Tip box ABOVE mode controls -->
+      <div class="tip-box">
+        <b>Quick start:</b> Use your best baseline assumptions, then stress test by raising volatility.
+        If persuasion lists feel inflated, enable <b>Institutional Anchoring</b> and set a Movable Share.
+        Reference: <b>DEFAULTS.md</b> and <b>EXAMPLES.md</b>.
+      </div>
 
-      <div class="row">
-        <div>
-          <label>Total Registered Voters</label>
-          <input type="number" id="totalVoters" />
+      <div class="panel">
+        <h2>Mode Controls</h2>
+
+        <div class="toggles">
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleSimulation" checked />
+            <div>
+              <div><b>Probability Simulation</b></div>
+              <div class="mini">Runs thousands of simulated elections to estimate win probability.</div>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleDistribution" checked />
+            <div>
+              <div><b>Margin Distribution</b></div>
+              <div class="mini">Shows average margin, worst case, best case, and volatility.</div>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleSensitivity" checked />
+            <div>
+              <div><b>Sensitivity Analysis</b></div>
+              <div class="mini">Shows which variable moves probability most (+1% test).</div>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleDiagnostics" checked />
+            <div>
+              <div><b>Diagnostics</b></div>
+              <div class="mini">Flags aggressive assumptions or structural deficits.</div>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleMovableShare" />
+            <div>
+              <div><b>Institutional Anchoring</b></div>
+              <div class="mini">Filters persuadables if “undecided” voters are socially locked in.</div>
+            </div>
+          </div>
+
+          <div class="toggle">
+            <input type="checkbox" id="toggleVolatilityInputs" checked />
+            <div>
+              <div><b>Volatility Inputs</b></div>
+              <div class="mini">Controls uncertainty applied to each variable.</div>
+            </div>
+          </div>
+
         </div>
-        <div>
-          <label>Expected Turnout %</label>
-          <input type="number" id="turnoutRate" />
+
+        <div class="hint">
+          Turn off <b>Probability Simulation</b> for deterministic-only math.
+          Distribution and sensitivity are disabled without simulation.
         </div>
       </div>
 
-      <div class="row">
-        <div>
-          <label>Safety Buffer % (added cushion)</label>
-          <input type="number" id="buffer" />
-          <div class="hint">
-            Extra cushion above half + 1. Helps account for late breaks, noise, and execution variance.
+      <div class="panel">
+        <h2>Core Inputs</h2>
+        <div class="row">
+          <div>
+            <label>Total Registered Voters</label>
+            <input type="number" id="totalVoters" />
           </div>
-        </div>
-        <div>
-          <label>Base Vote Secured (committed votes)</label>
-          <input type="number" id="baseVote" />
-          <div class="hint">
-            Votes you believe you already have locked.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Persuasion & GOTV Inputs</h2>
-
-      <div class="row">
-        <div>
-          <label>Persuasion Universe Size (people you think are persuadable)</label>
-          <input type="number" id="persuasionUniverse" />
-          <div class="hint">
-            This is the persuadable list BEFORE any “movable share” adjustment.
+          <div>
+            <label>Expected Turnout %</label>
+            <input type="number" id="turnoutRate" />
           </div>
         </div>
 
-        <div id="movableShareBlock" class="hidden">
-          <label>Persuasion Movable Share % (institutional anchoring filter)</label>
-          <input type="number" id="movableShare" />
-          <div class="hint">
-            Use this if “undecided” voters are actually anchored to churches, clubs, unions, leaders, etc.
-            Example: 70 means you believe only 70% of this universe is truly movable.
+        <div class="row">
+          <div>
+            <label>Safety Buffer % (added cushion)</label>
+            <input type="number" id="buffer" />
+          </div>
+          <div>
+            <label>Base Vote Secured (committed votes)</label>
+            <input type="number" id="baseVote" />
           </div>
         </div>
       </div>
 
-      <div class="row">
-        <div>
-          <label>Contact Rate % (of persuasion universe reached)</label>
-          <input type="number" id="contactRate" />
+      <div class="panel">
+        <h2>Persuasion & GOTV</h2>
+
+        <div class="row">
+          <div>
+            <label>Persuasion Universe Size</label>
+            <input type="number" id="persuasionUniverse" />
+          </div>
+
+          <div id="movableShareBlock" class="hidden">
+            <label>Persuasion Movable Share %</label>
+            <input type="number" id="movableShare" />
+            <div class="hint">Example: 70 = you believe only 70% of “persuadables” are truly movable.</div>
+          </div>
         </div>
-        <div>
-          <label>Persuasion Conversion % (of contacted, flipped)</label>
-          <input type="number" id="persuasionRate" />
+
+        <div class="row">
+          <div>
+            <label>Contact Rate % (of persuasion universe reached)</label>
+            <input type="number" id="contactRate" />
+          </div>
+          <div>
+            <label>Persuasion Conversion % (of contacted, flipped)</label>
+            <input type="number" id="persuasionRate" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>GOTV Universe Size</label>
+            <input type="number" id="gotvUniverse" />
+          </div>
+          <div>
+            <label>GOTV Conversion % (of GOTV universe turned out)</label>
+            <input type="number" id="gotvRate" />
+          </div>
         </div>
       </div>
 
-      <div class="row">
-        <div>
-          <label>GOTV Universe Size (supporters you need to turn out)</label>
-          <input type="number" id="gotvUniverse" />
+      <div class="panel" id="volatilityPanel">
+        <h2>Volatility Inputs</h2>
+        <div class="hint">Standard deviation used in simulation. Higher = more uncertainty.</div>
+
+        <div class="row">
+          <div>
+            <label>Turnout Volatility % (std dev)</label>
+            <input type="number" id="turnoutVolatility" />
+          </div>
+          <div>
+            <label>Contact Volatility % (std dev)</label>
+            <input type="number" id="contactVolatility" />
+          </div>
         </div>
-        <div>
-          <label>GOTV Conversion % (of GOTV universe turned out)</label>
-          <input type="number" id="gotvRate" />
+
+        <div class="row">
+          <div>
+            <label>Persuasion Volatility % (std dev)</label>
+            <input type="number" id="persuasionVolatility" />
+          </div>
+          <div>
+            <label>GOTV Volatility % (std dev)</label>
+            <input type="number" id="gotvVolatility" />
+          </div>
         </div>
       </div>
+
+      <div class="actions">
+        <button onclick="runCalculation()">Run Model</button>
+      </div>
+
+      <div class="results" id="results"></div>
+
     </div>
-
-    <div class="panel" id="volatilityPanel">
-      <h2>Volatility Inputs (Std Dev)</h2>
-      <div class="hint">
-        These control how much the model “wiggles” each variable across simulations.
-        Higher = more uncertainty modeled. Lower = more stability assumed.
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Turnout Volatility % (std dev)</label>
-          <input type="number" id="turnoutVolatility" />
-        </div>
-        <div>
-          <label>Contact Volatility % (std dev)</label>
-          <input type="number" id="contactVolatility" />
-        </div>
-      </div>
-
-      <div class="row">
-        <div>
-          <label>Persuasion Volatility % (std dev)</label>
-          <input type="number" id="persuasionVolatility" />
-        </div>
-        <div>
-          <label>GOTV Volatility % (std dev)</label>
-          <input type="number" id="gotvVolatility" />
-        </div>
-      </div>
-    </div>
-
-    <button onclick="runCalculation()">Run Model</button>
-
-    <div class="hint">
-      Tip: Start with <b>DEFAULTS.md</b>, sanity-check with <b>EXAMPLES.md</b>.
-      If results feel “too stable,” increase volatility or enable Movable Share.
-    </div>
-
-    <div class="results" id="results"></div>
   </div>
 </div>
 
