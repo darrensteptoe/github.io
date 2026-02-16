@@ -5,6 +5,10 @@ function randomNormal(mean, stdDev) {
   return mean + stdDev * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function calculateDeterministic(inputs) {
   const projectedTurnout = inputs.totalVoters * (inputs.turnoutRate / 100);
   const winNumber = Math.floor(projectedTurnout / 2) + 1;
@@ -32,30 +36,43 @@ function calculateDeterministic(inputs) {
   };
 }
 
-function runMonteCarlo(inputs, simulations = 7000) {
+function runMonteCarlo(inputs, simulations = 8000) {
   let wins = 0;
 
   for (let i = 0; i < simulations; i++) {
-    const simulatedTurnoutRate = randomNormal(
-      inputs.turnoutRate,
-      inputs.turnoutVolatility
+
+    const turnoutRate = clamp(
+      randomNormal(inputs.turnoutRate, inputs.turnoutVolatility),
+      0, 100
     );
 
-    const simulatedTurnout = inputs.totalVoters *
-      (simulatedTurnoutRate / 100);
+    const contactRate = clamp(
+      randomNormal(inputs.contactRate, inputs.contactVolatility),
+      0, 100
+    );
 
+    const persuasionRate = clamp(
+      randomNormal(inputs.persuasionRate, inputs.persuasionVolatility),
+      0, 100
+    );
+
+    const gotvRate = clamp(
+      randomNormal(inputs.gotvRate, inputs.gotvVolatility),
+      0, 100
+    );
+
+    const simulatedTurnout = inputs.totalVoters * (turnoutRate / 100);
     const winNumber = Math.floor(simulatedTurnout / 2) + 1;
-    const bufferedWin = Math.floor(winNumber *
-      (1 + inputs.buffer / 100));
+    const bufferedWin = Math.floor(winNumber * (1 + inputs.buffer / 100));
 
     const persuasionYield =
       inputs.persuasionUniverse *
-      (inputs.contactRate / 100) *
-      (inputs.persuasionRate / 100);
+      (contactRate / 100) *
+      (persuasionRate / 100);
 
     const gotvYield =
       inputs.gotvUniverse *
-      (inputs.gotvRate / 100);
+      (gotvRate / 100);
 
     const totalVotes =
       inputs.baseVote + persuasionYield + gotvYield;
