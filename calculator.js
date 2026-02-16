@@ -17,6 +17,36 @@ const inputs = {
 
   const deterministic = calculateDeterministic(inputs);
   const winProbability = runMonteCarlo(inputs);
+let warnings = [];
+
+if (inputs.contactRate > 75) {
+  warnings.push("Contact rate exceeds 75%. Verify realism.");
+}
+
+if (inputs.persuasionRate > 20) {
+  warnings.push("Persuasion conversion above 20%. Historically aggressive.");
+}
+
+if (inputs.gotvRate > 85) {
+  warnings.push("GOTV conversion above 85%. Confirm universe quality.");
+}
+
+if (
+  inputs.turnoutVolatility < 1 &&
+  inputs.contactVolatility < 1 &&
+  inputs.persuasionVolatility < 1 &&
+  inputs.gotvVolatility < 1
+) {
+  warnings.push("All volatility inputs are low. Model may be overconfident.");
+}
+
+if (deterministic.baseVote > deterministic.bufferedWin) {
+  warnings.push("Base vote exceeds win target. Confirm base accuracy.");
+}
+
+if (deterministic.totalCapacity < deterministic.bufferedWin) {
+  warnings.push("Total vote capacity below buffered win target.");
+}
 
   let riskClass = "risk-safe";
   let riskLabel = "SAFE";
