@@ -14,7 +14,7 @@
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: auto;
       background: #fff;
       padding: 30px;
@@ -22,31 +22,74 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
+    h1 { margin-top: 0; }
+    h2 { margin-top: 28px; }
+    h3 { margin-top: 20px; }
+
+    .panel {
+      background: #fafafa;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 18px;
+    }
+
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 14px;
       font-weight: bold;
     }
 
-    input {
+    input[type="number"], input[type="text"], input[type="password"] {
       width: 100%;
       padding: 8px;
-      margin-top: 5px;
+      margin-top: 6px;
       box-sizing: border-box;
     }
 
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .toggles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .toggle input { transform: scale(1.15); }
+
+    .hint {
+      font-size: 13px;
+      color: #444;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
+      margin-top: 18px;
+      padding: 10px 16px;
       font-size: 16px;
       cursor: pointer;
     }
 
     .results {
-      margin-top: 30px;
-      padding: 20px;
+      margin-top: 22px;
+      padding: 18px;
       background: #fafafa;
-      border-radius: 6px;
+      border-radius: 8px;
     }
 
     .risk-safe { color: green; font-weight: bold; }
@@ -54,12 +97,18 @@
     .risk-danger { color: red; font-weight: bold; }
 
     #loginSection {
-      max-width: 400px;
+      max-width: 420px;
       margin: auto;
       background: #fff;
-      padding: 30px;
+      padding: 28px;
       border-radius: 8px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .hidden { display: none; }
+    .mini {
+      font-size: 12px;
+      color: #555;
     }
   </style>
 </head>
@@ -79,46 +128,166 @@
   <div class="container">
     <h1>Campaign Probability Calculator</h1>
 
-    <label>Total Registered Voters</label>
-    <input type="number" id="totalVoters" />
+    <div class="panel">
+      <h2>Mode Controls</h2>
 
-    <label>Expected Turnout %</label>
-    <input type="number" id="turnoutRate" />
+      <div class="toggles">
+        <div class="toggle">
+          <input type="checkbox" id="toggleSimulation" checked />
+          <div>
+            <div><b>Probability Simulation</b></div>
+            <div class="mini">Monte Carlo (volatility + win %)</div>
+          </div>
+        </div>
 
-    <label>Turnout Volatility %</label>
-    <input type="number" id="turnoutVolatility" />
+        <div class="toggle">
+          <input type="checkbox" id="toggleDistribution" checked />
+          <div>
+            <div><b>Margin Distribution</b></div>
+            <div class="mini">Mean / worst / best / std dev</div>
+          </div>
+        </div>
 
-    <label>Safety Buffer %</label>
-    <input type="number" id="buffer" />
+        <div class="toggle">
+          <input type="checkbox" id="toggleSensitivity" checked />
+          <div>
+            <div><b>Sensitivity</b></div>
+            <div class="mini">+1% leverage test</div>
+          </div>
+        </div>
 
-    <label>Base Vote Secured</label>
-    <input type="number" id="baseVote" />
+        <div class="toggle">
+          <input type="checkbox" id="toggleDiagnostics" checked />
+          <div>
+            <div><b>Diagnostics</b></div>
+            <div class="mini">Warnings for aggressive assumptions</div>
+          </div>
+        </div>
 
-    <label>Persuasion Universe Size</label>
-    <input type="number" id="persuasionUniverse" />
+        <div class="toggle">
+          <input type="checkbox" id="toggleMovableShare" />
+          <div>
+            <div><b>Institutional Anchoring Adjustment</b></div>
+            <div class="mini">Persuasion “movable share” filter</div>
+          </div>
+        </div>
 
-    <label>Contact Rate %</label>
-    <input type="number" id="contactRate" />
+        <div class="toggle">
+          <input type="checkbox" id="toggleVolatilityInputs" checked />
+          <div>
+            <div><b>Volatility Inputs</b></div>
+            <div class="mini">Control std dev for each rate</div>
+          </div>
+        </div>
+      </div>
 
-    <label>Contact Volatility %</label>
-    <input type="number" id="contactVolatility" />
+      <div class="hint">
+        Tip: If you uncheck <b>Probability Simulation</b>, the tool becomes deterministic-only (no randomness).
+        Everything else that depends on simulation will hide automatically.
+      </div>
+    </div>
 
-    <label>Persuasion Conversion %</label>
-    <input type="number" id="persuasionRate" />
+    <div class="panel">
+      <h2>Core Inputs</h2>
 
-    <label>Persuasion Volatility %</label>
-    <input type="number" id="persuasionVolatility" />
+      <div class="row">
+        <div>
+          <label>Total Registered Voters</label>
+          <input type="number" id="totalVoters" />
+        </div>
+        <div>
+          <label>Expected Turnout %</label>
+          <input type="number" id="turnoutRate" />
+        </div>
+      </div>
 
-    <label>GOTV Universe Size</label>
-    <input type="number" id="gotvUniverse" />
+      <div class="row">
+        <div>
+          <label>Safety Buffer %</label>
+          <input type="number" id="buffer" />
+          <div class="hint">Adds margin for uncertainty: recounts, late breaks, reporting error.</div>
+        </div>
+        <div>
+          <label>Base Vote Secured</label>
+          <input type="number" id="baseVote" />
+          <div class="hint">Committed votes you believe you already hold.</div>
+        </div>
+      </div>
+    </div>
 
-    <label>GOTV Conversion %</label>
-    <input type="number" id="gotvRate" />
+    <div class="panel">
+      <h2>Persuasion & GOTV Inputs</h2>
 
-    <label>GOTV Volatility %</label>
-    <input type="number" id="gotvVolatility" />
+      <div class="row">
+        <div>
+          <label>Persuasion Universe Size</label>
+          <input type="number" id="persuasionUniverse" />
+          <div class="hint">The list you’re treating as persuadable (before adjustment).</div>
+        </div>
+        <div id="movableShareBlock" class="hidden">
+          <label>Persuasion Movable Share %</label>
+          <input type="number" id="movableShare" />
+          <div class="hint">
+            Models hidden allegiance / institutional anchoring.
+            If you think only 60% of your persuasion universe is truly movable, set 60.
+          </div>
+        </div>
+      </div>
 
-    <button onclick="runCalculation()">Run Simulation</button>
+      <div class="row">
+        <div>
+          <label>Contact Rate %</label>
+          <input type="number" id="contactRate" />
+        </div>
+        <div>
+          <label>Persuasion Conversion %</label>
+          <input type="number" id="persuasionRate" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>GOTV Universe Size</label>
+          <input type="number" id="gotvUniverse" />
+        </div>
+        <div>
+          <label>GOTV Conversion %</label>
+          <input type="number" id="gotvRate" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="volatilityPanel">
+      <h2>Volatility Inputs (Std Dev)</h2>
+      <div class="hint">
+        These control how much the engine randomizes each variable across simulations.
+        Higher = more honest volatility, lower = more stable assumptions.
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Turnout Volatility %</label>
+          <input type="number" id="turnoutVolatility" />
+        </div>
+        <div>
+          <label>Contact Volatility %</label>
+          <input type="number" id="contactVolatility" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Persuasion Volatility %</label>
+          <input type="number" id="persuasionVolatility" />
+        </div>
+        <div>
+          <label>GOTV Volatility %</label>
+          <input type="number" id="gotvVolatility" />
+        </div>
+      </div>
+    </div>
+
+    <button onclick="runCalculation()">Run</button>
 
     <div class="results" id="results"></div>
   </div>
