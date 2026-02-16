@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+Disallow: /calculator.html
+Disallow: /admin/
+
 Sitemap: https://darrensteptoe.com/sitemap.xml
