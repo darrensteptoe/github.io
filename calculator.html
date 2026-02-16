@@ -74,7 +74,7 @@
     .hint {
       font-size: 13px;
       color: #444;
-      margin-top: 6px;
+      margin-top: 8px;
       line-height: 1.35;
     }
 
@@ -106,10 +106,7 @@
     }
 
     .hidden { display: none; }
-    .mini {
-      font-size: 12px;
-      color: #555;
-    }
+    .mini { font-size: 12px; color: #555; }
   </style>
 </head>
 <body>
@@ -131,59 +128,61 @@
     <div class="panel">
       <h2>Mode Controls</h2>
 
-      <div class="toggles">
-        <div class="toggle">
-          <input type="checkbox" id="toggleSimulation" checked />
-          <div>
-            <div><b>Probability Simulation</b></div>
-            <div class="mini">Monte Carlo (volatility + win %)</div>
-          </div>
-        </div>
+<div class="toggles">
 
-        <div class="toggle">
-          <input type="checkbox" id="toggleDistribution" checked />
-          <div>
-            <div><b>Margin Distribution</b></div>
-            <div class="mini">Mean / worst / best / std dev</div>
-          </div>
-        </div>
+  <div class="toggle">
+    <input type="checkbox" id="toggleSimulation" checked />
+    <div>
+      <div><b>Probability Simulation</b></div>
+      <div class="mini">Runs thousands of simulated elections to estimate win probability.</div>
+    </div>
+  </div>
 
-        <div class="toggle">
-          <input type="checkbox" id="toggleSensitivity" checked />
-          <div>
-            <div><b>Sensitivity</b></div>
-            <div class="mini">+1% leverage test</div>
-          </div>
-        </div>
+  <div class="toggle">
+    <input type="checkbox" id="toggleDistribution" checked />
+    <div>
+      <div><b>Margin Distribution</b></div>
+      <div class="mini">Shows average margin, worst case, best case, and volatility.</div>
+    </div>
+  </div>
 
-        <div class="toggle">
-          <input type="checkbox" id="toggleDiagnostics" checked />
-          <div>
-            <div><b>Diagnostics</b></div>
-            <div class="mini">Warnings for aggressive assumptions</div>
-          </div>
-        </div>
+  <div class="toggle">
+    <input type="checkbox" id="toggleSensitivity" checked />
+    <div>
+      <div><b>Sensitivity Analysis</b></div>
+      <div class="mini">Shows which variable (turnout, contact, persuasion, GOTV) moves probability most.</div>
+    </div>
+  </div>
 
-        <div class="toggle">
-          <input type="checkbox" id="toggleMovableShare" />
-          <div>
-            <div><b>Institutional Anchoring Adjustment</b></div>
-            <div class="mini">Persuasion “movable share” filter</div>
-          </div>
-        </div>
+  <div class="toggle">
+    <input type="checkbox" id="toggleDiagnostics" checked />
+    <div>
+      <div><b>Diagnostics</b></div>
+      <div class="mini">Flags aggressive assumptions or structural deficits.</div>
+    </div>
+  </div>
 
-        <div class="toggle">
-          <input type="checkbox" id="toggleVolatilityInputs" checked />
-          <div>
-            <div><b>Volatility Inputs</b></div>
-            <div class="mini">Control std dev for each rate</div>
-          </div>
-        </div>
-      </div>
+  <div class="toggle">
+    <input type="checkbox" id="toggleMovableShare" />
+    <div>
+      <div><b>Institutional Anchoring Adjustment</b></div>
+      <div class="mini">Applies a structural filter if part of your persuasion universe isn’t truly movable.</div>
+    </div>
+  </div>
+
+  <div class="toggle">
+    <input type="checkbox" id="toggleVolatilityInputs" checked />
+    <div>
+      <div><b>Volatility Inputs</b></div>
+      <div class="mini">Controls how much uncertainty the simulation applies to each variable.</div>
+    </div>
+  </div>
+
+</div>
 
       <div class="hint">
-        Tip: If you uncheck <b>Probability Simulation</b>, the tool becomes deterministic-only (no randomness).
-        Everything else that depends on simulation will hide automatically.
+        If you uncheck <b>Probability Simulation</b>, the tool becomes deterministic-only (no randomness).
+        Distribution and sensitivity are disabled because they require simulation.
       </div>
     </div>
 
@@ -203,14 +202,18 @@
 
       <div class="row">
         <div>
-          <label>Safety Buffer %</label>
+          <label>Safety Buffer % (added cushion)</label>
           <input type="number" id="buffer" />
-          <div class="hint">Adds margin for uncertainty: recounts, late breaks, reporting error.</div>
+          <div class="hint">
+            Extra cushion above half + 1. Helps account for late breaks, noise, and execution variance.
+          </div>
         </div>
         <div>
-          <label>Base Vote Secured</label>
+          <label>Base Vote Secured (committed votes)</label>
           <input type="number" id="baseVote" />
-          <div class="hint">Committed votes you believe you already hold.</div>
+          <div class="hint">
+            Votes you believe you already have locked.
+          </div>
         </div>
       </div>
     </div>
@@ -220,38 +223,41 @@
 
       <div class="row">
         <div>
-          <label>Persuasion Universe Size</label>
+          <label>Persuasion Universe Size (people you think are persuadable)</label>
           <input type="number" id="persuasionUniverse" />
-          <div class="hint">The list you’re treating as persuadable (before adjustment).</div>
+          <div class="hint">
+            This is the persuadable list BEFORE any “movable share” adjustment.
+          </div>
         </div>
+
         <div id="movableShareBlock" class="hidden">
-          <label>Persuasion Movable Share %</label>
+          <label>Persuasion Movable Share % (institutional anchoring filter)</label>
           <input type="number" id="movableShare" />
           <div class="hint">
-            Models hidden allegiance / institutional anchoring.
-            If you think only 60% of your persuasion universe is truly movable, set 60.
+            Use this if “undecided” voters are actually anchored to churches, clubs, unions, leaders, etc.
+            Example: 70 means you believe only 70% of this universe is truly movable.
           </div>
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label>Contact Rate %</label>
+          <label>Contact Rate % (of persuasion universe reached)</label>
           <input type="number" id="contactRate" />
         </div>
         <div>
-          <label>Persuasion Conversion %</label>
+          <label>Persuasion Conversion % (of contacted, flipped)</label>
           <input type="number" id="persuasionRate" />
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label>GOTV Universe Size</label>
+          <label>GOTV Universe Size (supporters you need to turn out)</label>
           <input type="number" id="gotvUniverse" />
         </div>
         <div>
-          <label>GOTV Conversion %</label>
+          <label>GOTV Conversion % (of GOTV universe turned out)</label>
           <input type="number" id="gotvRate" />
         </div>
       </div>
@@ -260,28 +266,28 @@
     <div class="panel" id="volatilityPanel">
       <h2>Volatility Inputs (Std Dev)</h2>
       <div class="hint">
-        These control how much the engine randomizes each variable across simulations.
-        Higher = more honest volatility, lower = more stable assumptions.
+        These control how much the model “wiggles” each variable across simulations.
+        Higher = more uncertainty modeled. Lower = more stability assumed.
       </div>
 
       <div class="row">
         <div>
-          <label>Turnout Volatility %</label>
+          <label>Turnout Volatility % (std dev)</label>
           <input type="number" id="turnoutVolatility" />
         </div>
         <div>
-          <label>Contact Volatility %</label>
+          <label>Contact Volatility % (std dev)</label>
           <input type="number" id="contactVolatility" />
         </div>
       </div>
 
       <div class="row">
         <div>
-          <label>Persuasion Volatility %</label>
+          <label>Persuasion Volatility % (std dev)</label>
           <input type="number" id="persuasionVolatility" />
         </div>
         <div>
-          <label>GOTV Volatility %</label>
+          <label>GOTV Volatility % (std dev)</label>
           <input type="number" id="gotvVolatility" />
         </div>
       </div>
@@ -289,10 +295,10 @@
 
     <button onclick="runCalculation()">Run Model</button>
 
-<div class="hint">
-  Tip: Start with <b>DEFAULTS.md</b>, sanity-check your setup using <b>EXAMPLES.md</b>.
-  If results feel “too stable,” increase volatility or enable Movable Share.
-</div>
+    <div class="hint">
+      Tip: Start with <b>DEFAULTS.md</b>, sanity-check with <b>EXAMPLES.md</b>.
+      If results feel “too stable,” increase volatility or enable Movable Share.
+    </div>
 
     <div class="results" id="results"></div>
   </div>
