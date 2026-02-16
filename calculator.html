@@ -4,411 +4,333 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Calculator — Darren Steptoe</title>
-  <meta name="description" content="A simple, clean calculator." />
+  <meta name="description" content="Calculator tool." />
 
-  <!-- Prevent search engines from indexing this page -->
+  <!-- Keep it out of search engines -->
   <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="color-scheme" content="light dark" />
 
+  <!-- Your site CSS (leave as-is) -->
   <link rel="stylesheet" href="./styles.css" />
 
   <style>
     /* ==========================================================================
-       CALCULATOR PAGE (self-contained; does not touch site-wide CSS)
+       Calculator page — scoped styles only
        ========================================================================== */
 
-    :root {
-      --calc-bg: #eef1f7;
-      --calc-grid: rgba(17,17,17,0.045);
-      --calc-card: rgba(255,255,255,0.88);
-      --calc-shadow: 0 18px 50px rgba(0,0,0,0.12);
-      --calc-pill: #1f86ff;
-      --calc-pill-text: #ffffff;
-      --btn: #e9edf7;
-      --btn-dark: #1c2640;
-      --btn-text: #5b6376;
-      --btn-text-strong: #1a2133;
-      --btn-red: #ff3b5c;
-      --btn-blue: #1f86ff;
-      --btn-yellow: #ffc400;
-      --btn-green: #4cd964;
-    }
-
-    body {
+    .calc-page {
       min-height: 100vh;
-      background:
-        linear-gradient(0deg, rgba(255,255,255,0.55), rgba(255,255,255,0.55)),
-        linear-gradient(90deg, transparent 0 39px, var(--calc-grid) 40px),
-        linear-gradient(0deg, transparent 0 39px, var(--calc-grid) 40px);
-      background-size: auto, 40px 40px, 40px 40px;
-      background-color: var(--calc-bg);
-    }
-
-    .page-wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 28px 16px 44px;
-    }
-
-    /* Title (centered words) */
-    .page-title {
-      text-align: center;
-      margin: 0 0 18px;
-      font-size: 20px;
-      letter-spacing: 0.2px;
-    }
-
-    .calc-stage {
       display: grid;
       place-items: center;
-      padding: 10px 0 20px;
+      padding: 28px 16px 18px;
+    }
+
+    .calc-wrap {
+      width: min(420px, 100%);
+    }
+
+    .calc-title {
+      margin: 0 0 12px;
+      text-align: center; /* centers title */
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      font-size: 18px;
     }
 
     .calc-card {
-      width: min(390px, 96vw);
-      border-radius: 26px;
-      background: var(--calc-card);
-      border: 1px solid rgba(17,17,17,0.08);
-      box-shadow: var(--calc-shadow);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      padding: 20px 18px 18px;
+      background: var(--panel, #fff);
+      border: 1px solid var(--panel-border, rgba(17,17,17,0.12));
+      border-radius: 22px;
+      box-shadow: var(--panel-shadow, 0 12px 30px rgba(0,0,0,0.08));
+      padding: 18px;
     }
 
-    .display {
+    .calc-display {
       width: 100%;
-      border-radius: 26px;
-      background: var(--calc-pill);
-      color: var(--calc-pill-text);
-      padding: 18px 18px;
-      font-size: 34px;
-      font-weight: 700;
+      border: 0;
+      outline: none;
+      border-radius: 999px;
+      padding: 14px 18px;
       text-align: right;
+      font-weight: 800;
+      font-size: 22px; /* slightly smaller for safety */
       letter-spacing: 0.5px;
+      background: #1f86ff;
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(31,134,255,0.22);
+      /* protects layout if number gets longer than expected */
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.18);
-      user-select: none;
     }
 
-    /* Buttons grid: explicit gaps so boxes NEVER touch */
-    .keys {
+    .calc-pad {
       margin-top: 18px;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px; /* <-- spacing between buttons */
+      gap: 14px; /* THIS is the main “no touching” fix */
+      align-items: center;
+      justify-items: center;
     }
 
-    .btn {
-      appearance: none;
-      border: 0;
+    .calc-btn {
+      -webkit-tap-highlight-color: transparent;
+      width: 66px;
+      height: 66px;
       border-radius: 999px;
-      height: 62px;
-      width: 100%;
-      background: rgba(255,255,255,0.55);
-      box-shadow:
-        0 10px 22px rgba(0,0,0,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.85);
-      color: var(--btn-text-strong);
-      font-size: 22px;
-      font-weight: 700;
+      border: 0;
       cursor: pointer;
-      transition: transform 0.08s ease, filter 0.12s ease;
-    }
-
-    .btn:active {
-      transform: translateY(1px);
-      filter: brightness(0.98);
-    }
-
-    .btn.util {
-      background: rgba(255,255,255,0.70);
-      color: #6a7388;
       font-weight: 800;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.06);
+      transition: transform 0.06s ease, box-shadow 0.12s ease;
+      user-select: none;
+    }
+    .calc-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 7px 14px rgba(0,0,0,0.06);
+    }
+    .calc-btn:focus-visible {
+      outline: 3px solid var(--focus-ring, rgba(17,17,17,0.90));
+      outline-offset: 2px;
     }
 
-    .btn.op {
-      color: #fff;
-      font-weight: 900;
-    }
-    .btn.op.clear { background: var(--btn-dark); }
-    .btn.op.minus { background: var(--btn-red); }
-    .btn.op.divide { background: var(--btn-blue); }
-    .btn.op.multiply { background: var(--btn-yellow); color: #1a2133; }
-    .btn.op.plus { background: var(--btn-green); color: #133017; }
+    /* Button styles */
+    .b-fn { background: rgba(200, 210, 230, 0.35); color: var(--fg, #111); }
+    .b-num { background: rgba(200, 210, 230, 0.55); color: var(--fg, #111); }
+    .b-op-clear { background: #1d2b55; color: #fff; }
+    .b-op-sub { background: #ff3b5c; color: #fff; }
+    .b-op-div { background: #1f86ff; color: #fff; }
+    .b-op-mul { background: #ffc300; color: #1a1a1a; }
+    .b-op-add { background: #4fd06b; color: #0b1a10; }
 
-    .btn.equal {
-      background: rgba(255,255,255,0.70);
-      color: #6a7388;
-      font-weight: 900;
+    /* Make bottom row feel airy */
+    .calc-pad .row-gap {
+      margin-top: 2px;
     }
 
-    .footer {
-      margin-top: 18px;
+    /* Keep it clean on small screens */
+    @media (max-width: 380px) {
+      .calc-card { padding: 16px; border-radius: 20px; }
+      .calc-display { font-size: 20px; padding: 13px 16px; }
+      .calc-pad { gap: 12px; }
+      .calc-btn { width: 62px; height: 62px; font-size: 17px; }
+    }
+
+    /* Footer */
+    .calc-footer {
+      margin-top: 12px;
       text-align: center;
-      color: rgba(17,17,17,0.65);
       font-size: 12px;
-    }
-
-    /* Keep in step with your site spacing rhythm */
-    .rule {
-      height: 1px;
-      background: var(--rule, rgba(17,17,17,0.14));
-      margin: 18px auto 0;
-      max-width: 740px;
-      opacity: 0.7;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --calc-bg: #0e1016;
-        --calc-grid: rgba(255,255,255,0.06);
-        --calc-card: rgba(20,24,35,0.78);
-        --calc-shadow: 0 18px 60px rgba(0,0,0,0.55);
-      }
-      body {
-        background:
-          linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
-          linear-gradient(90deg, transparent 0 39px, var(--calc-grid) 40px),
-          linear-gradient(0deg, transparent 0 39px, var(--calc-grid) 40px);
-        background-size: auto, 40px 40px, 40px 40px;
-        background-color: var(--calc-bg);
-      }
-      .page-title, .footer { color: rgba(245,245,245,0.82); }
-      .calc-card { border-color: rgba(255,255,255,0.10); }
-      .btn {
-        background: rgba(255,255,255,0.10);
-        box-shadow:
-          0 14px 26px rgba(0,0,0,0.40),
-          inset 0 1px 0 rgba(255,255,255,0.08);
-        color: rgba(245,245,245,0.92);
-      }
-      .btn.util {
-        background: rgba(255,255,255,0.08);
-        color: rgba(245,245,245,0.72);
-      }
-      .btn.equal {
-        background: rgba(255,255,255,0.08);
-        color: rgba(245,245,245,0.76);
-      }
-      .rule {
-        background: rgba(245,245,245,0.14);
-      }
+      color: var(--muted, #444);
+      opacity: 0.9;
     }
   </style>
 </head>
 
 <body>
-  <main class="page-wrap">
-    <h1 class="page-title">Calculator</h1>
+  <main class="calc-page">
+    <div class="calc-wrap">
+      <h1 class="calc-title">Calculator</h1>
 
-    <div class="calc-stage">
       <section class="calc-card" aria-label="Calculator">
-        <div id="display" class="display" aria-live="polite">0</div>
+        <input id="display" class="calc-display" type="text" inputmode="numeric" autocomplete="off" value="0" readonly />
 
-        <div class="keys" role="group" aria-label="Calculator keys">
-          <button class="btn util" data-action="percent">%</button>
-          <button class="btn util" data-action="sqrt">√</button>
-          <button class="btn util" data-action="ce">CE</button>
-          <button class="btn op clear" data-action="c">C</button>
+        <div class="calc-pad" role="group" aria-label="Calculator keypad">
+          <!-- Row 1 -->
+          <button class="calc-btn b-fn" data-action="percent" aria-label="Percent">%</button>
+          <button class="calc-btn b-fn" data-action="sqrt" aria-label="Square root">√</button>
+          <button class="calc-btn b-fn" data-action="ce" aria-label="Clear entry">CE</button>
+          <button class="calc-btn b-op-clear" data-action="clear" aria-label="Clear">C</button>
 
-          <button class="btn" data-digit="7">7</button>
-          <button class="btn" data-digit="8">8</button>
-          <button class="btn" data-digit="9">9</button>
-          <button class="btn op minus" data-op="-">−</button>
+          <!-- Row 2 -->
+          <button class="calc-btn b-num" data-num="7">7</button>
+          <button class="calc-btn b-num" data-num="8">8</button>
+          <button class="calc-btn b-num" data-num="9">9</button>
+          <button class="calc-btn b-op-sub" data-op="-" aria-label="Minus">−</button>
 
-          <button class="btn" data-digit="4">4</button>
-          <button class="btn" data-digit="5">5</button>
-          <button class="btn" data-digit="6">6</button>
-          <button class="btn op divide" data-op="/">÷</button>
+          <!-- Row 3 -->
+          <button class="calc-btn b-num" data-num="4">4</button>
+          <button class="calc-btn b-num" data-num="5">5</button>
+          <button class="calc-btn b-num" data-num="6">6</button>
+          <button class="calc-btn b-op-div" data-op="/" aria-label="Divide">÷</button>
 
-          <button class="btn" data-digit="1">1</button>
-          <button class="btn" data-digit="2">2</button>
-          <button class="btn" data-digit="3">3</button>
-          <button class="btn op multiply" data-op="*">×</button>
+          <!-- Row 4 -->
+          <button class="calc-btn b-num" data-num="1">1</button>
+          <button class="calc-btn b-num" data-num="2">2</button>
+          <button class="calc-btn b-num" data-num="3">3</button>
+          <button class="calc-btn b-op-mul" data-op="*" aria-label="Multiply">×</button>
 
-          <button class="btn" data-action="dot">.</button>
-          <button class="btn" data-digit="0">0</button>
-          <button class="btn equal" data-action="equals">=</button>
-          <button class="btn op plus" data-op="+">+</button>
+          <!-- Row 5 -->
+          <button class="calc-btn b-num row-gap" data-num="." aria-label="Decimal">.</button>
+          <button class="calc-btn b-num row-gap" data-num="0">0</button>
+          <button class="calc-btn b-fn row-gap" data-action="equals" aria-label="Equals">=</button>
+          <button class="calc-btn b-op-add row-gap" data-op="+" aria-label="Plus">+</button>
         </div>
       </section>
-    </div>
 
-    <div class="rule"></div>
-    <footer class="footer">
-      © <span id="year">2026</span> Darren Steptoe. All rights reserved.
-    </footer>
+      <div class="calc-footer">© <span id="year"></span> Darren Steptoe. All rights reserved.</div>
+    </div>
   </main>
 
   <script>
-    (function() {
-      const display = document.getElementById('display');
+    (function () {
+      const display = document.getElementById("display");
+      const year = document.getElementById("year");
+      year.textContent = new Date().getFullYear();
 
-      const state = {
-        a: null,         // accumulator
-        op: null,        // pending operator
-        input: '0',      // current input string
-        fresh: true      // next digit starts new input
-      };
+      let current = "0";
+      let prev = null;
+      let op = null;
+      let justEvaluated = false;
 
-      const format = (n) => {
-        // Avoid scientific notation for typical sizes; keep it readable.
-        if (!isFinite(n)) return 'Error';
-        const s = String(n);
-        if (s.length <= 12) return s;
-        // Trim with reasonable precision
-        return Number(n).toPrecision(12).replace(/\.0+$/,'').replace(/(\.[0-9]*?)0+$/,'$1');
-      };
+      function setDisplay(val) {
+        display.value = val;
+      }
 
-      const readInput = () => {
-        const n = Number(state.input);
-        return isFinite(n) ? n : NaN;
-      };
+      function normalizeNumberString(s) {
+        // Prevent weird strings; keep it clean
+        if (s === "" || s === "-") return s;
+        const n = Number(s);
+        if (!isFinite(n)) return "0";
+        // Keep precision sane
+        const out = Math.abs(n) >= 1e9 ? n.toExponential(6) : String(n);
+        return out;
+      }
 
-      const setDisplay = (v) => {
-        display.textContent = v;
-      };
-
-      const commitOp = (nextOp) => {
-        const b = readInput();
-        if (state.a === null) {
-          state.a = b;
-        } else if (state.op) {
-          state.a = compute(state.a, state.op, b);
+      function inputNum(ch) {
+        if (justEvaluated) {
+          current = "0";
+          justEvaluated = false;
         }
-        state.op = nextOp;
-        state.fresh = true;
-        state.input = format(state.a);
-        setDisplay(state.input);
-      };
 
-      const compute = (a, op, b) => {
-        if (!isFinite(a) || !isFinite(b)) return NaN;
-        switch(op) {
-          case '+': return a + b;
-          case '-': return a - b;
-          case '*': return a * b;
-          case '/': return b === 0 ? NaN : a / b;
+        if (ch === ".") {
+          if (!current.includes(".")) current += ".";
+          return;
+        }
+
+        if (current === "0") current = ch;
+        else current += ch;
+
+        // Soft cap for your stated needs (still safe if exceeded because of ellipsis)
+        if (current.replace("-", "").replace(".", "").length > 12) {
+          current = current.slice(0, current.length - 1);
+        }
+      }
+
+      function clearAll() {
+        current = "0";
+        prev = null;
+        op = null;
+        justEvaluated = false;
+      }
+
+      function clearEntry() {
+        current = "0";
+      }
+
+      function applyOp(nextOp) {
+        const currNum = Number(current);
+        if (prev === null) {
+          prev = currNum;
+        } else if (op) {
+          prev = compute(prev, currNum, op);
+        }
+        op = nextOp;
+        current = "0";
+        justEvaluated = false;
+      }
+
+      function compute(a, b, oper) {
+        switch (oper) {
+          case "+": return a + b;
+          case "-": return a - b;
+          case "*": return a * b;
+          case "/": return b === 0 ? 0 : a / b;
           default: return b;
         }
-      };
+      }
 
-      const inputDigit = (d) => {
-        if (state.fresh) {
-          state.input = d;
-          state.fresh = false;
-        } else {
-          if (state.input === '0') state.input = d;
-          else state.input += d;
-        }
-        setDisplay(state.input);
-      };
+      function equals() {
+        if (op === null || prev === null) return;
+        const result = compute(prev, Number(current), op);
+        const out = normalizeNumberString(String(result));
+        setDisplay(out);
+        current = out;
+        prev = null;
+        op = null;
+        justEvaluated = true;
+      }
 
-      const inputDot = () => {
-        if (state.fresh) {
-          state.input = '0.';
-          state.fresh = false;
-        } else if (!state.input.includes('.')) {
-          state.input += '.';
-        }
-        setDisplay(state.input);
-      };
+      function percent() {
+        const n = Number(current);
+        if (!isFinite(n)) return;
+        const out = normalizeNumberString(String(n / 100));
+        current = out;
+      }
 
-      const doCE = () => {
-        state.input = '0';
-        state.fresh = true;
-        setDisplay('0');
-      };
+      function sqrt() {
+        const n = Number(current);
+        if (!isFinite(n) || n < 0) return;
+        const out = normalizeNumberString(String(Math.sqrt(n)));
+        current = out;
+      }
 
-      const doC = () => {
-        state.a = null;
-        state.op = null;
-        state.input = '0';
-        state.fresh = true;
-        setDisplay('0');
-      };
-
-      const doPercent = () => {
-        // Percent is relative to accumulator when op exists (like many basic calculators)
-        const x = readInput();
-        if (!isFinite(x)) { setDisplay('Error'); return; }
-        let y = x / 100;
-        if (state.a !== null && state.op) {
-          y = state.a * (x / 100);
-        }
-        state.input = format(y);
-        state.fresh = true;
-        setDisplay(state.input);
-      };
-
-      const doSqrt = () => {
-        const x = readInput();
-        if (x < 0 || !isFinite(x)) { setDisplay('Error'); return; }
-        const y = Math.sqrt(x);
-        state.input = format(y);
-        state.fresh = true;
-        setDisplay(state.input);
-      };
-
-      const doEquals = () => {
-        if (!state.op) {
-          setDisplay(state.input);
-          state.fresh = true;
-          return;
-        }
-        const b = readInput();
-        state.a = compute(state.a, state.op, b);
-        state.op = null;
-        state.input = format(state.a);
-        state.fresh = true;
-        setDisplay(state.input);
-      };
-
-      // Click handlers
-      document.querySelector('.keys').addEventListener('click', (e) => {
-        const btn = e.target.closest('button');
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
         if (!btn) return;
 
-        if (btn.dataset.digit) return inputDigit(btn.dataset.digit);
-        if (btn.dataset.op) return commitOp(btn.dataset.op);
+        const num = btn.getAttribute("data-num");
+        const oper = btn.getAttribute("data-op");
+        const action = btn.getAttribute("data-action");
 
-        const action = btn.dataset.action;
-        switch(action) {
-          case 'dot': return inputDot();
-          case 'ce': return doCE();
-          case 'c': return doC();
-          case 'percent': return doPercent();
-          case 'sqrt': return doSqrt();
-          case 'equals': return doEquals();
-        }
-      });
-
-      // Keyboard support
-      window.addEventListener('keydown', (e) => {
-        const k = e.key;
-
-        if (k >= '0' && k <= '9') { e.preventDefault(); return inputDigit(k); }
-        if (k === '.') { e.preventDefault(); return inputDot(); }
-        if (k === 'Enter' || k === '=') { e.preventDefault(); return doEquals(); }
-        if (k === 'Escape') { e.preventDefault(); return doC(); }
-        if (k === 'Backspace') {
-          e.preventDefault();
-          if (state.fresh) return;
-          state.input = state.input.length > 1 ? state.input.slice(0, -1) : '0';
-          setDisplay(state.input);
+        if (num !== null) {
+          inputNum(num);
+          setDisplay(current);
           return;
         }
-        if (k === '+' || k === '-' || k === '*' || k === '/') {
-          e.preventDefault();
-          return commitOp(k);
+
+        if (oper) {
+          applyOp(oper);
+          setDisplay(current);
+          return;
         }
-        if (k === '%') { e.preventDefault(); return doPercent(); }
+
+        if (action === "clear") {
+          clearAll();
+          setDisplay(current);
+          return;
+        }
+
+        if (action === "ce") {
+          clearEntry();
+          setDisplay(current);
+          return;
+        }
+
+        if (action === "equals") {
+          equals();
+          return;
+        }
+
+        if (action === "percent") {
+          percent();
+          setDisplay(current);
+          return;
+        }
+
+        if (action === "sqrt") {
+          sqrt();
+          setDisplay(current);
+          return;
+        }
       });
 
-      // Set year defensively (in case you copy/paste later)
-      document.getElementById('year').textContent = new Date().getFullYear();
-
+      // init
+      setDisplay(current);
     })();
   </script>
 </body>
