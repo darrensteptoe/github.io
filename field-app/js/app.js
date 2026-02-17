@@ -7,6 +7,38 @@ import { computeAvgLiftPP } from "./turnout.js";
 import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
+import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
+
+function downloadText(text, filename, mime){
+  try{
+    const blob = new Blob([String(text ?? "")], { type: mime || "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "export.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    // ignore
+  }
+}
+
+function requiredScenarioKeysMissing(scen){
+  const required = [
+    "scenarioName","raceType","electionDate","weeksRemaining","mode",
+    "universeBasis","universeSize","turnoutA","turnoutB","bandWidth",
+    "candidates","undecidedPct","yourCandidateId","undecidedMode","persuasionPct",
+    "earlyVoteExp","supportRatePct","contactRatePct","turnoutReliabilityPct",
+    "mcMode","mcVolatility","mcSeed","budget","timelineEnabled","ui"
+  ];
+  const missing = [];
+  for (const k of required){
+    if (!(k in scen)) missing.push(k);
+  }
+  return missing;
+}
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -219,6 +251,8 @@ const els = {
   guardrails: document.getElementById("guardrails"),
 
   btnSaveJson: document.getElementById("btnSaveJson"),
+  btnExportCsv: document.getElementById("btnExportCsv"),
+  btnCopySummary: document.getElementById("btnCopySummary"),
   btnResetAll: document.getElementById("btnResetAll"),
   loadJson: document.getElementById("loadJson"),
 
@@ -234,6 +268,10 @@ const DEFAULTS_BY_TEMPLATE = {
 };
 
 let state = loadState() || makeDefaultState();
+
+// Phase 9A - export snapshot cache (pure data, no side effects)
+let lastExportSnapshot = null;
+
 
 function makeDefaultState(){
   return {
@@ -821,9 +859,29 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   });
 
   els.btnSaveJson.addEventListener("click", () => {
-    const payload = structuredClone(state);
-    downloadJson(payload, (state.scenarioName || "field-path-scenario").trim().replace(/\s+/g,"-") + ".json");
+    const snap = { modelVersion: MODEL_VERSION, scenarioState: structuredClone(state) };
+    const payload = makeScenarioExport(snap);
+    if (hasNonFiniteNumbers(payload)) { alert("Export blocked: scenario contains NaN/Infinity."); return; }
+    const filename = makeTimestampedFilename("field-path-scenario", "json");
+    const jsonText = deterministicStringify(payload, 2);
+    downloadText(jsonText, filename, "application/json");
   });
+
+  if (els.btnExportCsv) els.btnExportCsv.addEventListener("click", () => {
+    const snap = getExportSnapshot();
+    const csv = planRowsToCsv(snap);
+    if (hasNonFiniteNumbers(csv)) { /* csv is string; ignore */ }
+    const filename = makeTimestampedFilename("field-path-plan-summary", "csv");
+    downloadText(csv, filename, "text/csv");
+  });
+
+  if (els.btnCopySummary) els.btnCopySummary.addEventListener("click", async () => {
+    const snap = getExportSnapshot();
+    const txt = formatSummaryText(snap);
+    const r = await copyTextToClipboard(txt);
+    if (!r.ok){ alert(r.reason || "Copy failed."); }
+  });
+
 
   if (els.btnResetAll) els.btnResetAll.addEventListener("click", () => {
     const ok = confirm("Reset all fields to defaults? This will clear the saved scenario in this browser.");
@@ -843,13 +901,21 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     const file = els.loadJson.files?.[0];
     if (!file) return;
     const loaded = await readJsonFile(file);
-    if (!loaded || typeof loaded !== "object") return;
-    state = normalizeLoadedState(loaded);
+    els.loadJson.value = "";
+    const v = validateScenarioExport(loaded, MODEL_VERSION);
+    if (!v.ok){ alert(`Import failed: ${v.reason}`); return; }
+    const scen = v.scenario;
+    const missing = requiredScenarioKeysMissing(scen);
+    if (missing.length){ alert(`Import failed: missing required fields: ${missing.join(", ")}`); return; }
+    // Replace entire state (normalized against current defaults for forward-compat).
+    state = normalizeLoadedState(scen);
     applyStateToUI();
     rebuildCandidateTable();
+    document.body.classList.toggle("training", !!state.ui.training);
+    document.body.classList.toggle("dark", !!state.ui.dark);
+    if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
-    els.loadJson.value = "";
   });
 
   els.toggleTraining.addEventListener("change", () => {
@@ -956,9 +1022,42 @@ function render(){
   renderOptimization(res, weeks);
   renderTimeline(res, weeks);
 
+  updateExportSnapshot(res, weeks);
+
   els.explainCard.hidden = !state.ui.training;
 }
 
+
+
+function updateExportSnapshot(res, weeks){
+  try{
+    const planRows = Array.isArray(state.ui?.lastPlanRows) ? state.ui.lastPlanRows : [];
+    const planMeta = state.ui?.lastPlanMeta || {};
+    const summary = state.ui?.lastSummary || {};
+
+    lastExportSnapshot = {
+      modelVersion: MODEL_VERSION,
+      scenarioState: structuredClone(state),
+      // Export.js never computes from this; it's for optional self-test parity.
+      results: structuredClone(res || {}),
+      weeks: (weeks == null ? null : Number(weeks)),
+      planRows: structuredClone(planRows),
+      planMeta: structuredClone(planMeta),
+      summary: structuredClone(summary),
+    };
+  } catch {
+    // Best-effort; never throw during render
+    try { lastExportSnapshot = { modelVersion: MODEL_VERSION, scenarioState: structuredClone(state) }; } catch {}
+  }
+}
+
+export function getExportSnapshot(){
+  try{
+    return lastExportSnapshot ? structuredClone(lastExportSnapshot) : { modelVersion: MODEL_VERSION, scenarioState: structuredClone(state) };
+  } catch {
+    return { modelVersion: MODEL_VERSION };
+  }
+}
 
 function renderConversion(res, weeks){
   // If Phase 2 panel isn't present, fail silently.
@@ -1915,6 +2014,8 @@ function renderOptimization(res, weeks){
     }
 
     const meta = tlOut?.meta || {};
+    // Cache for export/copy summary (pure diagnostics)
+    try { state.ui.lastTLMeta = structuredClone(meta); } catch {}
     if (els.tlOptGoalFeasible) els.tlOptGoalFeasible.textContent = (meta.goalFeasible === true) ? "true" : (meta.goalFeasible === false ? "false" : "—");
     if (els.tlOptMaxNetVotes) els.tlOptMaxNetVotes.textContent = fmtInt(Math.round(meta.maxAchievableNetVotes ?? 0));
     if (els.tlOptRemainingGap) els.tlOptRemainingGap.textContent = fmtInt(Math.round(meta.remainingGapNetVotes ?? 0));
@@ -1923,6 +2024,7 @@ function renderOptimization(res, weeks){
     // Phase 8B — Bottlenecks & Marginal Value (diagnostic)
     const mv = computeMarginalValueDiagnostics({
       baselineInputs: tlInputs,
+    try { state.ui.lastBottleneck = mv?.primaryBottleneck || ""; } catch {}
       baselineResult: tlOut,
       timelineInputs: capsInput
     });
@@ -2021,6 +2123,58 @@ function renderOptimization(res, weeks){
     votes: totalVotes,
     binding: result.binding || "—"
   });
+  // Phase 9A export snapshot (plan CSV + summary) — pure derived view only
+  try{
+    const obj = (state.budget?.optimize?.objective || "net");
+    const rows = [];
+    for (const t of tactics){
+      const a = result.allocation?.[t.id] ?? 0;
+      if (!a) continue;
+      const vpa = (obj === "turnout") ? (t.turnoutAdjustedNetVotesPerAttempt ?? t.netVotesPerAttempt) : t.netVotesPerAttempt;
+      const expNet = Math.round(a * (Number.isFinite(vpa) ? vpa : 0));
+      const expContacts = Math.round(a * (Number.isFinite(t?.used?.cr) ? t.used.cr : 0));
+      const cost = Math.round(a * (Number.isFinite(t.costPerAttempt) ? t.costPerAttempt : 0));
+      const cpnv = (expNet > 0) ? (cost / expNet) : null;
+      rows.push({
+        tactic: t.label,
+        attempts: Math.round(a),
+        expectedContacts: expContacts,
+        expectedNetVotes: expNet,
+        cost: cost,
+        costPerNetVote: (cpnv == null ? "" : cpnv.toFixed(4)),
+      });
+    }
+
+    const staff = safeNum(state.timelineStaffCount) ?? 0;
+    const volunteers = safeNum(state.timelineVolCount) ?? 0;
+    const weeksOut = (weeks == null ? "" : Math.max(0, Math.floor(Number(weeks))));
+    const tlFeas = state.ui?.lastTimeline?.percentPlanExecutable;
+    const tlGoal = state.ui?.lastTLMeta?.goalFeasible;
+    const feasible = (typeof tlGoal === "boolean") ? String(tlGoal) : ((tlFeas === 1) ? "true" : (tlFeas == null ? "" : "false"));
+
+    state.ui.lastPlanRows = rows;
+    state.ui.lastPlanMeta = {
+      weeks: weeksOut,
+      staff,
+      volunteers,
+      objective: obj,
+      feasible,
+    };
+
+    // Copy Summary block
+    const top = [...rows].sort((a,b) => (b.attempts||0) - (a.attempts||0)).slice(0, 3)
+      .map(r => `${r.tactic}: ${fmtInt(r.attempts)} attempts`);
+    state.ui.lastSummary = {
+      objective: obj,
+      netVotes: fmtInt(Math.round(totalVotes ?? 0)),
+      cost: `$${fmtInt(Math.round(totalCost ?? 0))}`,
+      feasible: feasible || "—",
+      primaryBottleneck: state.ui?.lastBottleneck || (state.ui?.lastTimeline?.constraintType || "—"),
+      topAllocations: top,
+    };
+  } catch {
+    // best-effort
+  }
 
   function setTotals(t){
     if (els.optTotalAttempts) els.optTotalAttempts.textContent = t ? fmtInt(Math.round(t.attempts)) : "—";
@@ -2108,6 +2262,8 @@ function renderTimeline(res, weeks){
     bindingHint,
     ramp: { enabled: !!state.timelineRampEnabled, mode: state.timelineRampMode || "linear" }
   });
+  // Cache for export/summary (no backward coupling)
+  try { state.ui.lastTimeline = structuredClone(tl); } catch {}
 
   const pct = Math.round((tl.percentPlanExecutable ?? 0) * 100);
   els.tlPercent.textContent = `${pct}%`;

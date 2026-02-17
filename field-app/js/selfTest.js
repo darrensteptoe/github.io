@@ -10,6 +10,7 @@
 import { FIXTURES } from "./fixtures.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
+import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 
 function nowMs(){ return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
 
@@ -948,6 +949,116 @@ export function runSelfTests(engine){
     return true;
   });
 
+
+  test("Phase 9A: Deterministic JSON ordering", () => {
+    const obj = { b: 1, a: { d: 2, c: 3 } };
+    const s1 = deterministicStringify(obj);
+    const s2 = deterministicStringify(obj);
+    assert(s1 === s2, "Deterministic stringify not stable");
+    assert(s1.indexOf(""a"") < s1.indexOf(""b""), "Key ordering not deterministic");
+    return true;
+  });
+
+  test("Phase 9A: Export → Import schema (no drift)", () => {
+    const scen = {
+      scenarioName: "t",
+      raceType: "state_leg",
+      electionDate: "",
+      weeksRemaining: "",
+      mode: "persuasion",
+      universeBasis: "registered",
+      universeSize: "50000",
+      sourceNote: "",
+      turnoutA: "35",
+      turnoutB: "55",
+      bandWidth: 4,
+      candidates: [{ id:"a", name:"A", supportPct:35 }, { id:"b", name:"B", supportPct:35 }],
+      undecidedPct: 30,
+      yourCandidateId: "a",
+      undecidedMode: "proportional",
+      userSplit: {},
+      persuasionPct: 30,
+      earlyVoteExp: 40,
+      goalSupportIds: "",
+      supportRatePct: 55,
+      contactRatePct: 22,
+      doorsPerHour: 30,
+      hoursPerShift: 3,
+      shiftsPerVolunteerPerWeek: 2,
+      orgCount: 2,
+      orgHoursPerWeek: 40,
+      volunteerMultBase: 1.0,
+      channelDoorPct: 70,
+      doorsPerHour3: 30,
+      callsPerHour3: 20,
+      turnoutReliabilityPct: 80,
+      turnoutEnabled: false,
+      turnoutBaselinePct: 55,
+      turnoutTargetOverridePct: "",
+      gotvMode: "basic",
+      gotvLiftPP: 1.0,
+      gotvMaxLiftPP: 10,
+      gotvDiminishing: false,
+      gotvLiftMin: 0.5,
+      gotvLiftMode: 1.0,
+      gotvLiftMax: 2.0,
+      gotvMaxLiftPP2: 10,
+      gotvDiminishing2: false,
+      timelineEnabled: false,
+      timelineActiveWeeks: "",
+      timelineGotvWeeks: 2,
+      timelineStaffCount: 0,
+      timelineStaffHours: 40,
+      timelineVolCount: 0,
+      timelineVolHours: 4,
+      timelineRampEnabled: false,
+      timelineRampMode: "linear",
+      timelineDoorsPerHour: 30,
+      timelineCallsPerHour: 20,
+      timelineTextsPerHour: 120,
+      mcMode: "basic",
+      mcVolatility: "med",
+      mcSeed: "",
+      budget: {
+        overheadAmount: 0,
+        includeOverhead: false,
+        tactics: {
+          doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+          phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+          texts: { enabled: false, cpa: 0.02, kind: "persuasion" }
+        },
+        optimize: {
+          mode: "budget", budgetAmount: 10000, capacityAttempts: "", step: 25, useDecay: false, objective: "net",
+          tlConstrainedEnabled: false, tlConstrainedObjective: "max_net"
+        }
+      },
+      mcLast: null,
+      mcLastHash: "",
+      ui: { training: false, dark: false, activeTab: "win" }
+    };
+    const exp = makeScenarioExport({ scenarioState: scen, modelVersion: MODEL_VERSION });
+    const v = validateScenarioExport(exp, MODEL_VERSION);
+    assert(v.ok, "Schema validation failed");
+    const s1 = deterministicStringify(exp);
+    const s2 = deterministicStringify(exp);
+    assert(s1 === s2, "Export JSON ordering not deterministic");
+    assert(!hasNonFiniteNumbers(exp), "Non-finite number found in export");
+    return true;
+  });
+
+  test("Phase 9A: CSV headers + no NaN/Infinity", () => {
+    const snap = {
+      planRows: [{ tactic:"Doors", attempts:100, expectedContacts:22, expectedNetVotes:9, cost:18, costPerNetVote:"2.0000" }],
+      planMeta: { weeks: 10, staff: 1, volunteers: 2, objective: "net", feasible: "true" }
+    };
+    const csv = planRowsToCsv(snap);
+    const first = csv.split(/?
+/)[0];
+    assert(first === PLAN_CSV_HEADERS.join(","), "CSV header mismatch");
+    assert(csv.indexOf("NaN") === -1, "CSV contains NaN");
+    assert(csv.indexOf("Infinity") === -1, "CSV contains Infinity");
+    return true;
+  });
   results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
   results.passed = Math.max(0, results.total - results.failed);
