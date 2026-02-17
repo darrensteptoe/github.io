@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Field Path Engine — Darren Steptoe Consulting</title>
+  <meta name="description" content="Internal field planning dashboard." />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">Field Path Engine <span class="chip">v1.0</span></div>
+      <div class="brand-sub">Darren Steptoe Consulting — Internal Use Only</div>
+    </div>
+
+    <div class="topbar-actions">
+      <div class="scenario">
+        <label class="label" for="scenarioName">Scenario</label>
+        <input id="scenarioName" class="input input-sm" type="text" placeholder="e.g., IL HD-XX — Primary Path" />
+      </div>
+
+      <div class="toolbar">
+        <button id="btnSaveJson" class="btn btn-sm" type="button">Save JSON</button>
+        <label class="btn btn-sm btn-ghost" for="loadJson">Load JSON</label>
+        <input id="loadJson" type="file" accept="application/json" hidden />
+        <span class="divider"></span>
+        <label class="switch">
+          <input id="toggleTraining" type="checkbox" />
+          <span class="slider"></span>
+          <span class="switch-label">Training</span>
+        </label>
+        <label class="switch">
+          <input id="toggleDark" type="checkbox" />
+          <span class="slider"></span>
+          <span class="switch-label">Dark</span>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="left">
+      <div class="card">
+        <div class="card-head">
+          <h2>Scenario setup</h2>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label class="label" for="raceType">Race template</label>
+            <select id="raceType" class="select">
+              <option value="federal">Federal (US House)</option>
+              <option value="state_leg" selected>State legislative</option>
+              <option value="municipal">Municipal / ward</option>
+              <option value="county">County / regional</option>
+            </select>
+            <div class="help" data-help="Template sets conservative default ranges. You can override anything.">
+              <span class="help-title">What this is</span>
+              <span class="help-text">Select a baseline assumptions profile (turnout band width defaults, etc.).</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="electionDate">Election date</label>
+            <input id="electionDate" class="input" type="date" />
+            <div class="help" data-help="Used to estimate weeks remaining. You can override weeks manually below.">
+              <span class="help-title">Why it matters</span>
+              <span class="help-text">Timeline affects later production planning (Phase 3+). For Phase 1 it’s reference only.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="weeksRemaining">Weeks remaining (override)</label>
+            <input id="weeksRemaining" class="input" type="number" min="0" step="1" placeholder="auto" />
+            <div class="help" data-help="If blank, the dashboard estimates based on election date.">
+              <span class="help-title">If unsure</span>
+              <span class="help-text">Leave blank; you can set it later when production planning is added.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="mode">Mode</label>
+            <select id="mode" class="select">
+              <option value="persuasion" selected>Persuasion-first (default)</option>
+              <option value="late_start">Late-start / turnout-heavy</option>
+            </select>
+            <div class="help" data-help="Mode influences defaults later. Phase 1 remains the same.">
+              <span class="help-title">What this changes</span>
+              <span class="help-text">In later phases, persuasion-first emphasizes persuasion volume before GOTV surge.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Universe</h2>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label class="label" for="universeBasis">Universe basis</label>
+            <select id="universeBasis" class="select">
+              <option value="registered" selected>Registered (default)</option>
+              <option value="active">Active (advanced)</option>
+            </select>
+            <div class="help" data-help="Registered is most publicly defensible. Active can be used when file hygiene is strong.">
+              <span class="help-title">Best practice</span>
+              <span class="help-text">Use Registered in client-facing work unless Active is clearly sourced and agreed.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="universeSize">Universe size (U)</label>
+            <input id="universeSize" class="input" type="number" min="0" step="1" placeholder="e.g., 52000" />
+            <div class="help" data-help="U is the base for turnout votes and persuasion universe.">
+              <span class="help-title">How it’s used</span>
+              <span class="help-text">Turnout votes = U × turnout %. Persuasion universe = U × persuasion %.</span>
+            </div>
+          </div>
+
+          <div class="field span2">
+            <label class="label" for="sourceNote">Source note (optional)</label>
+            <input id="sourceNote" class="input" type="text" placeholder="e.g., VAN export dated 2026-02-01 or Elections dept file" />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Turnout baseline (last two comparable cycles)</h2>
+        </div>
+
+        <div class="grid3">
+          <div class="field">
+            <label class="label" for="turnoutA">Cycle A turnout %</label>
+            <input id="turnoutA" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 39" />
+            <div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
+              <span class="help-title">If unsure</span>
+              <span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="turnoutB">Cycle B turnout %</label>
+            <input id="turnoutB" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 43" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="bandWidth">Band width (±)</label>
+            <input id="bandWidth" class="input" type="number" min="0" max="25" step="0.5" placeholder="e.g., 4" />
+            <div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
+              <span class="help-title">Typical</span>
+              <span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
+            </div>
+          </div>
+
+          <div class="field span3 inline-metrics">
+            <div class="metric">
+              <div class="metric-k">Expected turnout %</div>
+              <div id="turnoutExpected" class="metric-v">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric-k">Best / Worst turnout %</div>
+              <div id="turnoutBand" class="metric-v">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric-k">Votes per 1% turnout</div>
+              <div id="votesPer1pct" class="metric-v">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Candidates & vote landscape</h2>
+          <div class="card-actions">
+            <button id="btnAddCandidate" class="btn btn-sm btn-ghost" type="button">Add candidate</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label" for="yourCandidate">You are</label>
+          <select id="yourCandidate" class="select"></select>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table" aria-label="Candidate support table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th class="num">Support %</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="candTbody"></tbody>
+            <tfoot>
+              <tr>
+                <td class="muted">Undecided</td>
+                <td class="num"><input id="undecidedPct" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="muted"><strong>Total</strong></td>
+                <td class="num"><strong id="supportTotal">—</strong></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="grid2">
+          <div class="field">
+            <label class="label" for="undecidedMode">Undecided break</label>
+            <select id="undecidedMode" class="select">
+              <option value="proportional" selected>Proportional</option>
+              <option value="user_defined">User-defined split</option>
+              <option value="against">Conservative against you</option>
+              <option value="toward">Conservative toward you</option>
+            </select>
+            <div class="help" data-help="Undecided allocation is a primary source of volatility in multi-candidate races.">
+              <span class="help-title">Best practice</span>
+              <span class="help-text">Stress-test against you. Don’t rely on a friendly break.</span>
+            </div>
+          </div>
+
+          <div class="field" id="userSplitWrap" hidden>
+            <label class="label">User-defined undecided split %</label>
+            <div id="userSplitList" class="user-split"></div>
+            <div class="note">Must sum to 100% across candidates.</div>
+          </div>
+        </div>
+
+        <div class="banner warn" id="candWarn" hidden></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Persuasion universe</h2>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label class="label" for="persuasionPct">Persuasion % of universe</label>
+            <input id="persuasionPct" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 30" />
+            <div class="help" data-help="A modeling assumption: portion of registered voters who are not locked and could move.">
+              <span class="help-title">If unsure</span>
+              <span class="help-text">Use 30% for competitive/open; 25% for incumbent race; higher for chaotic municipal fields.</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="label" for="earlyVoteExp">Early vote % of turnout (Expected)</label>
+            <input id="earlyVoteExp" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 38" />
+            <div class="help" data-help="Used as a risk lever; later phases will model chase and timeline compression more deeply.">
+              <span class="help-title">Risk lever</span>
+              <span class="help-text">Higher early vote compresses persuasion window and increases early workload.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card sticky-bottom">
+        <div class="card-head">
+          <h2>Validation</h2>
+        </div>
+        <ul id="validationList" class="validation"></ul>
+      </div>
+    </section>
+
+    <section class="right">
+      <nav class="tabs" aria-label="Output tabs">
+        <button class="tab active" data-tab="win">Win path</button>
+        <button class="tab" data-tab="assumptions">Assumptions</button>
+      <button class="tab" data-tab="roi">ROI</button>
+      </nav>
+
+      <section class="panel active" id="tab-win">
+        <div class="card">
+          <div class="card-head">
+            <h2>Win path (Expected)</h2>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi">
+              <div class="kpi-k">Projected turnout votes</div>
+              <div id="kpiTurnoutVotes" class="kpi-v">—</div>
+              <div class="kpi-s" id="kpiTurnoutBand">—</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-k">Dynamic win threshold</div>
+              <div id="kpiWinThreshold" class="kpi-v">—</div>
+              <div class="kpi-s">Top competitor + 1 (after undecided allocation)</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-k">Your projected votes</div>
+              <div id="kpiYourVotes" class="kpi-v">—</div>
+              <div class="kpi-s" id="kpiYourVotesShare">—</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-k">Persuasion votes needed (net)</div>
+              <div id="kpiPersuasionNeed" class="kpi-v">—</div>
+              <div class="kpi-s" id="kpiPersuasionStatus">—</div>
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div class="mini">
+              <div class="mini-k">Early votes (Expected)</div>
+              <div id="miniEarlyVotes" class="mini-v">—</div>
+              <div class="mini-s" id="miniEarlyNote">—</div>
+            </div>
+            <div class="mini">
+              <div class="mini-k">Election Day votes (Expected)</div>
+              <div id="miniEDVotes" class="mini-v">—</div>
+              <div class="mini-s">Turnout − Early</div>
+            </div>
+            <div class="mini">
+              <div class="mini-k">Persuasion universe</div>
+              <div id="miniPersUniverse" class="mini-v">—</div>
+              <div class="mini-s" id="miniPersCheck">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Stress test summary (client style)</h2>
+          </div>
+          <div id="stressBox" class="stress">
+            <div class="stress-item">—</div>
+          </div>
+          <div class="note">
+            Export mode B (future) can include full tables; Version 1 output keeps this summary concise.
+          </div>
+        </div>
+
+        
+        <div class="card" id="conversionCard">
+          <div class="card-head">
+            <h2>Conversion + contact math (Phase 2)</h2>
+          </div>
+
+          <div class="grid3">
+            <div class="field">
+              <label class="label" for="goalSupportIds">Support IDs needed (goal)</label>
+              <input id="goalSupportIds" class="input num" type="number" min="0" step="1" placeholder="auto (uses persuasion need)" />
+              <div class="help" data-help="If blank, goal = Persuasion votes needed (net) from Win path.">
+                <span class="help-title">Default</span>
+                <span class="help-text">This uses the model’s net persuasion votes needed as your support-ID goal.</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="supportRatePct">Support rate (of conversations)</label>
+              <input id="supportRatePct" class="input num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 55" />
+              <div class="help" data-help="Of completed conversations, % you will ID as your support (not persuasion win rate).">
+                <span class="help-title">Example</span>
+                <span class="help-text">If 55% of conversations yield a support ID, set 55.</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="contactRatePct">Contact rate (doors → conversation)</label>
+              <input id="contactRatePct" class="input num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 22" />
+              <div class="help" data-help="Conversation rate: the percent of doors that become an actual live conversation.">
+                <span class="help-title">Typical</span>
+                <span class="help-text">15–30% depending on building type, time, and list quality.</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label" for="doorsPerHour">Doors per hour</label>
+              <input id="doorsPerHour" class="input num" type="number" min="0" step="1" placeholder="e.g., 30" />
+            </div>
+
+            <div class="field">
+              <label class="label" for="hoursPerShift">Hours per shift</label>
+              <input id="hoursPerShift" class="input num" type="number" min="0" step="0.5" placeholder="e.g., 3" />
+            </div>
+
+            <div class="field">
+              <label class="label" for="shiftsPerVolunteerPerWeek">Shifts per volunteer / week</label>
+              <input id="shiftsPerVolunteerPerWeek" class="input num" type="number" min="0" step="0.5" placeholder="e.g., 2" />
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div class="mini">
+              <div class="mini-k">Conversations needed</div>
+              <div id="outConversationsNeeded" class="mini-v">—</div>
+              <div class="mini-s">Goal ÷ Support rate</div>
+            </div>
+
+            <div class="mini">
+              <div class="mini-k">Doors needed</div>
+              <div id="outDoorsNeeded" class="mini-v">—</div>
+              <div class="mini-s">Conversations ÷ Contact rate</div>
+            </div>
+
+            <div class="mini">
+              <div class="mini-k">Doors per shift</div>
+              <div id="outDoorsPerShift" class="mini-v">—</div>
+              <div class="mini-s">Doors/hour × Hours/shift</div>
+            </div>
+          </div>
+
+          <div class="subgrid">
+            <div class="mini">
+              <div class="mini-k">Total shifts needed</div>
+              <div id="outTotalShifts" class="mini-v">—</div>
+              <div class="mini-s">Doors needed ÷ Doors/shift</div>
+            </div>
+
+            <div class="mini">
+              <div class="mini-k">Shifts per week needed</div>
+              <div id="outShiftsPerWeek" class="mini-v">—</div>
+              <div class="mini-s">Total shifts ÷ Weeks remaining</div>
+            </div>
+
+            <div class="mini">
+              <div class="mini-k">Active volunteers needed</div>
+              <div id="outVolunteersNeeded" class="mini-v">—</div>
+              <div class="mini-s">Shifts/week ÷ Shifts/volunteer/week</div>
+            </div>
+          </div>
+
+          <div id="convFeasBanner" class="banner" hidden></div>
+
+          <div class="note">
+            This is a conversion/capacity estimator. It assumes 1 support ID ≈ 1 vote and does not model multi-touch, paid volume, phones/texts, or persuasion win rate (Phase 3).
+          </div>
+        </div>
+
+        <div class="card" id="phase3Card">
+          <details class="mc-details" open>
+            <summary>
+              <span class="mc-summary-title">Execution + Risk (Phase 3)</span>
+              <span class="chip">Monte Carlo 10k</span>
+            </summary>
+
+            <div class="mc-body">
+              <div class="grid3">
+                <div class="field">
+                  <label class="label" for="orgCount">Organizers (count)</label>
+                  <input id="orgCount" class="input num" type="number" min="0" step="1" placeholder="e.g., 2" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="orgHoursPerWeek">Organizer hours / week</label>
+                  <input id="orgHoursPerWeek" class="input num" type="number" min="0" step="1" placeholder="e.g., 40" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="volunteerMultBase">Volunteer multiplier (base)</label>
+                  <input id="volunteerMultBase" class="input num" type="number" min="0" step="0.05" placeholder="e.g., 1.00" />
+                  <div class="help" data-help="Applies to total output. 1.20 = +20% more contact capacity from volunteers and shared shifts.">
+                    <span class="help-title">How to use</span>
+                    <span class="help-text">Set to 1.00 if you want a staff-only plan. Increase as your volunteer program stabilizes.</span>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label" for="channelDoorPct">Door share % (vs calls)</label>
+                  <input id="channelDoorPct" class="input num" type="number" min="0" max="100" step="1" placeholder="e.g., 70" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="doorsPerHour3">Doors per hour (base)</label>
+                  <input id="doorsPerHour3" class="input num" type="number" min="0" step="1" placeholder="e.g., 30" />
+                </div>
+
+                <div class="field">
+                  <label class="label" for="callsPerHour3">Calls per hour (base)</label>
+                  <input id="callsPerHour3" class="input num" type="number" min="0" step="1" placeholder="e.g., 20" />
+                </div>
+              </div>
+
+              <div class="subgrid">
+                <div class="mini">
+                  <div class="mini-k">Weeks remaining</div>
+                  <div id="p3Weeks" class="mini-v">—</div>
+                  <div class="mini-s">Uses election date or manual override</div>
+                </div>
+
+                <div class="mini">
+                  <div class="mini-k">Capacity: contacts possible</div>
+                  <div id="p3CapContacts" class="mini-v">—</div>
+                  <div class="mini-s">Ceiling from staff × time × productivity × volunteer multiplier</div>
+                </div>
+
+                <div class="mini">
+                  <div class="mini-k">Gap vs required contacts</div>
+                  <div id="p3GapContacts" class="mini-v">—</div>
+                  <div id="p3GapNote" class="mini-s">—</div>
+                </div>
+              </div>
+
+              <div class="mc-row">
+                <div class="mc-actions">
+                  <div class="field" style="min-width:220px;">
+                    <label class="label" for="mcMode">Monte Carlo mode</label>
+                    <select id="mcMode" class="select">
+                      <option value="basic" selected>Basic (volatility slider)</option>
+                      <option value="advanced">Advanced (min / mode / max)</option>
+                    </select>
+                  </div>
+
+                  <div class="field" style="min-width:220px;">
+                    <label class="label" for="mcSeed">Seed (optional)</label>
+                    <input id="mcSeed" class="input input-sm" type="text" placeholder="leave blank for random" />
+                  </div>
+
+                  <button id="mcRun" class="btn btn-sm" type="button">Run 10,000 sims</button>
+                  <span id="mcStale" class="mc-pill mc-stale warn" hidden>Results are stale</span>
+                </div>
+              </div>
+
+              <div id="mcBasic" class="mc-basic">
+                <div class="grid3">
+                  <div class="field">
+                    <label class="label" for="mcVolatility">Volatility</label>
+                    <select id="mcVolatility" class="select">
+                      <option value="low">Low</option>
+                      <option value="med" selected>Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                    <div class="help" data-help="Volatility generates min/mode/max around your base rates. Medium is a strong default.">
+                      <span class="help-title">Best practice</span>
+                      <span class="help-text">Use Medium unless you have strong evidence of stability (Low) or chaos (High).</span>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="turnoutReliabilityPct">Turnout reliability % (base)</label>
+                    <input id="turnoutReliabilityPct" class="input num" type="number" min="0" max="100" step="0.5" placeholder="e.g., 80" />
+                    <div class="help" data-help="Percent of newly persuaded supporters who will actually cast a ballot.">
+                      <span class="help-title">What this is</span>
+                      <span class="help-text">This is not overall turnout %. It is your modeled reliability for your moved vote.</span>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="mcRuns">Runs</label>
+                    <input id="mcRuns" class="input num" type="number" min="1000" step="1000" value="10000" disabled />
+                  </div>
+                </div>
+
+                <div class="note">
+                  Basic mode uses base Contact rate and Support rate from Phase 2, plus the reliability and capacity assumptions above.
+                </div>
+              </div>
+
+              <div id="mcAdvanced" class="mc-adv">
+                <div class="note">Advanced mode uses triangular distributions (min / expected / max) per variable.</div>
+
+                <div class="table-wrap">
+                  <table class="table sens-table" aria-label="Monte Carlo ranges">
+                    <thead>
+                      <tr>
+                        <th>Variable</th>
+                        <th class="num">Min</th>
+                        <th class="num">Expected</th>
+                        <th class="num">Max</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Contact rate % (contacts → conversations)</td>
+                        <td class="num"><input id="mcContactMin" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                        <td class="num"><input id="mcContactMode" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                        <td class="num"><input id="mcContactMax" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                      </tr>
+                      <tr>
+                        <td>Persuasion rate % (conversations → support ID)</td>
+                        <td class="num"><input id="mcPersMin" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                        <td class="num"><input id="mcPersMode" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                        <td class="num"><input id="mcPersMax" class="input input-sm num" type="number" min="0" max="100" step="0.1" /></td>
+                      </tr>
+                      <tr>
+                        <td>Turnout reliability % (support ID → vote)</td>
+                        <td class="num"><input id="mcReliMin" class="input input-sm num" type="number" min="0" max="100" step="0.5" /></td>
+                        <td class="num"><input id="mcReliMode" class="input input-sm num" type="number" min="0" max="100" step="0.5" /></td>
+                        <td class="num"><input id="mcReliMax" class="input input-sm num" type="number" min="0" max="100" step="0.5" /></td>
+                      </tr>
+                      <tr>
+                        <td>Doors per hour</td>
+                        <td class="num"><input id="mcDphMin" class="input input-sm num" type="number" min="0" step="1" /></td>
+                        <td class="num"><input id="mcDphMode" class="input input-sm num" type="number" min="0" step="1" /></td>
+                        <td class="num"><input id="mcDphMax" class="input input-sm num" type="number" min="0" step="1" /></td>
+                      </tr>
+                      <tr>
+                        <td>Calls per hour</td>
+                        <td class="num"><input id="mcCphMin" class="input input-sm num" type="number" min="0" step="1" /></td>
+                        <td class="num"><input id="mcCphMode" class="input input-sm num" type="number" min="0" step="1" /></td>
+                        <td class="num"><input id="mcCphMax" class="input input-sm num" type="number" min="0" step="1" /></td>
+                      </tr>
+                      <tr>
+                        <td>Volunteer multiplier</td>
+                        <td class="num"><input id="mcVolMin" class="input input-sm num" type="number" min="0" step="0.05" /></td>
+                        <td class="num"><input id="mcVolMode" class="input input-sm num" type="number" min="0" step="0.05" /></td>
+                        <td class="num"><input id="mcVolMax" class="input input-sm num" type="number" min="0" step="0.05" /></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="kpis">
+                <div class="kpi">
+                  <div class="kpi-k">Win probability</div>
+                  <div id="mcWinProb" class="kpi-v">—</div>
+                  <div id="mcRiskLabel" class="kpi-s">Run sims to estimate risk band.</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-k">Median net votes vs need</div>
+                  <div id="mcMedian" class="kpi-v">—</div>
+                  <div class="kpi-s">Net persuasion votes delivered − persuasion votes needed</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-k">5th percentile (downside)</div>
+                  <div id="mcP5" class="kpi-v">—</div>
+                  <div class="kpi-s">Bad-but-plausible environment</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-k">95th percentile (upside)</div>
+                  <div id="mcP95" class="kpi-v">—</div>
+                  <div class="kpi-s">Good-but-plausible environment</div>
+                </div>
+              </div>
+
+              <div class="card" style="padding:12px;">
+                <div class="card-head" style="margin-bottom:8px;">
+                  <h2>Sensitivity (what moves the outcome)</h2>
+                </div>
+                <div class="table-wrap">
+                  <table class="table" aria-label="Sensitivity ranking">
+                    <thead>
+                      <tr>
+                        <th>Variable</th>
+                        <th class="num">Impact</th>
+                      </tr>
+                    </thead>
+                    <tbody id="mcSensitivity">
+                      <tr><td class="muted">—</td><td class="num muted">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="note">Impact uses correlation strength with margin across simulations (higher = more important).</div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+
+<div class="card" id="explainCard" hidden>
+          <div class="card-head">
+            <h2>Explainability</h2>
+          </div>
+          <div class="explain">
+            <details open>
+              <summary>What this model is doing</summary>
+              <div class="explain-body">
+                <p>This tool defines operational requirements under stated assumptions. It does not predict outcomes.</p>
+                <ul>
+                  <li>Turnout votes = Universe × turnout %</li>
+                  <li>Projected votes per candidate = Turnout votes × support %</li>
+                  <li>Undecided votes are allocated by your chosen rule</li>
+                  <li>Win threshold = top competitor (after allocation) + 1</li>
+                  <li>Persuasion votes needed = win threshold − your projected votes</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-assumptions">
+        <div class="card">
+          <div class="card-head">
+            <h2>Assumptions snapshot</h2>
+          </div>
+          <div id="assumptionsSnapshot" class="assumptions"></div>
+          <div class="note">
+            This is the exact assumption block we’ll mirror in branded exports in later phases.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Warnings & guardrails</h2>
+          </div>
+          <div id="guardrails" class="guardrails"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="tab-roi">
+        <div class="card">
+          <div class="card-head">
+            <h2>Budget inputs (Phase 4)</h2>
+          </div>
+
+          <div class="grid3">
+            <div class="field">
+              <label class="label">Doors</label>
+              <div class="rowline">
+                <label class="switch">
+                  <input id="roiDoorsEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                  <span class="switch-label">Enable</span>
+                </label>
+                <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
+              </div>
+              <input id="roiDoorsCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.18" />
+              <div class="note">Attempt = door knocked. Uses Phase 2 rates for CR/SR and Phase 3 reliability (TR).</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Phones</label>
+              <div class="rowline">
+                <label class="switch">
+                  <input id="roiPhonesEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                  <span class="switch-label">Enable</span>
+                </label>
+                <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
+              </div>
+              <input id="roiPhonesCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.03" />
+              <div class="note">Attempt = call dialed. Uses the same CR/SR backbone (Phase 4A).</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Texts</label>
+              <div class="rowline">
+                <label class="switch">
+                  <input id="roiTextsEnabled" type="checkbox" />
+                  <span class="slider"></span>
+                  <span class="switch-label">Enable</span>
+                </label>
+                <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
+              </div>
+              <input id="roiTextsCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.02" />
+              <div class="note">Attempt = text sent. Phase 4A uses the same CR/SR as doors/phones.</div>
+            </div>
+          </div>
+
+          <div class="divider-h"></div>
+
+          <div class="grid2">
+            <div class="field">
+              <label class="label">Overhead (optional)</label>
+              <input id="roiOverheadAmount" class="input num" type="number" min="0" step="1" placeholder="e.g., 2500" />
+              <div class="note">Overhead is separate from per-attempt costs. You can include it in ROI as an allocation.</div>
+            </div>
+
+            <div class="field">
+              <label class="label">Include overhead in ROI</label>
+              <label class="switch" style="margin-top:6px;">
+                <input id="roiIncludeOverhead" type="checkbox" />
+                <span class="slider"></span>
+                <span class="switch-label">Allocate overhead across required attempts</span>
+              </label>
+              <div class="note">If on: overhead is spread across required attempts for each tactic (deterministic).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>ROI comparison</h2>
+            <div class="card-actions">
+              <button id="roiRefresh" class="btn btn-sm" type="button">Refresh</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="table" aria-label="ROI table">
+              <thead>
+                <tr>
+                  <th>Tactic</th>
+                  <th class="num">Cost / attempt</th>
+                  <th class="num">Cost / net vote</th>
+                  <th class="num">Total cost to close gap</th>
+                  <th>Feasibility</th>
+                </tr>
+              </thead>
+              <tbody id="roiTbody">
+                <tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="muted">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div id="roiBanner" class="banner warn" hidden></div>
+
+          <div class="note">
+            ROI uses the locked backbone: Attempts → Conversations (CR) → Support IDs (SR) → Net votes (TR). Costs are deterministic in Phase 4.
+          </div>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
