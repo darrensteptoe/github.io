@@ -34,14 +34,6 @@ const els = {
 
   persuasionPct: document.getElementById("persuasionPct"),
   earlyVoteExp: document.getElementById("earlyVoteExp"),
-    // Phase 2 — conversion + capacity
-    goalSupportIds: "",
-    supportRatePct: 55,
-    contactRatePct: 22,
-    doorsPerHour: 30,
-    hoursPerShift: 3,
-    shiftsPerVolunteerPerWeek: 2,
-
 
   // Phase 2 — conversion + capacity
   goalSupportIds: document.getElementById("goalSupportIds"),
@@ -136,6 +128,8 @@ const els = {
   optBanner: document.getElementById("optBanner"),
   optTotalAttempts: document.getElementById("optTotalAttempts"),
   optTotalCost: document.getElementById("optTotalCost"),
+  optPersVotes: document.getElementById("optPersVotes"),
+  optTurnVotes: document.getElementById("optTurnVotes"),
   optTotalVotes: document.getElementById("optTotalVotes"),
   optBinding: document.getElementById("optBinding"),
   optGapContext: document.getElementById("optGapContext"),
@@ -167,7 +161,56 @@ const els = {
 
   toggleTraining: document.getElementById("toggleTraining"),
   toggleDark: document.getElementById("toggleDark"),
+
+  // Phase 6 — Turnout & Mobilization (GOTV)
+  gotvBasePct: document.getElementById("gotvBasePct"),
+  gotvBaseTurnoutPct: document.getElementById("gotvBaseTurnoutPct"),
+  gotvCeilingVotes: document.getElementById("gotvCeilingVotes"),
+  gotvDoorsEnabled: document.getElementById("gotvDoorsEnabled"),
+  gotvDoorsLiftPct: document.getElementById("gotvDoorsLiftPct"),
+  gotvPhonesEnabled: document.getElementById("gotvPhonesEnabled"),
+  gotvPhonesLiftPct: document.getElementById("gotvPhonesLiftPct"),
+  gotvTextsEnabled: document.getElementById("gotvTextsEnabled"),
+  gotvTextsLiftPct: document.getElementById("gotvTextsLiftPct"),
+  gotvBanner: document.getElementById("gotvBanner"),
+
+  // Phase 7 — Timeline & pacing
+  tlEnabled: document.getElementById("tlEnabled"),
+  tlPersCompression: document.getElementById("tlPersCompression"),
+  tlCutoff: document.getElementById("tlCutoff"),
+  tlGoalWeek: document.getElementById("tlGoalWeek"),
+  tlPersAfter: document.getElementById("tlPersAfter"),
+  tlBanner: document.getElementById("tlBanner"),
+  tlTbody: document.getElementById("tlTbody"),
+
+  // Phase 8 — Hiring simulation
+  hireWeeklyCost: document.getElementById("hireWeeklyCost"),
+  hireWeek: document.getElementById("hireWeek"),
+  hireEndWeek: document.getElementById("hireEndWeek"),
+  hireSim: document.getElementById("hireSim"),
+  hireTbody: document.getElementById("hireTbody"),
+  hireBanner: document.getElementById("hireBanner"),
+
+  // Dev-only integrity harness
+  btnSelfTest: document.getElementById("btnSelfTest"),
+  selfTestCard: document.getElementById("selfTestCard"),
+  selfTestStatus: document.getElementById("selfTestStatus"),
+  selfTestSummary: document.getElementById("selfTestSummary"),
+  selfTestList: document.getElementById("selfTestList"),
 };
+
+// Dev mode (enables integrity harness)
+const DEV = (() => {
+  try {
+    const qs = new URLSearchParams(location.search);
+    if (qs.get("dev") === "1") return true;
+    return localStorage.getItem("fpe_dev") === "1";
+  } catch {
+    return false;
+  }
+})();
+
+if (DEV) document.body.classList.add("dev");
 
 const DEFAULTS_BY_TEMPLATE = {
   federal: { bandWidth: 4, persuasionPct: 28, earlyVoteExp: 45 },
@@ -177,6 +220,10 @@ const DEFAULTS_BY_TEMPLATE = {
 };
 
 let state = loadState() || makeDefaultState();
+
+// Non-persisted caches (derived each render)
+let lastOptSnapshot = null; // { totals, persVotes, turnVotes, totalAttempts, totalNetVotes, netVotesPerAttempt }
+let lastRoiRows = null;
 
 function makeDefaultState(){
   return {
@@ -240,6 +287,30 @@ function makeDefaultState(){
             useDecay: false,
           }
         },
+
+    // Phase 6 — GOTV (separate attempt pool)
+    gotv: {
+      basePct: 40,
+      baseTurnoutPct: 60,
+      tactics: {
+        doors: { enabled: true, liftPct: 6 },
+        phones: { enabled: true, liftPct: 3 },
+        texts: { enabled: false, liftPct: 1.5 },
+      }
+    },
+
+    // Phase 7 — Timeline & pacing (sequences totals; does not change totals)
+    timeline: {
+      enabled: true,
+      persCompression: 0.60,
+    },
+
+    // Phase 8 — Hiring simulation (button-triggered)
+    hiring: {
+      weeklyCost: "",
+      hireWeek: 1,
+      endWeek: "",
+    },
 
     mcContactMin: "",
     mcContactMode: "",
@@ -362,6 +433,29 @@ function applyStateToUI(){
   if (els.optCapacity) els.optCapacity.value = state.budget?.optimize?.capacityAttempts ?? "";
   if (els.optStep) els.optStep.value = state.budget?.optimize?.step ?? 25;
   if (els.optUseDecay) els.optUseDecay.checked = !!state.budget?.optimize?.useDecay;
+
+  // Phase 6 — GOTV
+  if (els.gotvBasePct) els.gotvBasePct.value = state.gotv?.basePct ?? "";
+  if (els.gotvBaseTurnoutPct) els.gotvBaseTurnoutPct.value = state.gotv?.baseTurnoutPct ?? "";
+
+  if (els.gotvDoorsEnabled) els.gotvDoorsEnabled.checked = !!state.gotv?.tactics?.doors?.enabled;
+  if (els.gotvDoorsLiftPct) els.gotvDoorsLiftPct.value = state.gotv?.tactics?.doors?.liftPct ?? "";
+
+  if (els.gotvPhonesEnabled) els.gotvPhonesEnabled.checked = !!state.gotv?.tactics?.phones?.enabled;
+  if (els.gotvPhonesLiftPct) els.gotvPhonesLiftPct.value = state.gotv?.tactics?.phones?.liftPct ?? "";
+
+  if (els.gotvTextsEnabled) els.gotvTextsEnabled.checked = !!state.gotv?.tactics?.texts?.enabled;
+  if (els.gotvTextsLiftPct) els.gotvTextsLiftPct.value = state.gotv?.tactics?.texts?.liftPct ?? "";
+
+  // Phase 7 — timeline
+  if (els.tlEnabled) els.tlEnabled.checked = (state.timeline?.enabled ?? true);
+  if (els.tlPersCompression) els.tlPersCompression.value = state.timeline?.persCompression ?? 0.60;
+
+  // Phase 8 — hiring inputs
+  if (els.hireWeeklyCost) els.hireWeeklyCost.value = state.hiring?.weeklyCost ?? "";
+  if (els.hireWeek) els.hireWeek.value = state.hiring?.hireWeek ?? 1;
+  if (els.hireEndWeek) els.hireEndWeek.value = state.hiring?.endWeek ?? "";
+
 
   els.toggleTraining.checked = !!state.ui?.training;
   els.toggleDark.checked = !!state.ui?.dark;
@@ -589,6 +683,17 @@ function wireEvents(){
     // Phase 4 — ROI inputs
     const ensureBudget = () => {
       if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false } };
+
+
+    // Phase 6 — GOTV inputs (separate from persuasion)
+    const ensureGotv = () => {
+      if (!state.gotv) state.gotv = { basePct: 40, baseTurnoutPct: 60, tactics: { doors:{enabled:true,liftPct:6}, phones:{enabled:true,liftPct:3}, texts:{enabled:false,liftPct:1.5} } };
+      if (!state.gotv.tactics) state.gotv.tactics = { doors:{enabled:true,liftPct:6}, phones:{enabled:true,liftPct:3}, texts:{enabled:false,liftPct:1.5} };
+      if (!state.gotv.tactics.doors) state.gotv.tactics.doors = { enabled:true, liftPct:6 };
+      if (!state.gotv.tactics.phones) state.gotv.tactics.phones = { enabled:true, liftPct:3 };
+      if (!state.gotv.tactics.texts) state.gotv.tactics.texts = { enabled:false, liftPct:1.5 };
+    };
+
       if (!state.budget.tactics) state.budget.tactics = { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} };
       if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false };
       if (!state.budget.tactics.doors) state.budget.tactics.doors = { enabled:true, cpa:0, crPct:null, srPct:null };
@@ -604,6 +709,43 @@ function wireEvents(){
       if (!el) return;
       el.addEventListener("input", () => { ensureBudget(); fn(); render(); persist(); });
     };
+
+
+    const watchGotvBool = (el, fn) => {
+      if (!el) return;
+      el.addEventListener("change", () => { ensureGotv(); fn(); render(); persist(); });
+    };
+    const watchGotvNum = (el, fn) => {
+      if (!el) return;
+      el.addEventListener("input", () => { ensureGotv(); fn(); render(); persist(); });
+    };
+
+    // Phase 7 — timeline controls
+    const ensureTimeline = () => {
+      if (!state.timeline) state.timeline = { enabled: true, persCompression: 0.60 };
+      if (state.timeline.enabled == null) state.timeline.enabled = true;
+      if (state.timeline.persCompression == null) state.timeline.persCompression = 0.60;
+    };
+
+    const watchTimelineBool = (el, fn) => {
+      if (!el) return;
+      el.addEventListener("change", () => { ensureTimeline(); fn(); render(); persist(); });
+    };
+    const watchTimelineNum = (el, fn) => {
+      if (!el) return;
+      el.addEventListener("input", () => { ensureTimeline(); fn(); render(); persist(); });
+    };
+
+    // Phase 8 — hiring controls (do not auto-run simulation)
+    const ensureHiring = () => {
+      if (!state.hiring) state.hiring = { weeklyCost: "", hireWeek: 1, endWeek: "" };
+      if (state.hiring.hireWeek == null) state.hiring.hireWeek = 1;
+    };
+    const watchHiringNum = (el, fn) => {
+      if (!el) return;
+      el.addEventListener("input", () => { ensureHiring(); fn(); persist(); });
+    };
+
 
     watchBool(els.roiDoorsEnabled, () => state.budget.tactics.doors.enabled = !!els.roiDoorsEnabled.checked);
     watchNum(els.roiDoorsCpa, () => state.budget.tactics.doors.cpa = safeNum(els.roiDoorsCpa.value) ?? 0);
@@ -627,6 +769,31 @@ function wireEvents(){
     watchBool(els.roiIncludeOverhead, () => state.budget.includeOverhead = !!els.roiIncludeOverhead.checked);
 
     
+
+
+
+    // Phase 6 — GOTV controls
+    watchGotvNum(els.gotvBasePct, () => state.gotv.basePct = safeNum(els.gotvBasePct.value));
+    watchGotvNum(els.gotvBaseTurnoutPct, () => state.gotv.baseTurnoutPct = safeNum(els.gotvBaseTurnoutPct.value));
+
+    watchGotvBool(els.gotvDoorsEnabled, () => state.gotv.tactics.doors.enabled = !!els.gotvDoorsEnabled.checked);
+    watchGotvNum(els.gotvDoorsLiftPct, () => state.gotv.tactics.doors.liftPct = safeNum(els.gotvDoorsLiftPct.value));
+
+    watchGotvBool(els.gotvPhonesEnabled, () => state.gotv.tactics.phones.enabled = !!els.gotvPhonesEnabled.checked);
+    watchGotvNum(els.gotvPhonesLiftPct, () => state.gotv.tactics.phones.liftPct = safeNum(els.gotvPhonesLiftPct.value));
+
+    watchGotvBool(els.gotvTextsEnabled, () => state.gotv.tactics.texts.enabled = !!els.gotvTextsEnabled.checked);
+    watchGotvNum(els.gotvTextsLiftPct, () => state.gotv.tactics.texts.liftPct = safeNum(els.gotvTextsLiftPct.value));
+
+    // Phase 7 — timeline
+    watchTimelineBool(els.tlEnabled, () => state.timeline.enabled = !!els.tlEnabled.checked);
+    watchTimelineNum(els.tlPersCompression, () => state.timeline.persCompression = safeNum(els.tlPersCompression.value));
+
+    // Phase 8 — hiring inputs (stored; simulation runs on click)
+    watchHiringNum(els.hireWeeklyCost, () => state.hiring.weeklyCost = els.hireWeeklyCost.value ?? "");
+    watchHiringNum(els.hireWeek, () => state.hiring.hireWeek = safeNum(els.hireWeek.value) ?? 1);
+    watchHiringNum(els.hireEndWeek, () => state.hiring.endWeek = els.hireEndWeek.value ?? "");
+
 // Phase 5 — optimization controls (top-layer only; does not change Phase 1–4 math)
 const watchOpt = (el, fn, evt="input") => {
   if (!el) return;
@@ -641,6 +808,9 @@ watchOpt(els.optUseDecay, () => state.budget.optimize.useDecay = !!els.optUseDec
 
 if (els.optRun) els.optRun.addEventListener("click", () => { render(); });
 if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); });
+
+  // Phase 8 — hiring simulation (explicit trigger)
+  if (els.hireSim) els.hireSim.addEventListener("click", () => { runHiringSim(); });
 
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -686,6 +856,573 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
   });
+
+  // Dev-only: integrity self-test
+  if (els.btnSelfTest){
+    els.btnSelfTest.addEventListener("click", () => {
+      if (els.selfTestCard) els.selfTestCard.hidden = false;
+      runSelfTest();
+    });
+  }
+
+  // Dev-only: toggle dev mode with Ctrl/Cmd + Shift + D
+  document.addEventListener("keydown", (e) => {
+    const key = String(e.key || "").toLowerCase();
+    if (key !== "d") return;
+    if (!(e.shiftKey && (e.ctrlKey || e.metaKey))) return;
+    try {
+      const next = document.body.classList.toggle("dev");
+      localStorage.setItem("fpe_dev", next ? "1" : "0");
+      if (els.selfTestCard) els.selfTestCard.hidden = !next;
+    } catch {}
+  });
+}
+
+/* ---- Integrity Harness (Dev-only) ---- */
+
+function runSelfTest(){
+  const startedAt = Date.now();
+  const results = [];
+  const add = (ok, label, detail="") => results.push({ ok: !!ok, label, detail });
+  const setStatus = (txt) => { if (els.selfTestStatus) els.selfTestStatus.textContent = txt; };
+
+  const showSummary = (kind, text) => {
+    if (!els.selfTestSummary) return;
+    els.selfTestSummary.hidden = false;
+    els.selfTestSummary.className = `banner ${kind}`;
+    els.selfTestSummary.textContent = text;
+  };
+  const clearSummary = () => {
+    if (!els.selfTestSummary) return;
+    els.selfTestSummary.hidden = true;
+    els.selfTestSummary.textContent = "";
+    els.selfTestSummary.className = "banner";
+  };
+  const renderList = () => {
+    if (!els.selfTestList) return;
+    els.selfTestList.innerHTML = "";
+    for (const r of results){
+      const li = document.createElement("li");
+      li.className = r.ok ? "ok" : "bad";
+      li.textContent = r.detail ? `${r.label} — ${r.detail}` : r.label;
+      els.selfTestList.appendChild(li);
+    }
+  };
+
+  const parseNum = (v) => {
+    if (v == null) return null;
+    const t = String(v).replace(/[$,%\s]/g, "").replace(/,/g, "");
+    const n = Number(t);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const uiHasBadNumbers = () => {
+    // Catch NaN/Infinity leaks in rendered UI quickly.
+    try {
+      const text = (document.body?.innerText || "").toLowerCase();
+      return text.includes("nan") || text.includes("infinity") || text.includes("∞");
+    } catch {
+      return false;
+    }
+  };
+
+  const getResFromState = () => {
+    const modelInput = {
+      universeSize: safeNum(state.universeSize),
+      turnoutA: safeNum(state.turnoutA),
+      turnoutB: safeNum(state.turnoutB),
+      bandWidth: safeNum(state.bandWidth),
+      candidates: state.candidates.map(c => ({ id: c.id, name: c.name, supportPct: safeNum(c.supportPct) })),
+      undecidedPct: safeNum(state.undecidedPct),
+      yourCandidateId: state.yourCandidateId,
+      undecidedMode: state.undecidedMode,
+      userSplit: state.userSplit,
+      persuasionPct: safeNum(state.persuasionPct),
+      earlyVoteExp: safeNum(state.earlyVoteExp),
+    };
+    return computeAll(modelInput);
+  };
+
+  const computeGotvLens = () => {
+    const U = safeNum(state.universeSize);
+    const basePct = safeNum(state.gotv?.basePct);
+    const baseTurn = safeNum(state.gotv?.baseTurnoutPct);
+    if (U == null || basePct == null || baseTurn == null) return { baseUniverse: null, nonVoterShare: null };
+    const baseUniverse = U * Math.max(0, Math.min(100, basePct)) / 100;
+    const nonVoterShare = Math.max(0, Math.min(1, 1 - (Math.max(0, Math.min(100, baseTurn)) / 100)));
+    return { baseUniverse, nonVoterShare };
+  };
+
+  const runInvariantSuite = ({ scenarioName, expectOpt=true, expectTimeline=true, expectHiring=true, allowBadValidation=false } = {}) => {
+    const res = getResFromState();
+
+    // Global UI sanity
+    add(!uiHasBadNumbers(), `${scenarioName}: Global — no NaN/Infinity visible`);
+
+    // Phase 1
+    const st = res.validation?.supportTotalPct;
+    add(st != null && Number.isFinite(st) && Math.abs(st - 100) < 0.25, `${scenarioName}: Phase 1 — support totals ≈ 100%`, st == null ? "missing" : `${st.toFixed(2)}%`);
+    const wt = res.expected?.winThreshold;
+    add(wt != null && Number.isFinite(wt) && wt > 0, `${scenarioName}: Phase 1 — win threshold numeric`, wt == null ? "missing" : fmtInt(Math.round(wt)));
+    const pn = res.expected?.persuasionNeed;
+    add(pn != null && Number.isFinite(pn) && pn >= 0, `${scenarioName}: Phase 1 — persuasion need non-negative`, pn == null ? "missing" : fmtInt(Math.round(pn)));
+
+    // Phase 2 (guard division-by-zero)
+    const cr = safeNum(state.contactRatePct);
+    const sr = safeNum(state.supportRatePct);
+    const conv = parseNum(els.outConversationsNeeded?.textContent);
+    const doors = parseNum(els.outDoorsNeeded?.textContent);
+    if ((pn != null && pn > 0) && cr != null && sr != null && cr > 0 && sr > 0) {
+      add(conv != null && conv >= 0, `${scenarioName}: Phase 2 — conversations computed`, conv == null ? "missing" : fmtInt(Math.round(conv)));
+      add(doors != null && doors >= 0, `${scenarioName}: Phase 2 — doors needed computed`, doors == null ? "missing" : fmtInt(Math.round(doors)));
+    } else {
+      // if CR/SR invalid, we just ensure we didn't crash or emit NaN
+      add(true, `${scenarioName}: Phase 2 — CR/SR edge handled`);
+    }
+
+    // Phase 3: capacity ceiling numeric
+    const cap = parseNum(els.p3CapContacts?.textContent);
+    add(cap == null || cap >= 0, `${scenarioName}: Phase 3 — capacity ceiling numeric`, cap == null ? "missing/ok" : fmtInt(Math.round(cap)));
+
+    // Phase 4: ROI sanity when enabled
+    const roiEnabled = !!(state.budget?.tactics?.doors?.enabled || state.budget?.tactics?.phones?.enabled || state.budget?.tactics?.texts?.enabled);
+    if (roiEnabled) {
+      const baseRates = {
+        cr: (safeNum(state.contactRatePct) != null) ? clamp(safeNum(state.contactRatePct)/100, 0, 1) : null,
+        sr: (safeNum(state.supportRatePct) != null) ? clamp(safeNum(state.supportRatePct)/100, 0, 1) : null,
+        tr: (safeNum(state.turnoutReliabilityPct) != null) ? clamp(safeNum(state.turnoutReliabilityPct)/100, 0, 1) : null,
+      };
+      const roi = computeRoiRows({
+        goalNetVotes: pn,
+        baseRates,
+        tactics: state.budget.tactics,
+        overheadAmount: safeNum(state.budget.overheadAmount) ?? 0,
+        includeOverhead: !!state.budget.includeOverhead,
+        caps: null,
+        mcLast: null,
+      });
+      add(Array.isArray(roi.rows) && roi.rows.length > 0, `${scenarioName}: Phase 4 — ROI rows computed`, `${roi.rows?.length || 0} row(s)`);
+      // If rates valid and gap>0, enabled rows should have numeric CPA lenses
+      if (pn != null && pn > 0 && baseRates.cr && baseRates.sr && baseRates.tr) {
+        const anyNumeric = roi.rows.some(r => r.costPerNetVote != null && Number.isFinite(r.costPerNetVote));
+        add(anyNumeric, `${scenarioName}: Phase 4 — ROI numeric outputs exist`);
+      }
+    } else {
+      add(true, `${scenarioName}: Phase 4 — no tactics enabled (ok)`);
+    }
+
+    // Phase 5/6: optimization snapshot
+    if (expectOpt) {
+      add(!!lastOptSnapshot && Number.isFinite(lastOptSnapshot.totalNetVotes) && lastOptSnapshot.totalNetVotes >= 0, `${scenarioName}: Phase 5/6 — optimization snapshot exists`, lastOptSnapshot ? `${fmtInt(Math.round(lastOptSnapshot.totalNetVotes))} votes` : "missing");
+      if (lastOptSnapshot) {
+        add(Number.isFinite(lastOptSnapshot.totalCost) && lastOptSnapshot.totalCost >= 0, `${scenarioName}: Phase 5/6 — total cost numeric`, `$${fmtInt(Math.round(lastOptSnapshot.totalCost))}`);
+        add(Number.isFinite(lastOptSnapshot.totalAttempts) && lastOptSnapshot.totalAttempts >= 0, `${scenarioName}: Phase 5/6 — total attempts numeric`, fmtInt(Math.round(lastOptSnapshot.totalAttempts)));
+      }
+    } else {
+      add(true, `${scenarioName}: Phase 5/6 — optimization not expected`);
+    }
+
+    // Phase 7: timeline reconciliation
+    if (expectTimeline && state.timeline?.enabled && lastOptSnapshot && els.tlTbody) {
+      const W = derivedWeeksRemaining();
+      const rows = Array.from(els.tlTbody.querySelectorAll("tr"));
+      add(W == null || rows.length === W, `${scenarioName}: Phase 7 — timeline rows match weeks`, `${rows.length}/${W ?? "?"}`);
+      let sum = 0;
+      let lastCum = 0;
+      let monotone = true;
+      for (const tr of rows) {
+        const tds = tr.querySelectorAll("td");
+        const total = parseNum(tds?.[4]?.textContent);
+        const cum = parseNum(tds?.[5]?.textContent);
+        if (total != null) sum += total;
+        if (cum != null) {
+          if (cum + 1e-9 < lastCum) monotone = false;
+          lastCum = cum;
+        }
+      }
+      add(monotone, `${scenarioName}: Phase 7 — cumulative monotone`);
+      const optTotal = lastOptSnapshot.totalNetVotes;
+      const tol = Math.max(3, optTotal * 0.02);
+      add(Math.abs(sum - optTotal) <= tol, `${scenarioName}: Phase 7 — sum ≈ optimized total`, `timeline ${fmtInt(Math.round(sum))} vs opt ${fmtInt(Math.round(optTotal))}`);
+      add(Math.abs(lastCum - sum) <= tol, `${scenarioName}: Phase 7 — final cumulative ≈ sum`, `cum ${fmtInt(Math.round(lastCum))} vs sum ${fmtInt(Math.round(sum))}`);
+    } else {
+      add(true, `${scenarioName}: Phase 7 — timeline not expected/disabled`);
+    }
+
+    // Phase 8: hiring sim (+1/+2/+3), explicit trigger
+    if (expectHiring) {
+      runHiringSim();
+      const trs = els.hireTbody ? Array.from(els.hireTbody.querySelectorAll("tr")) : [];
+      const real = trs.filter(tr => (tr.textContent || "").trim() && !(tr.textContent || "").includes("—"));
+      add(real.length === 3, `${scenarioName}: Phase 8 — hiring rows (+1/+2/+3)`, `${real.length} row(s)`);
+      const deltas = real.map(tr => parseNum(tr.querySelectorAll("td")?.[1]?.textContent)).filter(v => v != null);
+      const deltasNonNeg = deltas.length === 3 && deltas.every(v => v >= 0);
+      add(deltasNonNeg, `${scenarioName}: Phase 8 — hiring deltas non-negative`, deltasNonNeg ? "ok" : "unexpected");
+    } else {
+      add(true, `${scenarioName}: Phase 8 — hiring not expected`);
+    }
+
+    // Validation list global: allow warnings, but optionally disallow BADs.
+    const bads = els.validationList ? els.validationList.querySelectorAll("li.bad").length : 0;
+    if (!allowBadValidation) {
+      add(bads === 0, `${scenarioName}: Guardrails — no BAD validations`, `${bads} bad`);
+    } else {
+      add(true, `${scenarioName}: Guardrails — bad validations allowed`);
+    }
+  };
+
+  // Preserve current state and restore after matrix.
+  const saved = structuredClone(state);
+  const savedLastOpt = lastOptSnapshot ? { ...lastOptSnapshot } : null;
+
+  const scenarios = [
+    {
+      name: "1) Baseline",
+      setup: (s) => {
+        s.scenarioName = "SCN1";
+        s.weeksRemaining = 12;
+        s.universeSize = 100000;
+        s.turnoutA = 42; s.turnoutB = 46; s.bandWidth = 4;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 40 },
+          { id: uid(), name: "Opp", supportPct: 45 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 15; s.undecidedMode = "proportional";
+        s.persuasionPct = 30; s.earlyVoteExp = 40;
+        s.supportRatePct = 55; s.contactRatePct = 22;
+        s.orgCount = 2; s.orgHoursPerWeek = 40; s.volunteerMultBase = 1.0;
+        s.channelDoorPct = 70; s.doorsPerHour3 = 30; s.callsPerHour3 = 20;
+        s.turnoutReliabilityPct = 80;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.tactics.texts.enabled = false;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 10000;
+        s.budget.optimize.step = 50;
+        s.budget.optimize.useDecay = false;
+        s.gotv.basePct = 40; s.gotv.baseTurnoutPct = 60;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 6;
+        s.gotv.tactics.phones.enabled = true; s.gotv.tactics.phones.liftPct = 3;
+        s.gotv.tactics.texts.enabled = false;
+        s.timeline.enabled = true; s.timeline.persCompression = 0.60;
+        s.hiring.weeklyCost = 1200; s.hiring.hireWeek = 1; s.hiring.endWeek = "";
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "2) Multi-candidate",
+      setup: (s) => {
+        s.scenarioName = "SCN2";
+        s.weeksRemaining = 14;
+        s.universeSize = 80000;
+        s.turnoutA = 35; s.turnoutB = 40; s.bandWidth = 5;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 28 },
+          { id: uid(), name: "Opp1", supportPct: 26 },
+          { id: uid(), name: "Opp2", supportPct: 22 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 24; s.undecidedMode = "proportional";
+        s.persuasionPct = 35; s.earlyVoteExp = 25;
+        s.supportRatePct = 50; s.contactRatePct = 18;
+        s.orgCount = 1; s.orgHoursPerWeek = 35;
+        s.channelDoorPct = 60; s.doorsPerHour3 = 28; s.callsPerHour3 = 18;
+        s.turnoutReliabilityPct = 78;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.tactics.texts.enabled = true;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 12000;
+        s.budget.optimize.step = 50;
+        s.gotv.basePct = 35; s.gotv.baseTurnoutPct = 58;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 5;
+        s.timeline.enabled = true; s.timeline.persCompression = 0.60;
+        s.hiring.weeklyCost = 1000; s.hiring.hireWeek = 2;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "3) Already winning",
+      setup: (s) => {
+        s.scenarioName = "SCN3";
+        s.weeksRemaining = 10;
+        s.universeSize = 60000;
+        s.turnoutA = 45; s.turnoutB = 48; s.bandWidth = 3;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 54 },
+          { id: uid(), name: "Opp", supportPct: 38 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 8; s.undecidedMode = "proportional";
+        s.persuasionPct = 20; s.earlyVoteExp = 35;
+        s.supportRatePct = 55; s.contactRatePct = 20;
+        s.orgCount = 1; s.orgHoursPerWeek = 25;
+        s.channelDoorPct = 70; s.doorsPerHour3 = 30; s.callsPerHour3 = 20;
+        s.turnoutReliabilityPct = 85;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = false;
+        s.budget.tactics.texts.enabled = false;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 2000;
+        s.budget.optimize.step = 50;
+        s.gotv.basePct = 30; s.gotv.baseTurnoutPct = 65;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 4;
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 800; s.hiring.hireWeek = 1;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "4) High early vote (60%)",
+      setup: (s) => {
+        s.scenarioName = "SCN4";
+        s.weeksRemaining = 12;
+        s.universeSize = 120000;
+        s.turnoutA = 38; s.turnoutB = 44; s.bandWidth = 6;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 36 },
+          { id: uid(), name: "Opp", supportPct: 48 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 16; s.undecidedMode = "proportional";
+        s.persuasionPct = 35; s.earlyVoteExp = 60;
+        s.supportRatePct = 52; s.contactRatePct = 20;
+        s.orgCount = 2; s.orgHoursPerWeek = 35;
+        s.channelDoorPct = 65; s.doorsPerHour3 = 28; s.callsPerHour3 = 18;
+        s.turnoutReliabilityPct = 78;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 15000;
+        s.budget.optimize.step = 50;
+        s.gotv.basePct = 45; s.gotv.baseTurnoutPct = 58;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 6;
+        s.timeline.enabled = true; s.timeline.persCompression = 0.60;
+        s.hiring.weeklyCost = 1400; s.hiring.hireWeek = 1;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "5) W=2 weeks remaining",
+      setup: (s) => {
+        s.scenarioName = "SCN5";
+        s.weeksRemaining = 2;
+        s.universeSize = 40000;
+        s.turnoutA = 35; s.turnoutB = 38; s.bandWidth = 3;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 40 },
+          { id: uid(), name: "Opp", supportPct: 46 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 14; s.undecidedMode = "proportional";
+        s.persuasionPct = 30; s.earlyVoteExp = 30;
+        s.supportRatePct = 55; s.contactRatePct = 22;
+        s.orgCount = 1; s.orgHoursPerWeek = 30;
+        s.channelDoorPct = 70; s.doorsPerHour3 = 30; s.callsPerHour3 = 20;
+        s.turnoutReliabilityPct = 80;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.optimize.mode = "capacity";
+        s.budget.optimize.capacityAmount = 5000;
+        s.budget.optimize.step = 50;
+        s.gotv.basePct = 35; s.gotv.baseTurnoutPct = 55;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 6;
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 1000; s.hiring.hireWeek = 1;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "6) No tactics enabled",
+      setup: (s) => {
+        s.scenarioName = "SCN6";
+        s.weeksRemaining = 10;
+        s.universeSize = 80000;
+        s.turnoutA = 40; s.turnoutB = 44; s.bandWidth = 4;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 38 },
+          { id: uid(), name: "Opp", supportPct: 48 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 14; s.undecidedMode = "proportional";
+        s.persuasionPct = 30; s.earlyVoteExp = 40;
+        s.supportRatePct = 55; s.contactRatePct = 22;
+        s.orgCount = 1; s.orgHoursPerWeek = 30;
+        s.turnoutReliabilityPct = 80;
+        // all tactics disabled
+        s.budget.tactics.doors.enabled = false;
+        s.budget.tactics.phones.enabled = false;
+        s.budget.tactics.texts.enabled = false;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 10000;
+        // timeline enabled but opt not expected
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 1000; s.hiring.hireWeek = 1;
+      },
+      expectOpt: false, expectTimeline: false, expectHiring: false, allowBadValidation: true,
+    },
+    {
+      name: "7) Capacity-constrained (tight)",
+      setup: (s) => {
+        s.scenarioName = "SCN7";
+        s.weeksRemaining = 6;
+        s.universeSize = 90000;
+        s.turnoutA = 35; s.turnoutB = 40; s.bandWidth = 5;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 34 },
+          { id: uid(), name: "Opp", supportPct: 52 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 14; s.undecidedMode = "proportional";
+        s.persuasionPct = 40; s.earlyVoteExp = 30;
+        s.supportRatePct = 45; s.contactRatePct = 15;
+        s.orgCount = 1; s.orgHoursPerWeek = 20;
+        s.channelDoorPct = 80; s.doorsPerHour3 = 25; s.callsPerHour3 = 15;
+        s.turnoutReliabilityPct = 75;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.optimize.mode = "capacity";
+        s.budget.optimize.capacityAmount = 1500;
+        s.budget.optimize.step = 50;
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 1200; s.hiring.hireWeek = 3;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "8) GOTV-heavy",
+      setup: (s) => {
+        s.scenarioName = "SCN8";
+        s.weeksRemaining = 10;
+        s.universeSize = 110000;
+        s.turnoutA = 40; s.turnoutB = 45; s.bandWidth = 5;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 41 },
+          { id: uid(), name: "Opp", supportPct: 44 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 15; s.undecidedMode = "proportional";
+        s.persuasionPct = 20; s.earlyVoteExp = 50;
+        s.supportRatePct = 50; s.contactRatePct = 20;
+        s.orgCount = 2; s.orgHoursPerWeek = 35;
+        s.turnoutReliabilityPct = 80;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 8000;
+        s.gotv.basePct = 55; s.gotv.baseTurnoutPct = 50;
+        s.gotv.tactics.doors.enabled = true; s.gotv.tactics.doors.liftPct = 7;
+        s.gotv.tactics.phones.enabled = true; s.gotv.tactics.phones.liftPct = 4;
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 1500; s.hiring.hireWeek = 1;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+    {
+      name: "9) CR=0 edge case",
+      setup: (s) => {
+        s.scenarioName = "SCN9";
+        s.weeksRemaining = 10;
+        s.universeSize = 70000;
+        s.turnoutA = 38; s.turnoutB = 42; s.bandWidth = 4;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 38 },
+          { id: uid(), name: "Opp", supportPct: 50 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 12; s.undecidedMode = "proportional";
+        s.persuasionPct = 35; s.earlyVoteExp = 40;
+        s.supportRatePct = 55; s.contactRatePct = 0;
+        s.orgCount = 1; s.orgHoursPerWeek = 30;
+        s.turnoutReliabilityPct = 80;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 5000;
+        s.timeline.enabled = true;
+      },
+      // Expect opt may exist but netVotesPerAttempt will be 0; still should not crash.
+      expectOpt: true, expectTimeline: false, expectHiring: false, allowBadValidation: true,
+    },
+    {
+      name: "10) Overhead enabled",
+      setup: (s) => {
+        s.scenarioName = "SCN10";
+        s.weeksRemaining = 12;
+        s.universeSize = 100000;
+        s.turnoutA = 42; s.turnoutB = 46; s.bandWidth = 4;
+        s.candidates = [
+          { id: uid(), name: "You", supportPct: 40 },
+          { id: uid(), name: "Opp", supportPct: 45 },
+        ];
+        s.yourCandidateId = s.candidates[0].id;
+        s.undecidedPct = 15; s.undecidedMode = "proportional";
+        s.persuasionPct = 30; s.earlyVoteExp = 40;
+        s.supportRatePct = 55; s.contactRatePct = 22;
+        s.orgCount = 2; s.orgHoursPerWeek = 40;
+        s.channelDoorPct = 70; s.doorsPerHour3 = 30; s.callsPerHour3 = 20;
+        s.turnoutReliabilityPct = 80;
+        s.budget.tactics.doors.enabled = true;
+        s.budget.tactics.phones.enabled = true;
+        s.budget.overheadAmount = 2500;
+        s.budget.includeOverhead = true;
+        s.budget.optimize.mode = "budget";
+        s.budget.optimize.budgetAmount = 10000;
+        s.timeline.enabled = true;
+        s.hiring.weeklyCost = 1200; s.hiring.hireWeek = 1;
+      },
+      expectOpt: true, expectTimeline: true, expectHiring: true,
+    },
+  ];
+
+  try {
+    setStatus("Running…");
+    clearSummary();
+
+    // Ensure dev card is visible while testing
+    if (els.selfTestCard) els.selfTestCard.hidden = false;
+
+    for (const scn of scenarios){
+      // Reset snapshot between scenarios
+      lastOptSnapshot = null;
+
+      state = makeDefaultState();
+      scn.setup(state);
+
+      applyStateToUI();
+      rebuildCandidateTable();
+      render();
+
+      add(true, `— ${scn.name}`, ""); // visual separator (always OK)
+      runInvariantSuite({
+        scenarioName: scn.name,
+        expectOpt: scn.expectOpt !== false,
+        expectTimeline: scn.expectTimeline !== false,
+        expectHiring: scn.expectHiring !== false,
+        allowBadValidation: !!scn.allowBadValidation,
+      });
+    }
+
+  } catch (e){
+    add(false, "Self-test matrix crashed", String(e?.message || e));
+  } finally {
+    // Restore
+    state = saved;
+    lastOptSnapshot = savedLastOpt;
+    applyStateToUI();
+    rebuildCandidateTable();
+    render();
+
+    const failed = results.filter(r => !r.ok).length;
+    const ms = Date.now() - startedAt;
+    if (failed === 0){
+      setStatus("PASS");
+      showSummary("ok", `Self-test PASS (${results.length} checks, ${scenarios.length} scenarios) — ${ms}ms`);
+    } else {
+      setStatus("FAIL");
+      showSummary("bad", `Self-test FAIL (${failed}/${results.length} checks failed, ${scenarios.length} scenarios) — ${ms}ms`);
+    }
+    renderList();
+  }
 }
 
 function normalizeLoadedState(s){
@@ -701,6 +1438,18 @@ function normalizeLoadedState(s){
         optimize: { ...base.budget.optimize, ...(s.budget.optimize||{}) }
       }
     : structuredClone(base.budget);
+
+  out.gotv = (s.gotv && typeof s.gotv === "object")
+    ? { ...base.gotv, ...s.gotv, tactics: { ...base.gotv.tactics, ...(s.gotv.tactics||{}) } }
+    : structuredClone(base.gotv);
+
+  out.timeline = (s.timeline && typeof s.timeline === "object")
+    ? { ...base.timeline, ...s.timeline }
+    : structuredClone(base.timeline);
+
+  out.hiring = (s.hiring && typeof s.hiring === "object")
+    ? { ...base.hiring, ...s.hiring }
+    : structuredClone(base.hiring);
 
   if (!out.yourCandidateId && out.candidates[0]) out.yourCandidateId = out.candidates[0].id;
   return out;
@@ -775,7 +1524,10 @@ function render(){
   renderConversion(res, weeks);
 
   renderRoi(res, weeks);
+  renderGotvBasics(res);
   renderOptimization(res, weeks);
+
+  renderTimeline(res, weeks);
 
   els.explainCard.hidden = !state.ui.training;
 }
@@ -1165,6 +1917,9 @@ function renderRoi(res, weeks){
     mcLast
   });
 
+  // Cache for Phase 8 comparison (best paid $/net-vote)
+  lastRoiRows = rows;
+
   // banner
   if (els.roiBanner){
     if (banner){
@@ -1218,6 +1973,62 @@ function renderRoi(res, weeks){
 
 
 
+
+function renderGotvBasics(res){
+  // Phase 6 panel isn't present, fail silently.
+  if (!els.gotvCeilingVotes && !els.gotvBanner) return;
+
+  const U = safeNum(state.universeSize);
+  const basePct = safeNum(state.gotv?.basePct);
+  const baseTurnPct = safeNum(state.gotv?.baseTurnoutPct);
+
+  const persuasionPct = safeNum(state.persuasionPct);
+
+  const baseUniverse = (U != null && basePct != null) ? (U * clamp(basePct, 0, 100) / 100) : null;
+  const baseTurn = (baseTurnPct != null) ? clamp(baseTurnPct, 0, 100) / 100 : null;
+
+  const nonVoterShare = (baseTurn != null) ? clamp(1 - baseTurn, 0, 1) : null;
+  const ceilingVotes = (baseUniverse != null && nonVoterShare != null) ? (baseUniverse * nonVoterShare) : null;
+
+  if (els.gotvCeilingVotes) els.gotvCeilingVotes.textContent = (ceilingVotes == null) ? "—" : fmtInt(Math.round(ceilingVotes));
+
+  // Guardrails (transparent + defensible)
+  const bannerEl = els.gotvBanner;
+  if (!bannerEl) return;
+
+  const show = (kind, text) => {
+    bannerEl.hidden = false;
+    bannerEl.className = `banner ${kind}`;
+    bannerEl.textContent = text;
+  };
+  const hide = () => { bannerEl.hidden = true; };
+
+  // Reset if nothing entered
+  if (U == null || U <= 0){
+    hide();
+    return;
+  }
+
+  if (basePct == null || baseTurnPct == null){
+    show("warn", "Phase 6: Enter Base mobilization universe % and Baseline base turnout % to compute the GOTV ceiling.");
+    return;
+  }
+
+  const totalSeg = (persuasionPct != null ? clamp(persuasionPct, 0, 100) : 0) + clamp(basePct, 0, 100);
+  if (totalSeg > 100.0001){
+    show("bad", `Phase 6 guardrail: Base % + Persuasion % exceeds 100% (currently ${totalSeg.toFixed(1)}%). Reduce one of them to avoid overlap/double counting.`);
+    return;
+  }
+
+  if (baseTurnPct >= 95){
+    show("warn", "Phase 6: Baseline base turnout is very high (≥95%). Mobilization ceiling will be small; confirm this is realistic for your base universe and election type.");
+    return;
+  }
+
+  hide();
+}
+
+
 function renderOptimization(res, weeks){
   if (!els.optTbody) return;
 
@@ -1256,9 +2067,26 @@ function renderOptimization(res, weeks){
   const overheadAmount = safeNum(budget.overheadAmount) ?? 0;
   const includeOverhead = !!budget.includeOverhead;
 
+
+  // Phase 6 — derive GOTV config (separate attempt pool)
+  const U = safeNum(state.universeSize);
+  const basePct = safeNum(state.gotv?.basePct);
+  const baseTurnPct = safeNum(state.gotv?.baseTurnoutPct);
+
+  const baseUniverse = (U != null && basePct != null) ? (U * clamp(basePct, 0, 100) / 100) : null;
+  const baseTurn = (baseTurnPct != null) ? clamp(baseTurnPct, 0, 100) / 100 : null;
+  const nonVoterShare = (baseTurn != null) ? clamp(1 - baseTurn, 0, 1) : null;
+
+  const gotv = {
+    baseUniverse,
+    nonVoterShare,
+    tactics: state.gotv?.tactics || {}
+  };
+
   const tactics = buildOptimizationTactics({
     baseRates: { cr, sr, tr },
-    tactics: tacticsRaw
+    tactics: tacticsRaw,
+    gotv
   });
 
   const bannerEl = els.optBanner;
@@ -1273,6 +2101,39 @@ function renderOptimization(res, weeks){
     bannerEl.hidden = true;
     bannerEl.textContent = "";
   };
+
+
+
+  const useDecay = !!opt.useDecay;
+
+  const getTierMult = (t, currentAttempts) => {
+    const tiers = Array.isArray(t.decayTiers) ? t.decayTiers : null;
+    if (!tiers || tiers.length === 0) return 1;
+    for (const tier of tiers){
+      const upto = Number(tier?.upto);
+      if (!Number.isFinite(upto)) continue;
+      if (currentAttempts < upto) {
+        const m = Number(tier?.mult);
+        return Number.isFinite(m) ? m : 1;
+      }
+    }
+    const last = tiers[tiers.length - 1];
+    const lm = Number(last?.mult);
+    return Number.isFinite(lm) ? lm : 1;
+  };
+
+  const votesForAllocation = (t, attempts, step) => {
+    if (!useDecay) return attempts * t.netVotesPerAttempt;
+    const st = (step != null && step > 0) ? step : 1;
+    let v = 0;
+    for (let cur = 0; cur < attempts; cur += st){
+      const add = Math.min(st, attempts - cur);
+      const mult = getTierMult(t, cur);
+      v += add * t.netVotesPerAttempt * mult;
+    }
+    return v;
+  };
+
 
   // Mode UI (budget vs capacity)
   if (els.optMode && els.optBudget && els.optCapacity){
@@ -1291,6 +2152,7 @@ function renderOptimization(res, weeks){
     hideBanner();
     showBanner("warn", "Optimization: Enable at least one tactic (Doors/Phones/Texts) in Phase 4 inputs.");
     setTotals(null);
+    lastOptSnapshot = null;
     stubRow();
     return;
   }
@@ -1299,6 +2161,7 @@ function renderOptimization(res, weeks){
     hideBanner();
     showBanner("warn", "Optimization: Enter Phase 2 Contact rate + Support rate and Phase 3 Turnout reliability to optimize.");
     setTotals(null);
+    lastOptSnapshot = null;
     stubRow();
     return;
   }
@@ -1343,15 +2206,22 @@ function renderOptimization(res, weeks){
 
   if (!result){
     setTotals(null);
+    lastOptSnapshot = null;
     stubRow();
     return;
   }
 
   // Table rows
   let any = false;
+  let persVotes = 0;
+  let turnVotes = 0;
   for (const t of tactics){
     const a = result.allocation?.[t.id] ?? 0;
     if (!a) continue;
+
+    const votesHere = votesForAllocation(t, a, safeNum(opt.step) ?? 1);
+    if (String(t.id).endsWith("_gotv")) turnVotes += votesHere;
+    else persVotes += votesHere;
     any = true;
 
     const trEl = document.createElement("tr");
@@ -1369,7 +2239,7 @@ function renderOptimization(res, weeks){
 
     const td3 = document.createElement("td");
     td3.className = "num";
-    td3.textContent = fmtInt(Math.round(a * t.netVotesPerAttempt));
+    td3.textContent = fmtInt(Math.round(votesForAllocation(t, a, safeNum(opt.step) ?? 1)));
 
     trEl.appendChild(td0);
     trEl.appendChild(td1);
@@ -1391,14 +2261,28 @@ function renderOptimization(res, weeks){
     attempts: totalAttempts,
     cost: totalCost,
     votes: totalVotes,
+    persVotes,
+    turnVotes,
     binding: result.binding || "—"
   });
+
+  // Cache for Phase 7/8 layers (non-invasive)
+  lastOptSnapshot = {
+    totalAttempts: totalAttempts,
+    totalNetVotes: totalVotes,
+    persVotes,
+    turnVotes,
+    netVotesPerAttempt: (totalAttempts > 0) ? (totalVotes / totalAttempts) : 0,
+  };
 
   function setTotals(t){
     if (els.optTotalAttempts) els.optTotalAttempts.textContent = t ? fmtInt(Math.round(t.attempts)) : "—";
     if (els.optTotalCost) els.optTotalCost.textContent = t ? `$${fmtInt(Math.round(t.cost))}` : "—";
+    if (els.optPersVotes) els.optPersVotes.textContent = t ? fmtInt(Math.round(t.persVotes ?? 0)) : "—";
+    if (els.optTurnVotes) els.optTurnVotes.textContent = t ? fmtInt(Math.round(t.turnVotes ?? 0)) : "—";
     if (els.optTotalVotes) els.optTotalVotes.textContent = t ? fmtInt(Math.round(t.votes)) : "—";
     if (els.optBinding) els.optBinding.textContent = t ? (t.binding || "—") : "—";
+  }
   }
 
   function stubRow(){
@@ -1406,6 +2290,336 @@ function renderOptimization(res, weeks){
     tr.innerHTML = '<td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td>';
     els.optTbody.appendChild(tr);
   }
+}
+
+
+/* ---- Phase 7: Timeline & pacing ---- */
+
+function renderTimeline(res, weeks){
+  if (!els.tlTbody) return;
+
+  const enabled = (state.timeline?.enabled ?? true);
+  if (els.tlEnabled) els.tlEnabled.checked = !!enabled;
+
+  const bannerEl = els.tlBanner;
+  const showBanner = (kind, text) => {
+    if (!bannerEl) return;
+    bannerEl.hidden = false;
+    bannerEl.className = `banner ${kind}`;
+    bannerEl.textContent = text;
+  };
+  const hideBanner = () => {
+    if (!bannerEl) return;
+    bannerEl.hidden = true;
+    bannerEl.textContent = "";
+  };
+
+  // If disabled, show stub and return.
+  if (!enabled){
+    hideBanner();
+    if (els.tlCutoff) els.tlCutoff.textContent = "—";
+    if (els.tlGoalWeek) els.tlGoalWeek.textContent = "—";
+    if (els.tlPersAfter) els.tlPersAfter.textContent = "—";
+    els.tlTbody.innerHTML = '<tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td></tr>';
+    return;
+  }
+
+  const W = (weeks != null && weeks > 0) ? weeks : null;
+  if (!W){
+    hideBanner();
+    showBanner("warn", "Phase 7: Set election date (or weeks remaining) to build a weekly timeline.");
+    if (els.tlCutoff) els.tlCutoff.textContent = "—";
+    if (els.tlGoalWeek) els.tlGoalWeek.textContent = "—";
+    if (els.tlPersAfter) els.tlPersAfter.textContent = "—";
+    els.tlTbody.innerHTML = '<tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td></tr>';
+    return;
+  }
+
+  const snap = lastOptSnapshot;
+  if (!snap || !(snap.totalNetVotes > 0)){
+    hideBanner();
+    showBanner("warn", "Phase 7: Run Optimization (Phase 5) to produce total expected persuasion + turnout votes, then Phase 7 will sequence them by week.");
+    if (els.tlCutoff) els.tlCutoff.textContent = "—";
+    if (els.tlGoalWeek) els.tlGoalWeek.textContent = "—";
+    if (els.tlPersAfter) els.tlPersAfter.textContent = "—";
+    els.tlTbody.innerHTML = '<tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td></tr>';
+    return;
+  }
+
+  const EV = clamp(safeNum(state.earlyVoteExp) ?? 0, 0, 100) / 100;
+  const kPers = clamp(safeNum(state.timeline?.persCompression) ?? 0.60, 0.10, 1.0);
+  if (els.tlPersCompression && (els.tlPersCompression.value === "" || safeNum(els.tlPersCompression.value) == null)){
+    // Keep placeholder behavior but ensure the model has a value.
+    els.tlPersCompression.value = kPers;
+  }
+
+  const wCut = Math.max(1, Math.min(W, Math.ceil(W * (1 - EV))));
+  if (els.tlCutoff) els.tlCutoff.textContent = fmtInt(wCut);
+
+  const timeline = computeTimeline({
+    weeks: W,
+    earlyVoteShare: EV,
+    persCompression: kPers,
+    totalAttempts: snap.totalAttempts,
+    persVotes: snap.persVotes,
+    turnVotes: snap.turnVotes,
+  });
+
+  // Render table
+  els.tlTbody.innerHTML = "";
+  let cum = 0;
+  for (const row of timeline.rows){
+    cum += row.totalVotes;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmtInt(row.week)}</td>
+      <td class="num">${fmtInt(Math.round(row.attempts))}</td>
+      <td class="num">${fmtInt(Math.round(row.persVotes))}</td>
+      <td class="num">${fmtInt(Math.round(row.turnVotes))}</td>
+      <td class="num">${fmtInt(Math.round(row.totalVotes))}</td>
+      <td class="num">${fmtInt(Math.round(cum))}</td>
+    `;
+    els.tlTbody.appendChild(tr);
+  }
+
+  const needVotes = deriveNeedVotes(res);
+  const goalWeek = (needVotes > 0) ? weekReached({ timelineRows: timeline.rows, needVotes }) : null;
+  if (els.tlGoalWeek) els.tlGoalWeek.textContent = (goalWeek == null) ? "—" : fmtInt(goalWeek);
+
+  const persAfter = timeline.persuasionAfterCutoffShare;
+  if (els.tlPersAfter) els.tlPersAfter.textContent = (persAfter == null) ? "—" : `${(persAfter*100).toFixed(0)}%`;
+
+  hideBanner();
+  if (persAfter != null && persAfter > 0.35){
+    showBanner("warn", "Phase 7 pacing risk: More than 35% of persuasion votes are scheduled after the early-vote cutoff. Consider front-loading persuasion or increasing early program capacity.");
+  }
+}
+
+function computeTimeline({ weeks, earlyVoteShare, persCompression, totalAttempts, persVotes, turnVotes }){
+  const W = weeks;
+  const EV = clamp(earlyVoteShare ?? 0, 0, 1);
+  const k = clamp(persCompression ?? 0.60, 0.10, 1.0);
+
+  const wCut = Math.max(1, Math.min(W, Math.ceil(W * (1 - EV))));
+
+  // Attempts are paced evenly by default.
+  const attemptsPerWeek = (totalAttempts && totalAttempts > 0) ? (totalAttempts / W) : 0;
+
+  // Persuasion weights: 1 before cutoff, k after cutoff.
+  const pw = new Array(W).fill(1);
+  for (let i = wCut; i < W; i++) pw[i] = k; // 0-indexed; wCut is 1-indexed cutoff week
+  const pSum = pw.reduce((a,b)=>a+b, 0) || 1;
+
+  // GOTV ramp: if W>3, 20% pre-surge (weeks 1..W-3), then 25/35/20 in last 3.
+  const gw = new Array(W).fill(0);
+  if (W <= 3){
+    for (let i=0;i<W;i++) gw[i] = 1;
+  } else {
+    const preWeeks = W - 3;
+    for (let i=0;i<preWeeks;i++) gw[i] = 0.20 / preWeeks;
+    gw[W-3] = 0.25;
+    gw[W-2] = 0.35;
+    gw[W-1] = 0.20;
+  }
+
+  // If W<=3 we need to normalize gw to 1.0
+  if (W <= 3){
+    const s = gw.reduce((a,b)=>a+b,0) || 1;
+    for (let i=0;i<W;i++) gw[i] = gw[i] / s;
+  }
+
+  const rows = [];
+  let persAfter = 0;
+  for (let w=1; w<=W; w++){
+    const pShare = pw[w-1] / pSum;
+    const gShare = gw[w-1];
+    const p = (persVotes || 0) * pShare;
+    const g = (turnVotes || 0) * gShare;
+    if (w > wCut) persAfter += p;
+    rows.push({
+      week: w,
+      attempts: attemptsPerWeek,
+      persVotes: p,
+      turnVotes: g,
+      totalVotes: p + g,
+    });
+  }
+
+  const persuasionAfterCutoffShare = (persVotes && persVotes > 0) ? (persAfter / persVotes) : 0;
+  return { rows, persuasionAfterCutoffShare, cutoffWeek: wCut };
+}
+
+function weekReached({ timelineRows, needVotes }){
+  let cum = 0;
+  for (const r of timelineRows){
+    cum += r.totalVotes;
+    if (cum >= needVotes) return r.week;
+  }
+  return null;
+}
+
+
+/* ---- Phase 8: Hiring simulation (button-triggered) ---- */
+
+function runHiringSim(){
+  if (!els.hireTbody) return;
+
+  const bannerEl = els.hireBanner;
+  const showBanner = (kind, text) => {
+    if (!bannerEl) return;
+    bannerEl.hidden = false;
+    bannerEl.className = `banner ${kind}`;
+    bannerEl.textContent = text;
+  };
+  const hideBanner = () => {
+    if (!bannerEl) return;
+    bannerEl.hidden = true;
+    bannerEl.textContent = "";
+  };
+
+  const weeks = derivedWeeksRemaining();
+  const W = (weeks != null && weeks > 0) ? weeks : null;
+  if (!W){
+    showBanner("warn", "Phase 8: Set election date (or weeks remaining) before simulating hiring.");
+    renderHiringStub();
+    return;
+  }
+
+  const snap = lastOptSnapshot;
+  if (!snap || !(snap.totalAttempts > 0) || !(snap.totalNetVotes > 0)){
+    showBanner("warn", "Phase 8: Run Optimization (Phase 5) first so we have a baseline plan (attempts + net votes). Then simulate hiring.");
+    renderHiringStub();
+    return;
+  }
+
+  const weeklyCost = safeNum(state.hiring?.weeklyCost);
+  if (weeklyCost == null || weeklyCost <= 0){
+    showBanner("warn", "Phase 8: Enter an organizer weekly cost to simulate hiring ROI.");
+    renderHiringStub();
+    return;
+  }
+
+  const hireWeek = clamp(safeNum(state.hiring?.hireWeek) ?? 1, 1, W);
+  const endWeekRaw = safeNum(state.hiring?.endWeek);
+  const endWeek = clamp(endWeekRaw ?? W, 1, W);
+  if (endWeek < hireWeek){
+    showBanner("warn", "Phase 8: End week is before hire week. Adjust inputs and try again.");
+    renderHiringStub();
+    return;
+  }
+
+  // Compute attempts/week per organizer from Phase 3 productivity inputs.
+  const orgHrs = safeNum(state.orgHoursPerWeek);
+  const volMult = safeNum(state.volunteerMultBase);
+  const doorShare = clamp(safeNum(state.channelDoorPct) ?? 0, 0, 100) / 100;
+  const dph = safeNum(state.doorsPerHour3) ?? safeNum(state.doorsPerHour);
+  const cph = safeNum(state.callsPerHour3);
+
+  if (orgHrs == null || orgHrs <= 0 || volMult == null || volMult <= 0 || dph == null || cph == null){
+    showBanner("warn", "Phase 8: Enter Phase 3 production inputs (hours/week, doors/hr, calls/hr, volunteer multiplier) to simulate added capacity.");
+    renderHiringStub();
+    return;
+  }
+
+  const blended = doorShare * dph + (1 - doorShare) * cph;
+  if (!isFinite(blended) || blended <= 0){
+    showBanner("warn", "Phase 8: Invalid blended productivity. Check door share and per-hour rates.");
+    renderHiringStub();
+    return;
+  }
+
+  const attemptsPerWeekPerOrg = orgHrs * blended * volMult;
+  const activeWeeks = Math.max(0, endWeek - hireWeek + 1);
+
+  // Benchmark: best paid cost per net vote from ROI table (if available)
+  const bestPaid = getBestPaidCostPerVote();
+
+  // Prepare baseline timeline for week goal reached.
+  const baseTimeline = computeTimeline({
+    weeks: W,
+    earlyVoteShare: clamp(safeNum(state.earlyVoteExp) ?? 0, 0, 100) / 100,
+    persCompression: clamp(safeNum(state.timeline?.persCompression) ?? 0.60, 0.10, 1.0),
+    totalAttempts: snap.totalAttempts,
+    persVotes: snap.persVotes,
+    turnVotes: snap.turnVotes,
+  });
+
+  // Need votes context (uses existing Phase 1–2 output)
+  const modelInput = {
+    universeSize: safeNum(state.universeSize),
+    turnoutA: safeNum(state.turnoutA),
+    turnoutB: safeNum(state.turnoutB),
+    bandWidth: safeNum(state.bandWidth),
+    candidates: state.candidates.map(c => ({ id: c.id, name: c.name, supportPct: safeNum(c.supportPct) })),
+    undecidedPct: safeNum(state.undecidedPct),
+    yourCandidateId: state.yourCandidateId,
+    undecidedMode: state.undecidedMode,
+    userSplit: state.userSplit,
+    persuasionPct: safeNum(state.persuasionPct),
+    earlyVoteExp: safeNum(state.earlyVoteExp),
+  };
+  const res = computeAll(modelInput);
+  const needVotes = deriveNeedVotes(res);
+
+  hideBanner();
+  els.hireTbody.innerHTML = "";
+
+  for (const n of [1,2,3]){
+    const deltaAttempts = n * attemptsPerWeekPerOrg * activeWeeks;
+    const deltaVotes = deltaAttempts * (snap.netVotesPerAttempt || 0);
+    const cost = n * weeklyCost * activeWeeks;
+    const cpv = (deltaVotes > 0) ? (cost / deltaVotes) : null;
+
+    // Timeline shift: assume added attempts scale votes proportionally, then recompute timeline.
+    const scaledTotalAttempts = snap.totalAttempts + deltaAttempts;
+    const scaledPers = snap.persVotes + (snap.persVotes * (deltaAttempts / snap.totalAttempts));
+    const scaledTurn = snap.turnVotes + (snap.turnVotes * (deltaAttempts / snap.totalAttempts));
+    const simTimeline = computeTimeline({
+      weeks: W,
+      earlyVoteShare: clamp(safeNum(state.earlyVoteExp) ?? 0, 0, 100) / 100,
+      persCompression: clamp(safeNum(state.timeline?.persCompression) ?? 0.60, 0.10, 1.0),
+      totalAttempts: scaledTotalAttempts,
+      persVotes: scaledPers,
+      turnVotes: scaledTurn,
+    });
+    const goalWeek = (needVotes > 0) ? weekReached({ timelineRows: simTimeline.rows, needVotes }) : null;
+
+    const efficient = (bestPaid != null && cpv != null) ? (cpv <= bestPaid) : null;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>+${n}</td>
+      <td class="num">${fmtInt(Math.round(deltaVotes))}</td>
+      <td class="num">$${fmtInt(Math.round(cost))}</td>
+      <td class="num">${cpv == null ? "—" : `$${cpv.toFixed(2)}`}</td>
+      <td>${efficient == null ? "—" : (efficient ? "✓" : "✗")}</td>
+      <td class="num">${goalWeek == null ? "—" : fmtInt(goalWeek)}</td>
+    `;
+    els.hireTbody.appendChild(tr);
+  }
+
+  if (bestPaid != null){
+    showBanner("ok", `Hiring benchmark: best paid $/net-vote currently ≈ $${bestPaid.toFixed(2)} (from Phase 4 ROI).`);
+  } else {
+    showBanner("warn", "Hiring benchmark: ROI table is incomplete; cannot compare efficiency vs paid tactics.");
+  }
+}
+
+function renderHiringStub(){
+  if (!els.hireTbody) return;
+  els.hireTbody.innerHTML = '<tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="muted">—</td><td class="num muted">—</td></tr>';
+}
+
+function getBestPaidCostPerVote(){
+  const rows = Array.isArray(lastRoiRows) ? lastRoiRows : null;
+  if (!rows || !rows.length) return null;
+  let best = null;
+  for (const r of rows){
+    const v = Number(r?.costPerNetVote);
+    if (!Number.isFinite(v) || v <= 0) continue;
+    if (best == null || v < best) best = v;
+  }
+  return best;
 }
 
 function renderPhase3(res, weeks){

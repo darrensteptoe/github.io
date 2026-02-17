@@ -133,14 +133,14 @@ function fmtSignedLocal(v){
 // Phase 5 — Optimization helper (pure; does not change ROI math)
 // Returns enabled tactics with per-attempt deterministic cost + net-vote yield,
 // using the SAME CR/SR override logic as Phase 4B ROI.
-export function buildOptimizationTactics({ baseRates, tactics }){
+export function buildOptimizationTactics({ baseRates, tactics, gotv = null }){
   const baseCr = baseRates?.cr ?? null;
   const baseSr = baseRates?.sr ?? null;
   const baseTr = baseRates?.tr ?? null;
 
   const out = [];
 
-  const add = (key, label) => {
+  const addPers = (key, label) => {
     const t = tactics?.[key];
     if (!t?.enabled) return;
 
@@ -159,14 +159,79 @@ export function buildOptimizationTactics({ baseRates, tactics }){
       label,
       costPerAttempt,
       netVotesPerAttempt,
-      // keep debug parity with ROI layer
       used: { cr, sr, tr }
     });
   };
 
-  add("doors", "Doors");
-  add("phones", "Phones");
-  add("texts", "Texts");
+  const addGotv = (key, label) => {
+    // GOTV pool is optional and must be explicitly enabled
+    const g = gotv?.tactics?.[key];
+    if (!g?.enabled) return;
+
+    const t = tactics?.[key];
+    // If the base tactic is disabled in ROI, we still allow a GOTV pool only if it has a CPA value.
+    const costPerAttempt = (t?.cpa != null && isFinite(t.cpa)) ? Math.max(0, Number(t.cpa)) : 0;
+
+    const cr = pctOverrideToDecimal(t?.crPct, baseCr);
+    const lift = (g?.liftPct != null && isFinite(g.liftPct)) ? Math.max(0, Math.min(100, Number(g.liftPct))) / 100 : null;
+
+    const nonVoterShare = (gotv?.nonVoterShare != null && isFinite(gotv.nonVoterShare))
+      ? Math.max(0, Math.min(1, Number(gotv.nonVoterShare)))
+      : null;
+
+    // Deterministic expected votes per attempt (linear backbone)
+    const netVotesPerAttempt = (cr != null && cr > 0 && lift != null && lift > 0 && nonVoterShare != null && nonVoterShare > 0)
+      ? (cr * lift * nonVoterShare)
+      : 0;
+
+    // Optional realism: provide a saturation cap + decay tiers (used only when Phase 5 "diminishing returns" is ON)
+    let maxAttempts = null;
+    let decayTiers = null;
+
+    const baseUniverse = gotv?.baseUniverse;
+    if (baseUniverse != null && isFinite(baseUniverse) && baseUniverse > 0 && cr != null && cr > 0 && lift != null && lift > 0){
+      // 95% saturation point for random-contact model: V = N*(1-exp(-rA/B)); solve for A at 95% -> ln(20) ≈ 3.0
+      const r = cr * lift;
+      maxAttempts = (3 * baseUniverse) / r;
+
+      if (isFinite(maxAttempts) && maxAttempts > 0){
+        const a1 = maxAttempts * 0.25;
+        const a2 = maxAttempts * 0.50;
+        const a3 = maxAttempts * 0.75;
+        decayTiers = [
+          { upto: a1, mult: Math.exp(-3 * 0.00) },
+          { upto: a2, mult: Math.exp(-3 * 0.25) },
+          { upto: a3, mult: Math.exp(-3 * 0.50) },
+          { upto: maxAttempts, mult: Math.exp(-3 * 0.75) },
+          { upto: Infinity, mult: Math.exp(-3 * 1.00) },
+        ];
+      } else {
+        maxAttempts = null;
+      }
+    } else {
+      maxAttempts = null;
+    }
+
+    out.push({
+      id: `${key}_gotv`,
+      label: `${label} (GOTV)`,
+      costPerAttempt,
+      netVotesPerAttempt,
+      maxAttempts,
+      decayTiers,
+      used: { cr, lift, nonVoterShare }
+    });
+  };
+
+  addPers("doors", "Doors");
+  addPers("phones", "Phones");
+  addPers("texts", "Texts");
+
+  // Phase 6 — optional GOTV pools (separate from persuasion)
+  addGotv("doors", "Doors");
+  addGotv("phones", "Phones");
+  addGotv("texts", "Texts");
 
   return out;
 }
+
