@@ -713,6 +713,19 @@
                 <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
               </div>
               <input id="roiDoorsCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.18" />
+
+              <div class="field" style="margin-top:8px;">
+                <label class="label" for="roiDoorsKind">Tactic type</label>
+                <select id="roiDoorsKind" class="select input-sm">
+                  <option value="persuasion" selected>Persuasion</option>
+                  <option value="gotv">GOTV</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+                <div class="help" data-help="Persuasion affects preference; GOTV affects turnout probability; Hybrid applies turnout lift to persuasion realization.">
+                  <span class="help-title">Why this matters</span>
+                  <span class="help-text">Optimization can target Net Votes or Turnout-Adjusted Net Votes in Phase 6.</span>
+                </div>
+              </div>
               
               <div class="grid2" style="margin-top:8px;">
                 <div class="field">
@@ -738,6 +751,19 @@
                 <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
               </div>
               <input id="roiPhonesCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.03" />
+
+              <div class="field" style="margin-top:8px;">
+                <label class="label" for="roiPhonesKind">Tactic type</label>
+                <select id="roiPhonesKind" class="select input-sm">
+                  <option value="persuasion" selected>Persuasion</option>
+                  <option value="gotv">GOTV</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+                <div class="help" data-help="Persuasion affects preference; GOTV affects turnout probability; Hybrid applies turnout lift to persuasion realization.">
+                  <span class="help-title">Why this matters</span>
+                  <span class="help-text">Optimization can target Net Votes or Turnout-Adjusted Net Votes in Phase 6.</span>
+                </div>
+              </div>
               
               <div class="grid2" style="margin-top:8px;">
                 <div class="field">
@@ -763,6 +789,19 @@
                 <span class="muted" style="font-size:12px;">Cost / attempt ($)</span>
               </div>
               <input id="roiTextsCpa" class="input num" type="number" min="0" step="0.01" placeholder="e.g., 0.02" />
+
+              <div class="field" style="margin-top:8px;">
+                <label class="label" for="roiTextsKind">Tactic type</label>
+                <select id="roiTextsKind" class="select input-sm">
+                  <option value="persuasion" selected>Persuasion</option>
+                  <option value="gotv">GOTV</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+                <div class="help" data-help="Persuasion affects preference; GOTV affects turnout probability; Hybrid applies turnout lift to persuasion realization.">
+                  <span class="help-title">Why this matters</span>
+                  <span class="help-text">Optimization can target Net Votes or Turnout-Adjusted Net Votes in Phase 6.</span>
+                </div>
+              </div>
               
               <div class="grid2" style="margin-top:8px;">
                 <div class="field">
@@ -814,6 +853,7 @@
                   <th>Tactic</th>
                   <th class="num">Cost / attempt</th>
                   <th class="num">Cost / net vote</th>
+                  <th class="num">Cost / TA net vote</th>
                   <th class="num">Total cost to close gap</th>
                   <th>Feasibility</th>
                 </tr>
@@ -830,6 +870,132 @@
             ROI uses the locked backbone: Attempts → Conversations (CR) → Support IDs (SR) → Net votes (TR). Costs are deterministic in Phase 4.
           </div>
         </div>
+
+<div class="card">
+  <div class="card-head">
+    <h2>Turnout / GOTV (Phase 6)</h2>
+  </div>
+
+  <div class="rowline" style="margin-bottom:10px;">
+    <label class="switch">
+      <input id="turnoutEnabled" type="checkbox" />
+      <span class="slider"></span>
+      <span class="switch-label">Enable turnout modeling</span>
+    </label>
+    <span class="muted" style="font-size:12px;">OFF preserves Phase 1–5 outputs exactly.</span>
+  </div>
+
+  <div class="grid3">
+    <div class="field">
+      <label class="label" for="turnoutBaselinePct">Baseline turnout rate %</label>
+      <input id="turnoutBaselinePct" class="input num" type="number" min="0" max="100" step="0.5" placeholder="e.g., 55" />
+      <div class="help" data-help="Baseline probability of voting for the GOTV target universe (not overall electorate turnout).">
+        <span class="help-title">What this is</span>
+        <span class="help-text">Used only when turnout modeling is enabled, to cap lift at 100% and keep the math defensible.</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="turnoutTargetOverridePct">Target universe turnout override % (optional)</label>
+      <input id="turnoutTargetOverridePct" class="input num" type="number" min="0" max="100" step="0.5" placeholder="blank = use baseline" />
+      <div class="help" data-help="If your GOTV target universe turns out at a different rate than your baseline, set it here.">
+        <span class="help-title">When to use</span>
+        <span class="help-text">Example: low-propensity base universe (override lower) or high-propensity supporters (override higher).</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="gotvMode">GOTV lift model</label>
+      <select id="gotvMode" class="select">
+        <option value="basic" selected>Basic (single lift)</option>
+        <option value="advanced">Advanced (min/mode/max)</option>
+      </select>
+      <div class="help" data-help="Advanced mode is sampled per Monte Carlo run to model uncertainty.">
+        <span class="help-title">Monte Carlo</span>
+        <span class="help-text">Use Advanced when lift is uncertain. Seeded reproducibility is preserved.</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="gotvBasic" class="mc-subpanel active" style="margin-top:10px;">
+    <div class="grid3">
+      <div class="field">
+        <label class="label" for="gotvLiftPP">GOTV lift per contact (pp)</label>
+        <input id="gotvLiftPP" class="input num" type="number" min="0" max="25" step="0.1" placeholder="e.g., 1.0" />
+        <div class="help" data-help="Lift is percentage points added to turnout probability per successful contact.">
+          <span class="help-title">Example</span>
+          <span class="help-text">1.0 means +1pp turnout probability for a contacted voter, before saturation caps apply.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="gotvMaxLiftPP">Max lift ceiling (pp)</label>
+        <input id="gotvMaxLiftPP" class="input num" type="number" min="0" max="50" step="0.5" placeholder="e.g., 10" />
+        <div class="help" data-help="Ceiling on total turnout lift above baseline for the target universe (kept <= 100%).">
+          <span class="help-title">Why it exists</span>
+          <span class="help-text">Prevents unrealistic implied turnout like 120%.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Diminishing returns</label>
+        <div class="rowline">
+          <label class="switch">
+            <input id="gotvDiminishing" type="checkbox" />
+            <span class="slider"></span>
+            <span class="switch-label">Enable</span>
+          </label>
+        </div>
+        <div class="note">OFF by default. When ON, marginal lift tapers as you approach the ceiling.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="gotvAdvanced" class="mc-subpanel" style="margin-top:10px;">
+    <div class="grid3">
+      <div class="field">
+        <label class="label" for="gotvLiftMin">Lift min (pp)</label>
+        <input id="gotvLiftMin" class="input num" type="number" min="0" max="25" step="0.1" placeholder="e.g., 0.5" />
+      </div>
+      <div class="field">
+        <label class="label" for="gotvLiftMode">Lift mode (pp)</label>
+        <input id="gotvLiftMode" class="input num" type="number" min="0" max="25" step="0.1" placeholder="e.g., 1.0" />
+      </div>
+      <div class="field">
+        <label class="label" for="gotvLiftMax">Lift max (pp)</label>
+        <input id="gotvLiftMax" class="input num" type="number" min="0" max="25" step="0.1" placeholder="e.g., 2.0" />
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:10px;">
+      <div class="field">
+        <label class="label" for="gotvMaxLiftPP2">Max lift ceiling (pp)</label>
+        <input id="gotvMaxLiftPP2" class="input num" type="number" min="0" max="50" step="0.5" placeholder="e.g., 10" />
+      </div>
+      <div class="field">
+        <label class="label">Diminishing returns</label>
+        <div class="rowline">
+          <label class="switch">
+            <input id="gotvDiminishing2" type="checkbox" />
+            <span class="slider"></span>
+            <span class="switch-label">Enable</span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Status</label>
+        <div class="note">Advanced lift is sampled per Monte Carlo run. Deterministic uses Mode.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:10px;">
+    Turnout modeling affects <b>realized votes</b>. Persuasion changes preference among those who vote. GOTV increases the probability of voting in the target universe.
+  </div>
+
+  <div id="turnoutSummary" class="banner ok" hidden></div>
+</div>
+
 <div class="card">
   <div class="card-head">
     <h2>Optimization (Phase 5)</h2>
@@ -848,7 +1014,17 @@
       <div class="note">Optimization sits on top of Phase 4B ROI rates (CR/SR overrides) and deterministic CPA.</div>
     </div>
 
+    
     <div class="field">
+      <label class="label" for="optObjective">Optimize for</label>
+      <select id="optObjective" class="select">
+        <option value="net" selected>Net Votes</option>
+        <option value="turnout">Turnout-Adjusted Net Votes</option>
+      </select>
+      <div class="note">Default remains Net Votes. Turnout objective uses Phase 6 modeling when enabled.</div>
+    </div>
+
+<div class="field">
       <label class="label" for="optBudget">Budget ($)</label>
       <input id="optBudget" class="input num" type="number" min="0" step="1" placeholder="e.g., 25000" />
       <div class="note">If overhead allocation is ON, overhead is treated as fixed in budget mode (non-circular).</div>
