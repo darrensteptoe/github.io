@@ -2102,6 +2102,13 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     riskLabel: riskLabelFromWinProb(winProb),
     needVotes,
     turnoutAdjusted: turnoutAdjustedSummary,
+    // Phase 6 — explicit turnout-adjusted summary fields (present only when turnout modeling is enabled)
+    ...(turnoutEnabled && turnoutAdjustedSummary ? {
+      meanTurnoutAdjustedNetVotes: turnoutAdjustedSummary.mean,
+      p10TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p10,
+      p50TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p50,
+      p90TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p90,
+    } : {}),
   };
 
   return { summary };
