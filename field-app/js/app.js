@@ -653,7 +653,7 @@ function wireEvents(){
   els.weeksRemaining.addEventListener("input", () => { state.weeksRemaining = els.weeksRemaining.value; render(); persist(); });
   els.mode.addEventListener("change", () => { state.mode = els.mode.value; persist(); });
 
-  els.universeBasis.addEventListener("change", () => { state.universeBasis = els.universeBasis.value; persist(); });
+  els.universeBasis.addEventListener("change", () => { state.universeBasis = els.universeBasis.value; render(); persist(); });
   els.universeSize.addEventListener("input", () => { state.universeSize = safeNum(els.universeSize.value); render(); persist(); });
   els.sourceNote.addEventListener("input", () => { state.sourceNote = els.sourceNote.value; persist(); });
 
@@ -990,6 +990,10 @@ function derivedWeeksRemaining(){
   return Math.max(0, Math.ceil(days / 7));
 }
 
+function safeCall(fn){
+  try{ fn(); } catch(e){ /* keep UI alive */ }
+}
+
 function persist(){
   saveState(state);
 }
@@ -1039,15 +1043,15 @@ function render(){
   els.miniPersUniverse.textContent = res.expected.persuasionUniverse == null ? "—" : fmtInt(res.expected.persuasionUniverse);
   els.miniPersCheck.textContent = res.expected.persuasionUniverseCheck || "—";
 
-  renderStress(res);
-  renderValidation(res, weeks);
-  renderAssumptions(res, weeks);
-  renderGuardrails(res);
-  renderConversion(res, weeks);
+  safeCall(() => renderStress(res));
+  safeCall(() => renderValidation(res, weeks));
+  safeCall(() => renderAssumptions(res, weeks));
+  safeCall(() => renderGuardrails(res));
+  safeCall(() => renderConversion(res, weeks));
 
-  renderRoi(res, weeks);
-  renderOptimization(res, weeks);
-  renderTimeline(res, weeks);
+  safeCall(() => renderRoi(res, weeks));
+  safeCall(() => renderOptimization(res, weeks));
+  safeCall(() => renderTimeline(res, weeks));
 
   // Phase 9A — build immutable results snapshot for export.js (pure serialization layer)
   try {
@@ -1141,6 +1145,7 @@ function renderConversion(res, weeks){
 }
 
 function renderStress(res){
+  if (!els.stressBox) return;
   const lines = res.stressSummary || [];
   els.stressBox.innerHTML = "";
   if (!lines.length){
@@ -1159,6 +1164,7 @@ function renderStress(res){
 }
 
 function renderValidation(res, weeks){
+  if (!els.validationList) return;
   const items = [];
 
   const uOk = res.validation.universeOk;
