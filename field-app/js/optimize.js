@@ -43,6 +43,8 @@ function validateTactics(tactics) {
 
     const costPerAttempt = clampNumber(t.costPerAttempt, NaN);
     const netVotesPerAttempt = clampNumber(t.netVotesPerAttempt, NaN);
+    const turnoutAdjustedNetVotesPerAttempt = clampNumber(t.turnoutAdjustedNetVotesPerAttempt, NaN);
+    const chosenValue = (objective === "turnout") ? turnoutAdjustedNetVotesPerAttempt : netVotesPerAttempt;
 
     if (!id) throw new Error("optimizeMix: tactic missing id.");
     if (!Number.isFinite(costPerAttempt) || costPerAttempt < 0) throw new Error(`optimizeMix: invalid costPerAttempt for ${id}.`);
@@ -54,7 +56,7 @@ function validateTactics(tactics) {
       throw new Error(`optimizeMix: invalid maxAttempts for ${id}.`);
     }
 
-    return { ...t, id, label, costPerAttempt, netVotesPerAttempt, maxAttempts };
+    return { ...t, id, label, costPerAttempt, netVotesPerAttempt, turnoutAdjustedNetVotesPerAttempt, maxAttempts };
   });
 }
 
@@ -72,7 +74,7 @@ function computeTotals(tactics, allocation) {
     const a = clampNumber(allocation[t.id], 0);
     attempts += a;
     cost += a * t.costPerAttempt;
-    netVotes += a * t.netVotesPerAttempt;
+    netVotes += a * valuePerAttempt(t);
   }
   return { attempts, cost, netVotes };
 }
@@ -104,7 +106,7 @@ function greedyAllocate({ tactics, step, budgetLimit, capacityLimit, useDecay, s
       const cur = allocation[t.id];
       const mult = useDecay ? getTierMultiplier(t, cur) : 1;
 
-      const mNetVotes = step * t.netVotesPerAttempt * mult;
+      const mNetVotes = step * valuePerAttempt(t) * mult;
       const mCost = step * t.costPerAttempt;
 
       const score = scoringFn({ tactic: t, currentAllocatedAttempts: cur, step, marginalNetVotes: mNetVotes, marginalCost: mCost });
@@ -134,11 +136,18 @@ function greedyAllocate({ tactics, step, budgetLimit, capacityLimit, useDecay, s
   return { allocation, totals, trace, binding };
 }
 
-export function optimizeMixBudget({ budget, tactics, step = 25, capacityCeiling = null, useDecay = false }) {
+export function optimizeMixBudget({ budget, tactics, step = 25, capacityCeiling = null, useDecay = false, objective = "net" }) {
   const B = Math.max(0, clampNumber(budget, 0));
   const S = Math.max(1, Math.floor(clampNumber(step, 25)));
 
   const clean = validateTactics(tactics);
+
+  const valuePerAttempt = (t) => {
+    const v = (objective === "turnout") ? t?.turnoutAdjustedNetVotesPerAttempt : t?.netVotesPerAttempt;
+    const n = clampNumber(v, 0);
+    return n;
+  };
+
 
   const scoringFn = ({ marginalNetVotes, marginalCost }) => {
     if (marginalCost <= 0) return marginalNetVotes > 0 ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
@@ -157,7 +166,7 @@ export function optimizeMixBudget({ budget, tactics, step = 25, capacityCeiling 
   return { mode: "budget", step: S, constraint: B, binding, allocation, totals, trace };
 }
 
-export function optimizeMixCapacity({ capacity, tactics, step = 25, useDecay = false }) {
+export function optimizeMixCapacity({ capacity, tactics, step = 25, useDecay = false, objective = "net" }) {
   const A = Math.max(0, clampNumber(capacity, 0));
   const S = Math.max(1, Math.floor(clampNumber(step, 25)));
 

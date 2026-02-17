@@ -185,7 +185,7 @@ export function runSelfTests(engine){
 
     const budget = snap.budget || {};
     const tacticsRaw = budget.tactics || {};
-    const tactics = engine.buildOptimizationTactics({ baseRates: { cr, sr, tr }, tactics: tacticsRaw });
+    const tactics = engine.buildOptimizationTactics({ baseRates: { cr, sr, tr }, tactics: tacticsRaw, turnoutModel: { enabled:false }, universeSize: snap?.universeSize ?? null, targetUniversePct: snap?.persuasionPct ?? null });
 
     const out = engine.optimizeMixBudget({
       budget: 0,
@@ -463,3 +463,92 @@ results.durationMs = Math.round(nowMs() - started);
 
   return results;
 }
+  test("Phase 6 invariant: Turnout OFF leaves objective values unchanged", () => {
+    assert(typeof engine.withPatchedState === "function", "Missing withPatchedState()");
+    const out = engine.withPatchedState({ turnoutEnabled: false }, () => {
+      const s = engine.getStateSnapshot();
+      const cr = (s?.contactRatePct != null) ? Number(s.contactRatePct)/100 : 0.15;
+      const sr = (s?.supportRatePct != null) ? Number(s.supportRatePct)/100 : 0.10;
+      const tr = (s?.turnoutReliabilityPct != null) ? Number(s.turnoutReliabilityPct)/100 : 0.80;
+      return engine.buildOptimizationTactics({
+        baseRates: { cr, sr, tr },
+        tactics: s?.budget?.tactics || {},
+        turnoutModel: { enabled:false },
+        universeSize: s?.universeSize ?? null,
+        targetUniversePct: s?.persuasionPct ?? null,
+      });
+    });
+
+    assert(Array.isArray(out), "Expected tactics array");
+    for (const t of out){
+      assert(approx(t.turnoutAdjustedNetVotesPerAttempt, t.netVotesPerAttempt, 1e-12), `tactic ${t.id} drifted when turnout OFF`);
+    }
+  });
+
+  test("Phase 6: Monte Carlo seeds affect turnout-adjusted outputs when variability exists", () => {
+    assert(typeof engine.withPatchedState === "function", "Missing withPatchedState()");
+    const baseSnap = engine.getStateSnapshot();
+    const modelInput = buildModelInputFromSnapshot(baseSnap);
+
+    const patch = {
+      turnoutEnabled: true,
+      turnoutBaselinePct: 55,
+      turnoutTargetOverridePct: "",
+      gotvMode: "advanced",
+      gotvLiftMin: 0.2,
+      gotvLiftMode: 1.0,
+      gotvLiftMax: 2.0,
+      gotvMaxLiftPP2: 12,
+      gotvDiminishing2: true,
+    };
+
+    const a = engine.withPatchedState(patch, () => engine.runMonteCarloSim(modelInput, { mode: "advanced", seed: "seed-A", runs: 2000 }));
+    const b = engine.withPatchedState(patch, () => engine.runMonteCarloSim(modelInput, { mode: "advanced", seed: "seed-B", runs: 2000 }));
+
+    assert(a && b, "Missing MC summaries");
+    assert(a.turnoutAdjusted && b.turnoutAdjusted, "Missing turnoutAdjusted summaries");
+    assert(a.turnoutAdjusted.mean !== b.turnoutAdjusted.mean, "Different seeds should change turnout-adjusted mean when variability exists");
+  });
+
+  test("Phase 6: No NaN/Infinity in turnout-adjusted ROI fields", () => {
+    assert(typeof engine.withPatchedState === "function", "Missing withPatchedState()");
+    const s = engine.getStateSnapshot();
+    const cr = (s?.contactRatePct != null) ? clamp(Number(s.contactRatePct), 0, 100)/100 : 0.15;
+    const sr = (s?.supportRatePct != null) ? clamp(Number(s.supportRatePct), 0, 100)/100 : 0.10;
+    const tr = (s?.turnoutReliabilityPct != null) ? clamp(Number(s.turnoutReliabilityPct), 0, 100)/100 : 0.80;
+
+    const rows = engine.withPatchedState({
+      turnoutEnabled: true,
+      gotvMode: "basic",
+      gotvLiftPP: 1.0,
+      gotvMaxLiftPP: 10,
+      gotvDiminishing: false,
+      turnoutBaselinePct: 55,
+      budget: { tactics: { doors: { enabled:true, cpa:0.18, kind:"gotv" }, phones: { enabled:true, cpa:0.03, kind:"persuasion" } } }
+    }, () => {
+      const res = engine.computeAll(buildModelInputFromSnapshot(engine.getStateSnapshot()));
+      const needVotes = engine.deriveNeedVotes(res);
+      const out = engine.computeRoiRows({
+        goalNetVotes: needVotes,
+        baseRates: { cr, sr, tr },
+        tactics: engine.getStateSnapshot().budget.tactics,
+        overheadAmount: 0,
+        includeOverhead: false,
+        caps: { total: null, doors: null, phones: null },
+        mcLast: null,
+        turnoutModel: { enabled:true, baselineTurnoutPct:55, liftPerContactPP:1.0, maxLiftPP:10, useDiminishing:false },
+      });
+      return out.rows || [];
+    });
+
+    for (const r of rows){
+      if (r.turnoutAdjustedNetVotesPerAttempt != null){
+        assert(Number.isFinite(r.turnoutAdjustedNetVotesPerAttempt), "turnoutAdjustedNetVotesPerAttempt not finite");
+      }
+      if (r.costPerTurnoutAdjustedNetVote != null){
+        assert(Number.isFinite(r.costPerTurnoutAdjustedNetVote), "costPerTurnoutAdjustedNetVote not finite");
+      }
+    }
+  });
+
+

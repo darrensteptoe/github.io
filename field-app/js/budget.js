@@ -9,6 +9,7 @@ export function computeRoiRows({
   includeOverhead = false,
   caps = null,
   mcLast = null,
+  turnoutModel = null,
 }){
   const rows = [];
 
@@ -17,6 +18,13 @@ export function computeRoiRows({
   const baseCr = baseRates?.cr ?? null;
   const baseSr = baseRates?.sr ?? null;
   const baseTr = baseRates?.tr ?? null;
+
+  const turnoutEnabled = !!turnoutModel?.enabled;
+  const gotvLiftPP = (turnoutEnabled && turnoutModel?.liftPerContactPP != null) ? Math.max(0, Number(turnoutModel.liftPerContactPP)) : 0;
+  const gotvMaxLiftPP = (turnoutEnabled && turnoutModel?.maxLiftPP != null) ? Math.max(0, Number(turnoutModel.maxLiftPP)) : 0;
+  const baseTurnoutPct = (turnoutEnabled && turnoutModel?.baselineTurnoutPct != null) ? Math.max(0, Math.min(100, Number(turnoutModel.baselineTurnoutPct))) : 0;
+  const maxAdditionalPP = turnoutEnabled ? Math.max(0, Math.min(gotvMaxLiftPP, 100 - baseTurnoutPct)) : 0;
+
 
   const ratesOkBase = (need != null) && (need > 0) && (baseCr != null && baseCr > 0) && (baseSr != null && baseSr > 0) && (baseTr != null && baseTr > 0);
 
@@ -30,10 +38,29 @@ export function computeRoiRows({
 
     const ratesOk = (need != null) && (need > 0) && (tCr != null && tCr > 0) && (tSr != null && tSr > 0) && (tTr != null && tTr > 0);
 
+    const kind = (t?.kind || "persuasion"); // persuasion | gotv | hybrid
+
+    // Turnout-adjusted value-per-attempt (Phase 6). Conservative per-attempt lens (no saturation in ROI table).
+    let turnoutAdjustedNetVotesPerAttempt = null;
+    if (!turnoutEnabled){
+      turnoutAdjustedNetVotesPerAttempt = (tCr != null && tSr != null && tTr != null) ? (tCr * tSr * tTr) : 0;
+    } else if (kind === "gotv"){
+      turnoutAdjustedNetVotesPerAttempt = (tCr != null) ? (tCr * (gotvLiftPP / 100)) : 0;
+    } else {
+      const effTr = (tTr != null) ? Math.min(1, tTr + (Math.min(maxAdditionalPP, gotvLiftPP) / 100)) : null;
+      turnoutAdjustedNetVotesPerAttempt = (tCr != null && tSr != null && effTr != null) ? (tCr * tSr * effTr) : 0;
+    }
+
     let requiredAttempts = null;
+    let requiredAttemptsTA = null;
     if (ratesOk){
       requiredAttempts = need / (tCr * tSr * tTr);
       if (!isFinite(requiredAttempts) || requiredAttempts <= 0) requiredAttempts = null;
+    }
+
+    if (turnoutAdjustedNetVotesPerAttempt != null && isFinite(turnoutAdjustedNetVotesPerAttempt) && turnoutAdjustedNetVotesPerAttempt > 0 && need != null && need > 0){
+      requiredAttemptsTA = need / turnoutAdjustedNetVotesPerAttempt;
+      if (!isFinite(requiredAttemptsTA) || requiredAttemptsTA <= 0) requiredAttemptsTA = null;
     }
 
     const overheadPerAttempt = (includeOverhead && overheadAmount > 0 && requiredAttempts != null)
@@ -45,10 +72,15 @@ export function computeRoiRows({
 
     let costPerNetVote = null;
     let totalCost = null;
+    let costPerTurnoutAdjustedNetVote = null;
 
     if (ratesOk && cpa > 0 && requiredAttempts != null){
       costPerNetVote = cpa / (tCr * tSr * tTr);
       totalCost = requiredAttempts * cpa;
+    }
+
+    if (turnoutEnabled && cpa > 0 && requiredAttemptsTA != null && turnoutAdjustedNetVotesPerAttempt != null && turnoutAdjustedNetVotesPerAttempt > 0){
+      costPerTurnoutAdjustedNetVote = cpa / turnoutAdjustedNetVotesPerAttempt;
     }
 
     // Capacity feasibility: compare required attempts (to close gap) vs cap ceiling.
@@ -71,6 +103,8 @@ export function computeRoiRows({
       cpa: (cpa > 0) ? cpa : null,
       costPerNetVote,
       totalCost,
+      turnoutAdjustedNetVotesPerAttempt,
+      costPerTurnoutAdjustedNetVote,
       feasibilityText,
       // surface which rates were used (optional for future tooltips)
       used: { cr: tCr, sr: tSr, tr: tTr },
@@ -133,10 +167,21 @@ function fmtSignedLocal(v){
 // Phase 5 — Optimization helper (pure; does not change ROI math)
 // Returns enabled tactics with per-attempt deterministic cost + net-vote yield,
 // using the SAME CR/SR override logic as Phase 4B ROI.
-export function buildOptimizationTactics({ baseRates, tactics }){
+export function buildOptimizationTactics({ baseRates, tactics, turnoutModel, universeSize, targetUniversePct }){
   const baseCr = baseRates?.cr ?? null;
   const baseSr = baseRates?.sr ?? null;
   const baseTr = baseRates?.tr ?? null;
+
+  const turnoutEnabled = !!turnoutModel?.enabled;
+  const gotvLiftPP = (turnoutEnabled && turnoutModel?.liftPerContactPP != null) ? Math.max(0, Number(turnoutModel.liftPerContactPP)) : 0;
+  const gotvMaxLiftPP = (turnoutEnabled && turnoutModel?.maxLiftPP != null) ? Math.max(0, Number(turnoutModel.maxLiftPP)) : 0;
+  const baselineTurnoutPct = (turnoutEnabled && turnoutModel?.baselineTurnoutPct != null) ? Math.max(0, Math.min(100, Number(turnoutModel.baselineTurnoutPct))) : 0;
+  const maxAdditionalPP = turnoutEnabled ? Math.max(0, Math.min(gotvMaxLiftPP, 100 - baselineTurnoutPct)) : 0;
+
+  const U = (universeSize != null && isFinite(universeSize) && universeSize > 0) ? Number(universeSize) : null;
+  const tuPct = (targetUniversePct != null && isFinite(targetUniversePct)) ? Math.max(0, Math.min(100, Number(targetUniversePct))) : null;
+  const targetUniverseSize = (U != null && tuPct != null) ? Math.round(U * (tuPct / 100)) : null;
+
 
   const out = [];
 
@@ -154,11 +199,41 @@ export function buildOptimizationTactics({ baseRates, tactics }){
 
     const costPerAttempt = (t?.cpa != null && isFinite(t.cpa)) ? Math.max(0, Number(t.cpa)) : 0;
 
+    const kind = (t?.kind || "persuasion"); // persuasion | gotv | hybrid
+
+    let turnoutAdjustedNetVotesPerAttempt = netVotesPerAttempt;
+    let maxAttempts = null;
+
+    if (turnoutEnabled){
+      if (kind === "gotv"){
+        turnoutAdjustedNetVotesPerAttempt = (cr != null && cr > 0) ? (cr * (gotvLiftPP / 100)) : 0;
+
+        // Linear saturation cap: ceiling reached when (contacts / targetUniverse) * liftPP = maxAdditionalPP
+        // contacts = attempts * cr
+        if (targetUniverseSize != null && targetUniverseSize > 0 && cr != null && cr > 0 && gotvLiftPP > 0 && maxAdditionalPP > 0){
+          const capContacts = targetUniverseSize * (maxAdditionalPP / gotvLiftPP);
+          const capAttempts = capContacts / cr;
+          if (isFinite(capAttempts) && capAttempts > 0) maxAttempts = Math.ceil(capAttempts);
+        }
+      } else if (kind === "hybrid"){
+        const effTr = (tr != null) ? Math.min(1, tr + (Math.min(maxAdditionalPP, gotvLiftPP) / 100)) : tr;
+        turnoutAdjustedNetVotesPerAttempt = (cr != null && cr > 0 && sr != null && sr > 0 && effTr != null && effTr > 0)
+          ? (cr * sr * effTr)
+          : 0;
+      } else {
+        // persuasion-only: unchanged (TR already captures baseline voting reliability)
+        turnoutAdjustedNetVotesPerAttempt = netVotesPerAttempt;
+      }
+    }
+
     out.push({
       id: key,
       label,
+      kind,
       costPerAttempt,
       netVotesPerAttempt,
+      turnoutAdjustedNetVotesPerAttempt,
+      maxAttempts,
       // keep debug parity with ROI layer
       used: { cr, sr, tr }
     });

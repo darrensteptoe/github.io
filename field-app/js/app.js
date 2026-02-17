@@ -3,6 +3,7 @@ import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from 
 import { loadState, saveState } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
+import { computeAvgLiftPP } from "./turnout.js";
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -81,6 +82,22 @@ const els = {
   mcVolatility: document.getElementById("mcVolatility"),
   turnoutReliabilityPct: document.getElementById("turnoutReliabilityPct"),
 
+  turnoutEnabled: document.getElementById("turnoutEnabled"),
+  turnoutBaselinePct: document.getElementById("turnoutBaselinePct"),
+  turnoutTargetOverridePct: document.getElementById("turnoutTargetOverridePct"),
+  gotvMode: document.getElementById("gotvMode"),
+  gotvBasic: document.getElementById("gotvBasic"),
+  gotvAdvanced: document.getElementById("gotvAdvanced"),
+  gotvLiftPP: document.getElementById("gotvLiftPP"),
+  gotvMaxLiftPP: document.getElementById("gotvMaxLiftPP"),
+  gotvDiminishing: document.getElementById("gotvDiminishing"),
+  gotvLiftMin: document.getElementById("gotvLiftMin"),
+  gotvLiftMode: document.getElementById("gotvLiftMode"),
+  gotvLiftMax: document.getElementById("gotvLiftMax"),
+  gotvMaxLiftPP2: document.getElementById("gotvMaxLiftPP2"),
+  gotvDiminishing2: document.getElementById("gotvDiminishing2"),
+  turnoutSummary: document.getElementById("turnoutSummary"),
+
   mcContactMin: document.getElementById("mcContactMin"),
   mcContactMode: document.getElementById("mcContactMode"),
   mcContactMax: document.getElementById("mcContactMax"),
@@ -109,14 +126,17 @@ const els = {
     // Phase 4 — budget + ROI
     roiDoorsEnabled: document.getElementById("roiDoorsEnabled"),
     roiDoorsCpa: document.getElementById("roiDoorsCpa"),
+    roiDoorsKind: document.getElementById("roiDoorsKind"),
     roiDoorsCr: document.getElementById("roiDoorsCr"),
     roiDoorsSr: document.getElementById("roiDoorsSr"),
     roiPhonesEnabled: document.getElementById("roiPhonesEnabled"),
     roiPhonesCpa: document.getElementById("roiPhonesCpa"),
+    roiPhonesKind: document.getElementById("roiPhonesKind"),
     roiPhonesCr: document.getElementById("roiPhonesCr"),
     roiPhonesSr: document.getElementById("roiPhonesSr"),
     roiTextsEnabled: document.getElementById("roiTextsEnabled"),
     roiTextsCpa: document.getElementById("roiTextsCpa"),
+    roiTextsKind: document.getElementById("roiTextsKind"),
     roiTextsCr: document.getElementById("roiTextsCr"),
     roiTextsSr: document.getElementById("roiTextsSr"),
     roiOverheadAmount: document.getElementById("roiOverheadAmount"),
@@ -127,6 +147,7 @@ const els = {
 
   // Phase 5 — optimization
   optMode: document.getElementById("optMode"),
+    optObjective: document.getElementById("optObjective"),
   optBudget: document.getElementById("optBudget"),
   optCapacity: document.getElementById("optCapacity"),
   optStep: document.getElementById("optStep"),
@@ -219,6 +240,21 @@ function makeDefaultState(){
     callsPerHour3: 20,
     turnoutReliabilityPct: 80,
 
+    // Phase 6 — turnout / GOTV
+    turnoutEnabled: false,
+    turnoutBaselinePct: 55,
+    turnoutTargetOverridePct: "",
+    gotvMode: "basic",
+    gotvLiftPP: 1.0,
+    gotvMaxLiftPP: 10,
+    gotvDiminishing: false,
+    gotvLiftMin: 0.5,
+    gotvLiftMode: 1.0,
+    gotvLiftMax: 2.0,
+    gotvMaxLiftPP2: 10,
+    gotvDiminishing2: false,
+
+
     mcMode: "basic",
     mcVolatility: "med",
     mcSeed: "",
@@ -228,9 +264,9 @@ function makeDefaultState(){
           overheadAmount: 0,
           includeOverhead: false,
           tactics: {
-            doors: { enabled: true, cpa: 0.18 },
-            phones: { enabled: true, cpa: 0.03 },
-            texts: { enabled: false, cpa: 0.02 },
+            doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+            phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+            texts: { enabled: false, cpa: 0.02, kind: "persuasion" },
           },
           optimize: {
             mode: "budget",
@@ -238,6 +274,7 @@ function makeDefaultState(){
             capacityAttempts: "",
             step: 25,
             useDecay: false,
+            objective: "net",
           }
         },
 
@@ -312,6 +349,20 @@ function applyStateToUI(){
   if (els.callsPerHour3) els.callsPerHour3.value = state.callsPerHour3 ?? "";
   if (els.turnoutReliabilityPct) els.turnoutReliabilityPct.value = state.turnoutReliabilityPct ?? "";
 
+  // Phase 6 — turnout / GOTV
+  if (els.turnoutEnabled) els.turnoutEnabled.checked = !!state.turnoutEnabled;
+  if (els.turnoutBaselinePct) els.turnoutBaselinePct.value = state.turnoutBaselinePct ?? "";
+  if (els.turnoutTargetOverridePct) els.turnoutTargetOverridePct.value = state.turnoutTargetOverridePct ?? "";
+  if (els.gotvMode) els.gotvMode.value = state.gotvMode || "basic";
+  if (els.gotvLiftPP) els.gotvLiftPP.value = state.gotvLiftPP ?? "";
+  if (els.gotvMaxLiftPP) els.gotvMaxLiftPP.value = state.gotvMaxLiftPP ?? "";
+  if (els.gotvDiminishing) els.gotvDiminishing.checked = !!state.gotvDiminishing;
+  if (els.gotvLiftMin) els.gotvLiftMin.value = state.gotvLiftMin ?? "";
+  if (els.gotvLiftMode) els.gotvLiftMode.value = state.gotvLiftMode ?? "";
+  if (els.gotvLiftMax) els.gotvLiftMax.value = state.gotvLiftMax ?? "";
+  if (els.gotvMaxLiftPP2) els.gotvMaxLiftPP2.value = state.gotvMaxLiftPP2 ?? "";
+  if (els.gotvDiminishing2) els.gotvDiminishing2.checked = !!state.gotvDiminishing2;
+
   if (els.mcMode) els.mcMode.value = state.mcMode || "basic";
   if (els.mcVolatility) els.mcVolatility.value = state.mcVolatility || "med";
   if (els.mcSeed) els.mcSeed.value = state.mcSeed || "";
@@ -338,19 +389,23 @@ function applyStateToUI(){
   setIf(els.mcVolMax, state.mcVolMax);
 
   syncMcModeUI();
+  syncGotvModeUI();
 
 
     // Phase 4 — budget + ROI
     if (els.roiDoorsEnabled) els.roiDoorsEnabled.checked = !!state.budget?.tactics?.doors?.enabled;
     if (els.roiDoorsCpa) els.roiDoorsCpa.value = state.budget?.tactics?.doors?.cpa ?? "";
+    if (els.roiDoorsKind) els.roiDoorsKind.value = state.budget?.tactics?.doors?.kind || "persuasion";
     if (els.roiDoorsCr) els.roiDoorsCr.value = state.budget?.tactics?.doors?.crPct ?? "";
     if (els.roiDoorsSr) els.roiDoorsSr.value = state.budget?.tactics?.doors?.srPct ?? "";
     if (els.roiPhonesEnabled) els.roiPhonesEnabled.checked = !!state.budget?.tactics?.phones?.enabled;
     if (els.roiPhonesCpa) els.roiPhonesCpa.value = state.budget?.tactics?.phones?.cpa ?? "";
+    if (els.roiPhonesKind) els.roiPhonesKind.value = state.budget?.tactics?.phones?.kind || "persuasion";
     if (els.roiPhonesCr) els.roiPhonesCr.value = state.budget?.tactics?.phones?.crPct ?? "";
     if (els.roiPhonesSr) els.roiPhonesSr.value = state.budget?.tactics?.phones?.srPct ?? "";
     if (els.roiTextsEnabled) els.roiTextsEnabled.checked = !!state.budget?.tactics?.texts?.enabled;
     if (els.roiTextsCpa) els.roiTextsCpa.value = state.budget?.tactics?.texts?.cpa ?? "";
+    if (els.roiTextsKind) els.roiTextsKind.value = state.budget?.tactics?.texts?.kind || "persuasion";
     if (els.roiTextsCr) els.roiTextsCr.value = state.budget?.tactics?.texts?.crPct ?? "";
     if (els.roiTextsSr) els.roiTextsSr.value = state.budget?.tactics?.texts?.srPct ?? "";
     if (els.roiOverheadAmount) els.roiOverheadAmount.value = state.budget?.overheadAmount ?? "";
@@ -358,6 +413,7 @@ function applyStateToUI(){
 
   // Phase 5 — optimization
   if (els.optMode) els.optMode.value = state.budget?.optimize?.mode || "budget";
+    if (els.optObjective) els.optObjective.value = state.budget?.optimize?.objective || "net";
   if (els.optBudget) els.optBudget.value = state.budget?.optimize?.budgetAmount ?? "";
   if (els.optCapacity) els.optCapacity.value = state.budget?.optimize?.capacityAttempts ?? "";
   if (els.optStep) els.optStep.value = state.budget?.optimize?.step ?? 25;
@@ -551,6 +607,24 @@ function wireEvents(){
   if (els.doorsPerHour3) els.doorsPerHour3.addEventListener("input", () => { state.doorsPerHour3 = safeNum(els.doorsPerHour3.value); markMcStale(); render(); persist(); });
   if (els.callsPerHour3) els.callsPerHour3.addEventListener("input", () => { state.callsPerHour3 = safeNum(els.callsPerHour3.value); markMcStale(); render(); persist(); });
   if (els.turnoutReliabilityPct) els.turnoutReliabilityPct.addEventListener("input", () => { state.turnoutReliabilityPct = safeNum(els.turnoutReliabilityPct.value); markMcStale(); render(); persist(); });
+
+  // Phase 6 — turnout / GOTV inputs
+  if (els.turnoutEnabled) els.turnoutEnabled.addEventListener("change", () => { state.turnoutEnabled = !!els.turnoutEnabled.checked; markMcStale(); render(); persist(); });
+  if (els.turnoutBaselinePct) els.turnoutBaselinePct.addEventListener("input", () => { state.turnoutBaselinePct = safeNum(els.turnoutBaselinePct.value); markMcStale(); render(); persist(); });
+  if (els.turnoutTargetOverridePct) els.turnoutTargetOverridePct.addEventListener("input", () => { state.turnoutTargetOverridePct = els.turnoutTargetOverridePct.value; markMcStale(); render(); persist(); });
+
+  if (els.gotvMode) els.gotvMode.addEventListener("change", () => { state.gotvMode = els.gotvMode.value; syncGotvModeUI(); markMcStale(); render(); persist(); });
+
+  if (els.gotvLiftPP) els.gotvLiftPP.addEventListener("input", () => { state.gotvLiftPP = safeNum(els.gotvLiftPP.value); markMcStale(); render(); persist(); });
+  if (els.gotvMaxLiftPP) els.gotvMaxLiftPP.addEventListener("input", () => { state.gotvMaxLiftPP = safeNum(els.gotvMaxLiftPP.value); markMcStale(); render(); persist(); });
+  if (els.gotvDiminishing) els.gotvDiminishing.addEventListener("change", () => { state.gotvDiminishing = !!els.gotvDiminishing.checked; markMcStale(); render(); persist(); });
+
+  if (els.gotvLiftMin) els.gotvLiftMin.addEventListener("input", () => { state.gotvLiftMin = safeNum(els.gotvLiftMin.value); markMcStale(); render(); persist(); });
+  if (els.gotvLiftMode) els.gotvLiftMode.addEventListener("input", () => { state.gotvLiftMode = safeNum(els.gotvLiftMode.value); markMcStale(); render(); persist(); });
+  if (els.gotvLiftMax) els.gotvLiftMax.addEventListener("input", () => { state.gotvLiftMax = safeNum(els.gotvLiftMax.value); markMcStale(); render(); persist(); });
+  if (els.gotvMaxLiftPP2) els.gotvMaxLiftPP2.addEventListener("input", () => { state.gotvMaxLiftPP2 = safeNum(els.gotvMaxLiftPP2.value); markMcStale(); render(); persist(); });
+  if (els.gotvDiminishing2) els.gotvDiminishing2.addEventListener("change", () => { state.gotvDiminishing2 = !!els.gotvDiminishing2.checked; markMcStale(); render(); persist(); });
+
 
   if (els.mcMode) els.mcMode.addEventListener("change", () => { state.mcMode = els.mcMode.value; syncMcModeUI(); markMcStale(); persist(); });
   if (els.mcVolatility) els.mcVolatility.addEventListener("change", () => { state.mcVolatility = els.mcVolatility.value; markMcStale(); persist(); });
@@ -1244,6 +1318,7 @@ export function getSelfTestAccessors(){
   return {
     // state / context
     getStateSnapshot,
+    withPatchedState,
 
     // deterministic
     computeAll,
@@ -1277,6 +1352,15 @@ function syncMcModeUI(){
   els.mcAdvanced.classList.toggle("active", mode === "advanced");
 }
 
+
+function syncGotvModeUI(){
+  if (!els.gotvBasic || !els.gotvAdvanced || !els.gotvMode) return;
+  const mode = els.gotvMode.value || "basic";
+  els.gotvBasic.classList.toggle("active", mode === "basic");
+  els.gotvAdvanced.classList.toggle("active", mode === "advanced");
+}
+
+
 function markMcStale(){
   // Mark results stale if there is a prior run.
   if (!els.mcStale) return;
@@ -1284,6 +1368,32 @@ function markMcStale(){
     els.mcStale.hidden = false;
   }
 }
+
+
+function withPatchedState(patch, fn){
+  // Dev-only helper used by selfTest harness.
+  const prev = getStateSnapshot();
+  const merge = (target, src) => {
+    if (!src || typeof src !== "object") return;
+    for (const k of Object.keys(src)){
+      const v = src[k];
+      if (v && typeof v === "object" && !Array.isArray(v)){
+        if (!target[k] || typeof target[k] !== "object" || Array.isArray(target[k])) target[k] = {};
+        merge(target[k], v);
+      } else {
+        target[k] = v;
+      }
+    }
+  };
+  try{
+    merge(state, patch || {});
+    return fn();
+  } finally {
+    // Restore
+    state = prev;
+  }
+}
+
 
 function clearMcStale(){
   if (!els.mcStale) return;
@@ -1308,6 +1418,20 @@ function hashMcInputs(res, weeks){
     contactRatePct: safeNum(state.contactRatePct),
     supportRatePct: safeNum(state.supportRatePct),
     turnoutReliabilityPct: safeNum(state.turnoutReliabilityPct),
+
+    // Phase 6 — turnout / GOTV
+    turnoutEnabled: !!state.turnoutEnabled,
+    turnoutBaselinePct: safeNum(state.turnoutBaselinePct),
+    turnoutTargetOverridePct: state.turnoutTargetOverridePct ?? "",
+    gotvMode: state.gotvMode || "basic",
+    gotvLiftPP: safeNum(state.gotvLiftPP),
+    gotvMaxLiftPP: safeNum(state.gotvMaxLiftPP),
+    gotvDiminishing: !!state.gotvDiminishing,
+    gotvLiftMin: safeNum(state.gotvLiftMin),
+    gotvLiftMode: safeNum(state.gotvLiftMode),
+    gotvLiftMax: safeNum(state.gotvLiftMax),
+    gotvMaxLiftPP2: safeNum(state.gotvMaxLiftPP2),
+    gotvDiminishing2: !!state.gotvDiminishing2,
     // MC config
     mcMode: state.mcMode || "basic",
     mcVolatility: state.mcVolatility || "med",
@@ -1378,6 +1502,14 @@ function renderRoi(res, weeks){
 
   const mcLast = state.mcLast || null;
 
+  const turnoutModel = {
+    enabled: !!state.turnoutEnabled,
+    baselineTurnoutPct: (safeNum(state.turnoutTargetOverridePct) != null) ? safeNum(state.turnoutTargetOverridePct) : safeNum(state.turnoutBaselinePct),
+    liftPerContactPP: (state.gotvMode === "advanced") ? safeNum(state.gotvLiftMode) : safeNum(state.gotvLiftPP),
+    maxLiftPP: (state.gotvMode === "advanced") ? safeNum(state.gotvMaxLiftPP2) : safeNum(state.gotvMaxLiftPP),
+    useDiminishing: (state.gotvMode === "advanced") ? !!state.gotvDiminishing2 : !!state.gotvDiminishing,
+  };
+
   const { rows, banner } = computeRoiRows({
     goalNetVotes: needVotes,
     baseRates: { cr, sr, tr },
@@ -1385,7 +1517,8 @@ function renderRoi(res, weeks){
     overheadAmount,
     includeOverhead,
     caps: { total: capAttempts, doors: capBreakdown?.doors ?? null, phones: capBreakdown?.phones ?? null },
-    mcLast
+    mcLast,
+    turnoutModel,
   });
 
   // banner
@@ -1399,7 +1532,38 @@ function renderRoi(res, weeks){
     }
   }
 
-  // render table
+  
+  // Phase 6 — turnout summary (deterministic lens)
+  if (els.turnoutSummary){
+    if (turnoutModel.enabled){
+      const U = safeNum(state.universeSize);
+      const tuPct = safeNum(state.persuasionPct);
+      const targetUniverseSize = (U != null && tuPct != null) ? Math.round(U * (clamp(tuPct, 0, 100) / 100)) : null;
+
+      // Use capacity ceiling as a conservative "plan" for total attempted contacts, and base CR to convert to successful contacts.
+      const contacts = (capAttempts != null && cr != null) ? Math.max(0, capAttempts * cr) : 0;
+
+      const avgLiftPP = computeAvgLiftPP({
+        baselineTurnoutPct: turnoutModel.baselineTurnoutPct,
+        liftPerContactPP: turnoutModel.liftPerContactPP,
+        maxLiftPP: turnoutModel.maxLiftPP,
+        contacts,
+        universeSize: targetUniverseSize || 0,
+        useDiminishing: turnoutModel.useDiminishing,
+      });
+
+      const gotvAddedVotes = (targetUniverseSize != null) ? Math.round(targetUniverseSize * (avgLiftPP / 100)) : 0;
+      const baseTxt = (turnoutModel.baselineTurnoutPct != null && isFinite(turnoutModel.baselineTurnoutPct)) ? `${Number(turnoutModel.baselineTurnoutPct).toFixed(1)}%` : "—";
+
+      els.turnoutSummary.hidden = false;
+      els.turnoutSummary.className = "banner ok";
+      els.turnoutSummary.textContent = `Turnout enabled: baseline ${baseTxt} · modeled avg lift ${avgLiftPP.toFixed(1)}pp · implied +${fmtInt(gotvAddedVotes)} votes (at capacity ceiling).`;
+    } else {
+      els.turnoutSummary.hidden = true;
+    }
+  }
+
+// render table
   els.roiTbody.innerHTML = "";
   if (!rows.length){
     const trEl = document.createElement("tr");
@@ -1422,6 +1586,10 @@ function renderRoi(res, weeks){
     td2.className = "num";
     td2.textContent = r.costPerNetVote == null ? "—" : `$${r.costPerNetVote.toFixed(2)}`;
 
+    const td2b = document.createElement("td");
+    td2b.className = "num";
+    td2b.textContent = (!turnoutModel.enabled || r.costPerTurnoutAdjustedNetVote == null) ? "—" : `$${r.costPerTurnoutAdjustedNetVote.toFixed(2)}`;
+
     const td3 = document.createElement("td");
     td3.className = "num";
     td3.textContent = r.totalCost == null ? "—" : `$${fmtInt(Math.round(r.totalCost))}`;
@@ -1432,6 +1600,7 @@ function renderRoi(res, weeks){
     trEl.appendChild(td0);
     trEl.appendChild(td1);
     trEl.appendChild(td2);
+    trEl.appendChild(td2b);
     trEl.appendChild(td3);
     trEl.appendChild(td4);
 
@@ -1592,7 +1761,9 @@ function renderOptimization(res, weeks){
 
     const td3 = document.createElement("td");
     td3.className = "num";
-    td3.textContent = fmtInt(Math.round(a * t.netVotesPerAttempt));
+    const obj = (state.budget?.optimize?.objective || "net");
+    const vpa = (obj === "turnout") ? (t.turnoutAdjustedNetVotesPerAttempt ?? t.netVotesPerAttempt) : t.netVotesPerAttempt;
+    td3.textContent = fmtInt(Math.round(a * (Number.isFinite(vpa) ? vpa : 0)));
 
     trEl.appendChild(td0);
     trEl.appendChild(td1);
@@ -1608,7 +1779,7 @@ function renderOptimization(res, weeks){
   if ((opt.mode || "budget") === "budget" && includeOverhead && overheadAmount > 0){
     totalCost += overheadAmount;
   }
-  const totalVotes = result.totals?.netVotes ?? 0;
+  const totalVotes = result.totals?.netVotes ?? 0; // netVotes is objective-aligned in optimize.js
 
   setTotals({
     attempts: totalAttempts,
@@ -1808,6 +1979,24 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     volunteerMult: new Array(runs),
   };
 
+  const turnoutEnabled = !!state.turnoutEnabled;
+  const baseTurnoutPct = (safeNum(state.turnoutTargetOverridePct) != null) ? safeNum(state.turnoutTargetOverridePct) : safeNum(state.turnoutBaselinePct);
+  const gotvMaxLiftPP = (state.gotvMode === "advanced") ? safeNum(state.gotvMaxLiftPP2) : safeNum(state.gotvMaxLiftPP);
+  const useDim = (state.gotvMode === "advanced") ? !!state.gotvDiminishing2 : !!state.gotvDiminishing;
+
+  const U = safeNum(state.universeSize);
+  const tuPct = safeNum(state.persuasionPct);
+  const targetUniverseSize = (U != null && tuPct != null) ? Math.round(U * (clamp(tuPct, 0, 100) / 100)) : null;
+
+  const turnoutAdjustedVotesArr = new Array(runs);
+  const winsTA = new Array(runs);
+
+  // Add sampled GOTV lift to sensitivity when enabled + advanced
+  if (turnoutEnabled && mode === "advanced"){
+    samples.gotvLift = new Array(runs);
+  }
+
+
   for (let i=0;i<runs;i++){
     const cr = triSample(specs.contactRate.min, specs.contactRate.mode, specs.contactRate.max, rng);
     const pr = triSample(specs.persuasionRate.min, specs.persuasionRate.mode, specs.persuasionRate.max, rng);
@@ -1815,6 +2004,18 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     const dph = triSample(specs.doorsPerHour.min, specs.doorsPerHour.mode, specs.doorsPerHour.max, rng);
     const cph = triSample(specs.callsPerHour.min, specs.callsPerHour.mode, specs.callsPerHour.max, rng);
     const vm = triSample(specs.volunteerMult.min, specs.volunteerMult.mode, specs.volunteerMult.max, rng);
+
+    let gotvLiftPP = 0;
+    if (turnoutEnabled){
+      if (mode === "advanced" && state.gotvMode === "advanced"){
+        const mn = Math.max(0, safeNum(state.gotvLiftMin) ?? 0);
+        const md = Math.max(0, safeNum(state.gotvLiftMode) ?? 0);
+        const mx = Math.max(0, safeNum(state.gotvLiftMax) ?? 0);
+        gotvLiftPP = triSample(mn, md, mx, rng);
+      } else {
+        gotvLiftPP = Math.max(0, safeNum(state.gotvLiftPP) ?? 0);
+      }
+    }
 
     const capContacts = computeCapacityContacts({
       weeks,
@@ -1827,16 +2028,38 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     });
 
     let votes = 0;
+    let turnoutAdjustedVotes = 0;
+
+    let convos = 0;
     if (capContacts != null && capContacts > 0){
-      const convos = capContacts * cr;
+      convos = capContacts * cr;
       const supports = convos * pr;
       votes = supports * rr;
     }
 
+    turnoutAdjustedVotes = votes;
+
+    if (turnoutEnabled && targetUniverseSize != null && targetUniverseSize > 0 && gotvLiftPP > 0){
+      const avgLiftPP = computeAvgLiftPP({
+        baselineTurnoutPct: baseTurnoutPct,
+        liftPerContactPP: gotvLiftPP,
+        maxLiftPP: gotvMaxLiftPP,
+        contacts: convos,
+        universeSize: targetUniverseSize,
+        useDiminishing: useDim,
+      });
+      const gotvAddedVotes = targetUniverseSize * (avgLiftPP / 100);
+      turnoutAdjustedVotes = votes + gotvAddedVotes;
+    }
+
     const margin = votes - needVotes;
+    const marginTA = turnoutAdjustedVotes - needVotes;
 
     margins[i] = margin;
     wins[i] = (margin >= 0) ? 1 : 0;
+
+    turnoutAdjustedVotesArr[i] = turnoutAdjustedVotes;
+    winsTA[i] = (marginTA >= 0) ? 1 : 0;
 
     samples.contactRate[i] = cr;
     samples.persuasionRate[i] = pr;
@@ -1844,26 +2067,41 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     samples.doorsPerHour[i] = dph;
     samples.callsPerHour[i] = cph;
     samples.volunteerMult[i] = vm;
+    if (turnoutEnabled && mode === "advanced" && state.gotvMode === "advanced" && samples.gotvLift){ samples.gotvLift[i] = gotvLiftPP; }
   }
 
   const winProb = sum(wins) / runs;
+  const winProbTurnoutAdjusted = turnoutEnabled ? (sum(winsTA) / runs) : winProb;
 
   const sorted = margins.slice().sort((a,b)=>a-b);
   const median = quantileSorted(sorted, 0.50);
   const p5 = quantileSorted(sorted, 0.05);
   const p95 = quantileSorted(sorted, 0.95);
 
+  let turnoutAdjustedSummary = null;
+  if (turnoutEnabled){
+    const vSorted = turnoutAdjustedVotesArr.slice().sort((a,b)=>a-b);
+    turnoutAdjustedSummary = {
+      mean: mean(turnoutAdjustedVotesArr),
+      p10: quantileSorted(vSorted, 0.10),
+      p50: quantileSorted(vSorted, 0.50),
+      p90: quantileSorted(vSorted, 0.90),
+    };
+  }
+
   const sens = computeSensitivity(samples, margins);
 
   const summary = {
     runs,
     winProb,
+    winProbTurnoutAdjusted,
     median,
     p5,
     p95,
     sensitivity: sens,
     riskLabel: riskLabelFromWinProb(winProb),
     needVotes,
+    turnoutAdjusted: turnoutAdjustedSummary,
   };
 
   return { summary };
@@ -1906,13 +2144,21 @@ function buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol 
 function renderMcResults(summary){
   if (!els.mcWinProb) return;
 
-  els.mcWinProb.textContent = `${(summary.winProb * 100).toFixed(1)}%`;
+  if (summary.winProbTurnoutAdjusted != null && summary.winProbTurnoutAdjusted !== summary.winProb){
+    els.mcWinProb.textContent = `${(summary.winProb * 100).toFixed(1)}% (TA: ${(summary.winProbTurnoutAdjusted * 100).toFixed(1)}%)`;
+  } else {
+    els.mcWinProb.textContent = `${(summary.winProb * 100).toFixed(1)}%`;
+  }
   els.mcMedian.textContent = fmtSigned(summary.median);
   els.mcP5.textContent = fmtSigned(summary.p5);
   els.mcP95.textContent = fmtSigned(summary.p95);
 
   if (els.mcRiskLabel){
-    els.mcRiskLabel.textContent = `${summary.riskLabel} — Need: ${fmtInt(Math.round(summary.needVotes))} net persuasion votes.`;
+    let extra = "";
+    if (summary.turnoutAdjusted){
+      extra = ` | TA votes (p50): ${fmtInt(Math.round(summary.turnoutAdjusted.p50))}`;
+    }
+    els.mcRiskLabel.textContent = `${summary.riskLabel} — Need: ${fmtInt(Math.round(summary.needVotes))} net persuasion votes.${extra}`;
   }
 
   if (els.mcSensitivity){
@@ -2042,6 +2288,11 @@ function sum(arr){
   let s = 0;
   for (let i=0;i<arr.length;i++) s += arr[i];
   return s;
+}
+
+function mean(arr){
+  if (!arr || arr.length === 0) return 0;
+  return sum(arr) / arr.length;
 }
 
 function fmtSigned(v){
