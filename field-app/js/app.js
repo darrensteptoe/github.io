@@ -1031,17 +1031,240 @@ function initExplainCard(){
   els.explainCard.hidden = !state.ui?.training;
 }
 
+
+function isDevMode(){
+  try{
+    const qs = new URLSearchParams(window.location.search);
+    if (qs.get("dev") === "1") return true;
+  } catch {}
+  try{
+    return localStorage.getItem("devMode") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function initDevTools(){
+  if (!isDevMode()) return;
+
+  // Minimal, isolated UI elements (do not touch existing layout).
+  const host = document.createElement("div");
+  host.className = "devtools";
+  host.setAttribute("data-devtools", "1");
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "devtools-btn";
+  btn.textContent = "Run Self-Test";
+
+  const panel = document.createElement("div");
+  panel.className = "devtools-panel";
+  panel.hidden = true;
+
+  const FPE_LAST_GOOD_KEY = "fpe_lastGood";
+
+  const safeJsonParse = (s) => {
+    try{ return JSON.parse(s); } catch { return null; }
+  };
+
+  const formatWhen = (ts) => {
+    try{
+      const d = new Date(ts);
+      return d.toLocaleString();
+    } catch {
+      return "";
+    }
+  };
+
+  const diffFlat = (a, b, prefix="") => {
+    const diffs = [];
+    const isObj = (v) => (v && typeof v === "object" && !Array.isArray(v));
+    if (Array.isArray(a) || Array.isArray(b)){
+      const sa = JSON.stringify(a);
+      const sb = JSON.stringify(b);
+      if (sa !== sb) diffs.push({ path: prefix || "(root)", a: sa, b: sb });
+      return diffs;
+    }
+    if (!isObj(a) || !isObj(b)){
+      if (a !== b) diffs.push({ path: prefix || "(root)", a, b });
+      return diffs;
+    }
+    const keys = Array.from(new Set([...Object.keys(a), ...Object.keys(b)])).sort();
+    for (const k of keys){
+      const p = prefix ? `${prefix}.${k}` : k;
+      const va = a[k];
+      const vb = b[k];
+      if (isObj(va) && isObj(vb)){
+        diffs.push(...diffFlat(va, vb, p));
+      } else if (Array.isArray(va) || Array.isArray(vb)){
+        diffs.push(...diffFlat(va, vb, p));
+      } else if (va !== vb){
+        diffs.push({ path: p, a: va, b: vb });
+      }
+      if (diffs.length >= 12) break;
+    }
+    return diffs;
+  };
+
+
+  const renderResult = (r) => {
+    panel.hidden = false;
+    panel.innerHTML = "";
+
+    const head = document.createElement("div");
+    head.className = "devtools-head";
+    const status = (r.failed && r.failed > 0) ? "FAIL" : "PASS";
+    head.textContent = `Self-Test: ${status} — ${r.passed}/${r.total} passed${r.durationMs != null ? ` (${r.durationMs}ms)` : ""}`;
+    panel.appendChild(head);
+
+    // Last good signature (saved only on PASS)
+    let lastGood = null;
+    try{ lastGood = safeJsonParse(localStorage.getItem(FPE_LAST_GOOD_KEY) || ""); } catch {}
+
+    const hasSig = !!(r && r.signature && r.signatureHash);
+    if (status === "PASS" && hasSig){
+      try{
+        localStorage.setItem(FPE_LAST_GOOD_KEY, JSON.stringify({ ts: Date.now(), signature: r.signature, hash: r.signatureHash }));
+        lastGood = { ts: Date.now(), signature: r.signature, hash: r.signatureHash };
+      } catch {}
+    }
+
+    if (hasSig || lastGood){
+      const meta = document.createElement("div");
+      meta.className = "devtools-meta";
+
+      const currentHash = hasSig ? r.signatureHash : null;
+      const lastHash = lastGood?.hash || null;
+
+      let line = "";
+      if (lastGood?.ts){
+        line += `Last good: ${formatWhen(lastGood.ts)}`;
+      } else {
+        line += "Last good: (none)";
+      }
+      if (lastHash){
+        line += ` · hash ${String(lastHash).slice(0,12)}`;
+      }
+      if (currentHash){
+        line += ` · current ${String(currentHash).slice(0,12)}`;
+      }
+      if (lastHash && currentHash){
+        line += (lastHash === currentHash) ? " · no drift" : " · DRIFT";
+      }
+      meta.textContent = line;
+      panel.appendChild(meta);
+
+      if (lastGood?.signature && hasSig && lastHash && currentHash && lastHash !== currentHash){
+        const diffs = diffFlat(lastGood.signature, r.signature);
+        if (diffs.length){
+          const dbox = document.createElement("div");
+          dbox.className = "devtools-diff";
+          const title = document.createElement("div");
+          title.className = "devtools-diff-title";
+          title.textContent = "Top drift diffs:";
+          dbox.appendChild(title);
+          const ul = document.createElement("ul");
+          ul.className = "devtools-diff-list";
+          for (const d of diffs){
+            const li = document.createElement("li");
+            li.textContent = `${d.path}: was ${String(d.a)} → now ${String(d.b)}`;
+            ul.appendChild(li);
+          }
+          dbox.appendChild(ul);
+          panel.appendChild(dbox);
+        }
+      }
+    }
+
+    if (r.failed && r.failures && r.failures.length){
+      const ul = document.createElement("ul");
+      ul.className = "devtools-failures";
+      for (const f of r.failures){
+        const li = document.createElement("li");
+        li.textContent = `${f.name}: ${f.message}`;
+        ul.appendChild(li);
+      }
+      panel.appendChild(ul);
+    }
+  };
+
+  btn.addEventListener("click", async () => {
+    btn.disabled = true;
+    btn.textContent = "Running…";
+    try{
+      const mod = await import("./selfTest.js");
+      const runSelfTests = mod?.runSelfTests;
+      if (typeof runSelfTests !== "function"){
+        renderResult({ total: 1, passed: 0, failed: 1, failures:[{ name:"Loader", message:"runSelfTests() not found" }] });
+      } else {
+        const r = runSelfTests(getSelfTestAccessors());
+        renderResult(r || { total: 1, passed: 0, failed: 1, failures:[{ name:"Runner", message:"No results returned" }] });
+      }
+    } catch (err){
+      renderResult({ total: 1, passed: 0, failed: 1, failures:[{ name:"Exception", message: err?.message ? err.message : String(err) }] });
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Run Self-Test";
+    }
+  });
+
+  host.appendChild(btn);
+  host.appendChild(panel);
+  document.body.appendChild(host);
+}
+
 function init(){
   applyStateToUI();
   rebuildCandidateTable();
   initTabs();
   initExplainCard();
   wireEvents();
+  initDevTools();
   render();
   persist();
 }
 
 init();
+
+
+// =========================
+// Phase 5.5 — Self-test accessors (dev-only)
+// =========================
+export function getStateSnapshot(){
+  // Deep clone to prevent accidental mutation from dev tools.
+  try{
+    return JSON.parse(JSON.stringify(state));
+  } catch {
+    // Fallback shallow snapshot
+    return { ...state };
+  }
+}
+
+export function getSelfTestAccessors(){
+  return {
+    // state / context
+    getStateSnapshot,
+
+    // deterministic
+    computeAll,
+    deriveNeedVotes,
+    derivedWeeksRemaining,
+
+    // ROI + optimization
+    computeRoiRows,
+    buildOptimizationTactics,
+    optimizeMixBudget,
+    optimizeMixCapacity,
+
+    // capacity helpers
+    computeCapacityBreakdown,
+    computeCapacityContacts,
+
+    // Monte Carlo
+    runMonteCarloSim,
+  };
+}
+
 
 /* =========================
    Phase 3 — Execution + Risk
