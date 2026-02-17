@@ -43,7 +43,7 @@
 
   <main class="shell">
     <section class="left">
-      <div class="card" data-phase="1">
+      <div class="card">
         <div class="card-head">
           <h2>Scenario setup</h2>
         </div>
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <div class="card" data-phase="1">
+      <div class="card">
         <div class="card-head">
           <h2>Universe</h2>
         </div>
@@ -127,7 +127,7 @@
         </div>
       </div>
 
-      <div class="card" data-phase="1">
+      <div class="card">
         <div class="card-head">
           <h2>Turnout baseline (last two comparable cycles)</h2>
         </div>
@@ -173,7 +173,7 @@
         </div>
       </div>
 
-      <div class="card" data-phase="1">
+      <div class="card">
         <div class="card-head">
           <h2>Candidates & vote landscape</h2>
           <div class="card-actions">
@@ -236,7 +236,7 @@
         <div class="banner warn" id="candWarn" hidden></div>
       </div>
 
-      <div class="card" data-phase="1">
+      <div class="card">
         <div class="card-head">
           <h2>Persuasion universe</h2>
         </div>
@@ -261,7 +261,7 @@
         </div>
       </div>
 
-      <div class="card sticky-bottom" data-phase="1">
+      <div class="card sticky-bottom">
         <div class="card-head">
           <h2>Validation</h2>
         </div>
@@ -277,9 +277,9 @@
       </nav>
 
       <section class="panel active" id="tab-win">
-        <div class="card" data-phase="1">
-        <div class="card-head">
-          <h2>Win path (Expected)</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>Win path (Expected)</h2>
           </div>
 
           <div class="kpis">
@@ -324,9 +324,9 @@
           </div>
         </div>
 
-        <div class="card" data-phase="1">
-        <div class="card-head">
-          <h2>Stress test summary (client style)</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>Stress test summary (client style)</h2>
           </div>
           <div id="stressBox" class="stress">
             <div class="stress-item">—</div>
@@ -337,7 +337,7 @@
         </div>
 
         
-        <div class="card" id="conversionCard" data-phase="2">
+        <div class="card" id="conversionCard">
           <div class="card-head">
             <h2>Conversion + contact math (Phase 2)</h2>
           </div>
@@ -433,7 +433,7 @@
           </div>
         </div>
 
-        <div class="card" id="phase3Card" data-phase="3">
+        <div class="card" id="phase3Card">
           <details class="mc-details" open>
             <summary>
               <span class="mc-summary-title">Execution + Risk (Phase 3)</span>
@@ -654,7 +654,7 @@
         </div>
 
 
-<div class="card" id="explainCard" hidden data-phase="1">
+<div class="card" id="explainCard" hidden>
           <div class="card-head">
             <h2>Explainability</h2>
           </div>
@@ -677,9 +677,9 @@
       </section>
 
       <section class="panel" id="tab-assumptions">
-        <div class="card" data-phase="1">
-        <div class="card-head">
-          <h2>Assumptions snapshot</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>Assumptions snapshot</h2>
           </div>
           <div id="assumptionsSnapshot" class="assumptions"></div>
           <div class="note">
@@ -687,18 +687,18 @@
           </div>
         </div>
 
-        <div class="card" data-phase="1">
-        <div class="card-head">
-          <h2>Warnings & guardrails</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>Warnings & guardrails</h2>
           </div>
           <div id="guardrails" class="guardrails"></div>
         </div>
       </section>
 
       <section class="panel" id="tab-roi">
-        <div class="card" data-phase="4">
-        <div class="card-head">
-          <h2>Budget inputs (Phase 4)</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>Budget inputs (Phase 4)</h2>
           </div>
 
           <div class="grid3">
@@ -799,9 +799,9 @@
           </div>
         </div>
 
-        <div class="card" data-phase="4">
-        <div class="card-head">
-          <h2>ROI comparison</h2>
+        <div class="card">
+          <div class="card-head">
+            <h2>ROI comparison</h2>
             <div class="card-actions">
               <button id="roiRefresh" class="btn btn-sm" type="button">Refresh</button>
             </div>
@@ -830,7 +830,7 @@
             ROI uses the locked backbone: Attempts → Conversations (CR) → Support IDs (SR) → Net votes (TR). Costs are deterministic in Phase 4.
           </div>
         </div>
-<div class="card" data-phase="5">
+<div class="card">
   <div class="card-head">
     <h2>Optimization (Phase 5)</h2>
     <div class="card-actions">
@@ -901,19 +901,9 @@
       <div class="kpi-s">Includes fixed overhead in budget mode (if enabled)</div>
     </div>
     <div class="kpi">
-      <div class="kpi-k">Expected persuasion votes</div>
-      <div id="optPersVotes" class="kpi-v">—</div>
-      <div class="kpi-s">Deterministic: Persuasion pool attempts × (CR × SR × TR)</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-k">Expected turnout votes</div>
-      <div id="optTurnVotes" class="kpi-v">—</div>
-      <div class="kpi-s">Deterministic: GOTV pool attempts × (CR × GOTV lift × non-voter share)</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-k">Expected total net votes</div>
+      <div class="kpi-k">Expected net persuasion votes</div>
       <div id="optTotalVotes" class="kpi-v">—</div>
-      <div class="kpi-s">Persuasion votes + turnout votes (Phase 6)</div>
+      <div class="kpi-s">Deterministic: Attempts × (CR × SR × TR)</div>
     </div>
     <div class="kpi">
       <div class="kpi-k">Gap context</div>
@@ -944,85 +934,6 @@
     Interpretation: If diminishing returns is OFF and there are no caps, the optimal allocation can legitimately concentrate in the single best marginal tactic.
   </div>
 </div>
-
-<div class="card" data-phase="6">
-  <div class="card-head">
-    <h2>Turnout & Mobilization (Phase 6)</h2>
-  </div>
-
-  <div class="grid3">
-    <div class="field">
-      <label class="label" for="gotvBasePct">Base mobilization universe % of U</label>
-      <input id="gotvBasePct" class="input num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 40" />
-      <div class="note">Strong + lean supporters you expect to mobilize (not persuade). Guardrail: Base % + Persuasion % ≤ 100.</div>
-    </div>
-
-    <div class="field">
-      <label class="label" for="gotvBaseTurnoutPct">Baseline base turnout %</label>
-      <input id="gotvBaseTurnoutPct" class="input num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 62" />
-      <div class="note">Historical turnout probability among your base universe (used to cap the non-voter pool).</div>
-    </div>
-
-    <div class="field">
-      <label class="label">Mobilization ceiling (derived)</label>
-      <div class="metric">
-        <div class="metric-k">Max additional base votes</div>
-        <div id="gotvCeilingVotes" class="metric-v">—</div>
-      </div>
-      <div class="note">Ceiling = Base universe × (1 − baseline turnout). This prevents impossible GOTV math.</div>
-    </div>
-  </div>
-
-  <div class="divider-h"></div>
-
-  <div class="grid3">
-    <div class="field">
-      <label class="label">Doors (GOTV)</label>
-      <label class="switch" style="margin-top:6px;">
-        <input id="gotvDoorsEnabled" type="checkbox" />
-        <span class="slider"></span>
-        <span class="switch-label">Enable GOTV pool</span>
-      </label>
-      <div style="margin-top:8px;">
-        <label class="label" for="gotvDoorsLiftPct">Turnout lift per contact %</label>
-        <input id="gotvDoorsLiftPct" class="input input-sm num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 6" />
-      </div>
-      <div class="note">Uses the same Contact rate override % you set in ROI for Doors. Lift is incremental turnout probability among remaining non-voters.</div>
-    </div>
-
-    <div class="field">
-      <label class="label">Phones (GOTV)</label>
-      <label class="switch" style="margin-top:6px;">
-        <input id="gotvPhonesEnabled" type="checkbox" />
-        <span class="slider"></span>
-        <span class="switch-label">Enable GOTV pool</span>
-      </label>
-      <div style="margin-top:8px;">
-        <label class="label" for="gotvPhonesLiftPct">Turnout lift per contact %</label>
-        <input id="gotvPhonesLiftPct" class="input input-sm num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 3" />
-      </div>
-      <div class="note">Uses the same Contact rate override % you set in ROI for Phones.</div>
-    </div>
-
-    <div class="field">
-      <label class="label">Texts (GOTV)</label>
-      <label class="switch" style="margin-top:6px;">
-        <input id="gotvTextsEnabled" type="checkbox" />
-        <span class="slider"></span>
-        <span class="switch-label">Enable GOTV pool</span>
-      </label>
-      <div style="margin-top:8px;">
-        <label class="label" for="gotvTextsLiftPct">Turnout lift per contact %</label>
-        <input id="gotvTextsLiftPct" class="input input-sm num" type="number" min="0" max="100" step="0.1" placeholder="e.g., 1.5" />
-      </div>
-      <div class="note">Texts often have lower mobilization lift. Enable only if you have evidence or a disciplined program.</div>
-    </div>
-  </div>
-
-  <div id="gotvBanner" class="banner warn" hidden></div>
-</div>
-
-
 
       </section>
 
