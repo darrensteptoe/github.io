@@ -34,6 +34,7 @@
   --p3:#fde68a; /* Execution + Risk (pastel yellow) */
   --p4:#a7f3d0; /* ROI (pastel green) */
   --p5:#fda4af; /* Optimization (pastel red) */
+  --p6:#99f6e4; /* Turnout/GOTV (pastel teal) */
 
   /* Auto-populated info bubble background */
   --auto-bg: color-mix(in srgb, var(--panel) 72%, var(--bg) 28%);
@@ -75,7 +76,12 @@ body.dark{
   --p3:#fcd34d;
   --p4:#6ee7b7;
   --p5:#fca5a5;
+  --p6:#5eead4;
 }
+
+/* Dev-only helpers (hidden unless dev mode enabled) */
+.dev-only{ display:none !important; }
+body.dev .dev-only{ display: revert !important; }
 
 .topbar{
   position:fixed;
@@ -168,6 +174,7 @@ body.dark{
 .card[data-phase="3"]{ --phase: var(--p3); }
 .card[data-phase="4"]{ --phase: var(--p4); }
 .card[data-phase="5"]{ --phase: var(--p5); }
+.card[data-phase="6"]{ --phase: var(--p6); }
 
 .card[data-phase] .note{
   border-color: color-mix(in srgb, var(--phase) 35%, var(--rule) 65%);
@@ -390,8 +397,10 @@ body.training .help{ display:block; }
   color:var(--muted2);
   font-weight:650;
   background: color-mix(in srgb, var(--panel2) 92%, transparent);
-  position:fixed;
+  /* Sticky header inside scroll containers (prevents global fixed headers stacking across tables) */
+  position:sticky;
   top:0;
+  z-index:2;
 }
 .table td.num, .table th.num{ text-align:right; }
 .table tfoot td{ border-bottom:none; }
