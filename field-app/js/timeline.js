@@ -8,6 +8,8 @@
 */
 
 function num(v, fallback = null){
+  // Treat null/undefined/empty as "no value" (important because Number(null) === 0).
+  if (v === null || v === undefined || v === "") return fallback;
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
