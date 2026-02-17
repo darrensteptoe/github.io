@@ -1936,12 +1936,12 @@ function runMonteCarloNow(){
 
   const sim = runMonteCarloSim({ res, weeks: w, needVotes, runs: 10000, seed: state.mcSeed || "" });
 
-  state.mcLast = sim.summary;
+  state.mcLast = sim;
   state.mcLastHash = h;
 
   persist();
   clearMcStale();
-  renderMcResults(sim.summary);
+  renderMcResults(sim);
 }
 
 function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
@@ -2102,16 +2102,9 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     riskLabel: riskLabelFromWinProb(winProb),
     needVotes,
     turnoutAdjusted: turnoutAdjustedSummary,
-    // Phase 6 — explicit turnout-adjusted summary fields (present only when turnout modeling is enabled)
-    ...(turnoutEnabled && turnoutAdjustedSummary ? {
-      meanTurnoutAdjustedNetVotes: turnoutAdjustedSummary.mean,
-      p10TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p10,
-      p50TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p50,
-      p90TurnoutAdjustedNetVotes: turnoutAdjustedSummary.p90,
-    } : {}),
   };
 
-  return { summary };
+  return summary;
 }
 
 function buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol }){
