@@ -1472,6 +1472,7 @@ function initDevTools(){
       } else {
         line += "Last good: (none)";
       }
+      // Display full 16-hex snapshot hashes (unambiguous, monospace via CSS).
       if (lastHash){
         line += ` · fixture ${String(lastHash)}`;
       }

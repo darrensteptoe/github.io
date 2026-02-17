@@ -672,8 +672,8 @@ export function runSelfTests(engine){
   };
   results.signature = signature;
   try{
-    // A true, deterministic hash for drift diagnostics (do NOT stringify objects into the UI).
-    // Uses the Phase 9B snapshot hasher (canonical + FNV-1a 64-bit).
+    // Deterministic, order-independent hash for drift diagnostics.
+    // NOTE: This must be a short, stable hex string (not a JSON blob).
     results.signatureHash = computeSnapshotHash(signature);
   } catch {
     results.signatureHash = null;
