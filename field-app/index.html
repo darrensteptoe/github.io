@@ -1135,6 +1135,41 @@
         <div class="kpi-s">Timeline / budget / capacity</div>
       </div>
     </div>
+
+    <div class="divider-h" style="margin:10px 0;"></div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div class="muted" style="font-weight:700;">Bottlenecks &amp; Marginal Value</div>
+    </div>
+
+    <div class="kpis" style="margin-top:8px;">
+      <div class="kpi">
+        <div class="kpi-k">primaryBottleneck</div>
+        <div id="tlMvPrimary" class="kpi-v">—</div>
+        <div class="kpi-s">Which constraint is binding</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-k">secondaryNotes</div>
+        <div id="tlMvSecondary" class="kpi-v">—</div>
+        <div class="kpi-s">Near-binding hints (optional)</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:8px;">
+      <table class="table" aria-label="Marginal value interventions">
+        <thead>
+          <tr>
+            <th>Intervention</th>
+            <th class="num">Δ max net votes</th>
+            <th class="num">Δ cost</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody id="tlMvTbody">
+          <tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="muted">—</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 
