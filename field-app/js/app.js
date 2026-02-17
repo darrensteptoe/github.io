@@ -5,6 +5,7 @@ import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
 import { computeTimelineFeasibility } from "./timeline.js";
+import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -149,6 +150,13 @@ const els = {
   // Phase 5 — optimization
   optMode: document.getElementById("optMode"),
     optObjective: document.getElementById("optObjective"),
+  tlOptEnabled: document.getElementById("tlOptEnabled"),
+  tlOptObjective: document.getElementById("tlOptObjective"),
+  tlOptResults: document.getElementById("tlOptResults"),
+  tlOptGoalFeasible: document.getElementById("tlOptGoalFeasible"),
+  tlOptMaxNetVotes: document.getElementById("tlOptMaxNetVotes"),
+  tlOptRemainingGap: document.getElementById("tlOptRemainingGap"),
+  tlOptBinding: document.getElementById("tlOptBinding"),
   optBudget: document.getElementById("optBudget"),
   optCapacity: document.getElementById("optCapacity"),
   optStep: document.getElementById("optStep"),
@@ -312,6 +320,8 @@ function makeDefaultState(){
             step: 25,
             useDecay: false,
             objective: "net",
+            tlConstrainedEnabled: false,
+            tlConstrainedObjective: "max_net",
           }
         },
 
@@ -450,7 +460,9 @@ function applyStateToUI(){
 
   // Phase 5 — optimization
   if (els.optMode) els.optMode.value = state.budget?.optimize?.mode || "budget";
-    if (els.optObjective) els.optObjective.value = state.budget?.optimize?.objective || "net";
+  if (els.optObjective) els.optObjective.value = state.budget?.optimize?.objective || "net";
+  if (els.tlOptEnabled) els.tlOptEnabled.checked = !!state.budget?.optimize?.tlConstrainedEnabled;
+  if (els.tlOptObjective) els.tlOptObjective.value = state.budget?.optimize?.tlConstrainedObjective || "max_net";
   if (els.optBudget) els.optBudget.value = state.budget?.optimize?.budgetAmount ?? "";
   if (els.optCapacity) els.optCapacity.value = state.budget?.optimize?.capacityAttempts ?? "";
   if (els.optStep) els.optStep.value = state.budget?.optimize?.step ?? 25;
@@ -713,9 +725,9 @@ function wireEvents(){
 
     // Phase 4 — ROI inputs
     const ensureBudget = () => {
-      if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, phones:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, texts:{enabled:false,cpa:0,crPct:null,srPct:null,kind:"persuasion"} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net" } };
+      if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, phones:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, texts:{enabled:false,cpa:0,crPct:null,srPct:null,kind:"persuasion"} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net", tlConstrainedEnabled:false, tlConstrainedObjective:"max_net" } };
       if (!state.budget.tactics) state.budget.tactics = { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} };
-      if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net" };
+      if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net", tlConstrainedEnabled:false, tlConstrainedObjective:"max_net" };
       if (!state.budget.tactics.doors) state.budget.tactics.doors = { enabled:true, cpa:0, crPct:null, srPct:null };
       if (!state.budget.tactics.phones) state.budget.tactics.phones = { enabled:true, cpa:0, crPct:null, srPct:null };
       if (!state.budget.tactics.texts) state.budget.tactics.texts = { enabled:false, cpa:0, crPct:null, srPct:null };
@@ -760,6 +772,8 @@ const watchOpt = (el, fn, evt="input") => {
 
 watchOpt(els.optMode, () => state.budget.optimize.mode = els.optMode.value, "change");
 watchOpt(els.optObjective, () => state.budget.optimize.objective = els.optObjective.value, "change");
+watchOpt(els.tlOptEnabled, () => state.budget.optimize.tlConstrainedEnabled = !!els.tlOptEnabled.checked, "change");
+watchOpt(els.tlOptObjective, () => state.budget.optimize.tlConstrainedObjective = els.tlOptObjective.value || "max_net", "change");
 watchOpt(els.optBudget, () => state.budget.optimize.budgetAmount = safeNum(els.optBudget.value) ?? 0);
 watchOpt(els.optCapacity, () => state.budget.optimize.capacityAttempts = els.optCapacity.value ?? "");
 watchOpt(els.optStep, () => state.budget.optimize.step = safeNum(els.optStep.value) ?? 25);
@@ -1406,6 +1420,10 @@ export function getSelfTestAccessors(){
     // Phase 7
     computeTimelineFeasibility,
 
+    // Phase 8A
+    computeMaxAttemptsByTactic,
+    optimizeTimelineConstrained,
+
     // capacity helpers
     computeCapacityBreakdown,
     computeCapacityContacts,
@@ -1817,7 +1835,69 @@ function renderOptimization(res, weeks){
     return;
   }
 
-  // Cache for Phase 7 feasibility (no backward coupling)
+  
+  // Phase 8A — Timeline-Constrained Optimization (optional)
+  const tlConstrainedOn = !!opt.tlConstrainedEnabled;
+  if (els.tlOptResults) els.tlOptResults.hidden = !tlConstrainedOn;
+
+  if (tlConstrainedOn){
+    const tacticKinds = {
+      doors: state.budget?.tactics?.doors?.kind || "persuasion",
+      phones: state.budget?.tactics?.phones?.kind || "persuasion",
+      texts: state.budget?.tactics?.texts?.kind || "persuasion",
+    };
+
+    const caps = computeMaxAttemptsByTactic({
+      enabled: !!state.timelineEnabled,
+      weeksRemaining: weeks ?? 0,
+      activeWeeksOverride: safeNum(state.timelineActiveWeeks),
+      gotvWindowWeeks: safeNum(state.timelineGotvWeeks),
+      staffing: {
+        staff: safeNum(state.timelineStaffCount) ?? 0,
+        volunteers: safeNum(state.timelineVolCount) ?? 0,
+        staffHours: safeNum(state.timelineStaffHours) ?? 0,
+        volunteerHours: safeNum(state.timelineVolHours) ?? 0,
+      },
+      throughput: {
+        doors: safeNum(state.timelineDoorsPerHour) ?? 0,
+        phones: safeNum(state.timelineCallsPerHour) ?? 0,
+        texts: safeNum(state.timelineTextsPerHour) ?? 0,
+      },
+      tacticKinds
+    });
+
+    const budgetIn = safeNum(opt.budgetAmount) ?? 0;
+    const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
+
+    const capUser = safeNum(opt.capacityAttempts);
+    const capLimit = (capUser != null && capUser >= 0) ? capUser : (capAttempts != null ? capAttempts : 0);
+
+    const tlObj = opt.tlConstrainedObjective || "max_net";
+    const tlOut = optimizeTimelineConstrained({
+      mode: (opt.mode || "budget"),
+      budgetLimit: (opt.mode === "capacity") ? null : budgetAvail,
+      capacityLimit: (opt.mode === "capacity") ? capLimit : null,
+      capacityCeiling: (opt.mode === "capacity") ? null : capAttempts,
+      tactics,
+      step,
+      useDecay: !!opt.useDecay,
+      objective,
+      maxAttemptsByTactic: (caps && caps.enabled) ? caps.maxAttemptsByTactic : null,
+      tlObjectiveMode: tlObj,
+      goalNetVotes: needVotes
+    });
+
+    if (tlOut && tlOut.plan){
+      result = tlOut.plan;
+    }
+
+    const meta = tlOut?.meta || {};
+    if (els.tlOptGoalFeasible) els.tlOptGoalFeasible.textContent = (meta.goalFeasible === true) ? "true" : (meta.goalFeasible === false ? "false" : "—");
+    if (els.tlOptMaxNetVotes) els.tlOptMaxNetVotes.textContent = fmtInt(Math.round(meta.maxAchievableNetVotes ?? 0));
+    if (els.tlOptRemainingGap) els.tlOptRemainingGap.textContent = fmtInt(Math.round(meta.remainingGapNetVotes ?? 0));
+    if (els.tlOptBinding) els.tlOptBinding.textContent = meta.bindingConstraints || "—";
+  }
+// Cache for Phase 7 feasibility (no backward coupling)
   state.ui.lastOpt = {
     allocation: structuredClone(result.allocation || {}),
     totals: structuredClone(result.totals || {}),

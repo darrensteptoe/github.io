@@ -672,6 +672,187 @@ export function runSelfTests(engine){
       }
     });
 
+
+
+  // =========================
+  // Phase 8A — Timeline-Constrained Optimization tests
+  // =========================
+
+  test("Phase 8A: Caps high enough => timeline-constrained matches standard optimizer", () => {
+    if (!engine.optimizeTimelineConstrained) return true;
+
+    const tacticsOpt = engine.buildOptimizationTactics({
+      baseRates: { cr: 0.2, sr: 0.5, tr: 0.8 },
+      tactics: {
+        doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+        phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+        texts: { enabled: true, cpa: 0.02, kind: "persuasion" }
+      }
+    });
+
+    const standard = engine.optimizeMixBudget({
+      budget: 5000,
+      tactics: tacticsOpt,
+      step: 25,
+      capacityCeiling: null,
+      useDecay: false,
+      objective: "net"
+    });
+
+    const tl = engine.optimizeTimelineConstrained({
+      mode: "budget",
+      budgetLimit: 5000,
+      capacityLimit: null,
+      capacityCeiling: null,
+      tactics: tacticsOpt,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: { doors: 1e12, phones: 1e12, texts: 1e12 },
+      tlObjectiveMode: "max_net",
+      goalNetVotes: 100
+    });
+
+    assert(stableStringify(tl.plan.allocation) === stableStringify(standard.allocation), "Allocation drift under high caps");
+    assert(Math.abs((tl.plan.totals?.netVotes ?? 0) - (standard.totals?.netVotes ?? 0)) < 1e-9, "Totals drift under high caps");
+    return true;
+  });
+
+  test("Phase 8A: Tight caps => allocations never exceed caps", () => {
+    if (!engine.optimizeTimelineConstrained) return true;
+
+    const tacticsOpt = engine.buildOptimizationTactics({
+      baseRates: { cr: 0.2, sr: 0.5, tr: 0.8 },
+      tactics: {
+        doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+        phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+        texts: { enabled: true, cpa: 0.02, kind: "persuasion" }
+      }
+    });
+
+    const caps = { doors: 0, phones: 200, texts: 50 };
+
+    const tl = engine.optimizeTimelineConstrained({
+      mode: "budget",
+      budgetLimit: 5000,
+      capacityLimit: null,
+      capacityCeiling: null,
+      tactics: tacticsOpt,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: caps,
+      tlObjectiveMode: "max_net",
+      goalNetVotes: 100
+    });
+
+    for (const [k, cap] of Object.entries(caps)){
+      const a = Number(tl.plan.allocation?.[k] ?? 0);
+      assert(Number.isFinite(a), `Allocation ${k} not finite`);
+      assert(a <= cap + 1e-9, `Allocation ${k} exceeds cap`);
+    }
+    return true;
+  });
+
+  test("Phase 8A: Impossible goal => goalFeasible=false, remainingGapNetVotes>0", () => {
+    if (!engine.optimizeTimelineConstrained) return true;
+
+    const tacticsOpt = engine.buildOptimizationTactics({
+      baseRates: { cr: 0.2, sr: 0.5, tr: 0.8 },
+      tactics: {
+        doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+        phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+        texts: { enabled: true, cpa: 0.02, kind: "persuasion" }
+      }
+    });
+
+    const tl = engine.optimizeTimelineConstrained({
+      mode: "budget",
+      budgetLimit: 100,
+      capacityLimit: null,
+      capacityCeiling: null,
+      tactics: tacticsOpt,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: { doors: 25, phones: 25, texts: 25 },
+      tlObjectiveMode: "min_cost_goal",
+      goalNetVotes: 1e9
+    });
+
+    assert(tl.meta.goalFeasible === false, "Expected goalFeasible=false");
+    assert(Number.isFinite(tl.meta.maxAchievableNetVotes), "maxAchievableNetVotes not finite");
+    assert(Number.isFinite(tl.meta.remainingGapNetVotes), "remainingGapNetVotes not finite");
+    assert(tl.meta.remainingGapNetVotes > 0, "Expected remainingGapNetVotes > 0");
+    return true;
+  });
+
+  test("Phase 8A: No NaN/Infinity in new outputs", () => {
+    if (!engine.optimizeTimelineConstrained) return true;
+
+    const tacticsOpt = engine.buildOptimizationTactics({
+      baseRates: { cr: 0.2, sr: 0.5, tr: 0.8 },
+      tactics: {
+        doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+        phones: { enabled: true, cpa: 0.03, kind: "persuasion" }
+      }
+    });
+
+    const tl = engine.optimizeTimelineConstrained({
+      mode: "capacity",
+      budgetLimit: null,
+      capacityLimit: 100,
+      capacityCeiling: null,
+      tactics: tacticsOpt,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: { doors: 100, phones: 100 },
+      tlObjectiveMode: "max_net",
+      goalNetVotes: 10
+    });
+
+    const meta = tl.meta || {};
+    assert(typeof meta.bindingConstraints === "string", "bindingConstraints not string");
+    assert(Number.isFinite(meta.maxAchievableNetVotes), "maxAchievableNetVotes not finite");
+    assert(Number.isFinite(meta.remainingGapNetVotes), "remainingGapNetVotes not finite");
+    return true;
+  });
+
+  test("Phase 8A: Deterministic reproducibility (same inputs => same outputs)", () => {
+    if (!engine.optimizeTimelineConstrained) return true;
+
+    const tacticsOpt = engine.buildOptimizationTactics({
+      baseRates: { cr: 0.2, sr: 0.5, tr: 0.8 },
+      tactics: {
+        doors: { enabled: true, cpa: 0.18, kind: "persuasion" },
+        phones: { enabled: true, cpa: 0.03, kind: "persuasion" },
+        texts: { enabled: true, cpa: 0.02, kind: "persuasion" }
+      }
+    });
+
+    const args = {
+      mode: "budget",
+      budgetLimit: 5000,
+      capacityLimit: null,
+      capacityCeiling: null,
+      tactics: tacticsOpt,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: { doors: 200, phones: 200, texts: 200 },
+      tlObjectiveMode: "min_cost_goal",
+      goalNetVotes: 50
+    };
+
+    const a = engine.optimizeTimelineConstrained(args);
+    const b = engine.optimizeTimelineConstrained(args);
+
+    assert(stableStringify(a.plan.allocation) === stableStringify(b.plan.allocation), "Allocation not deterministic");
+    assert(stableStringify(a.meta) === stableStringify(b.meta), "Meta not deterministic");
+    return true;
+  });
+
   results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
   results.passed = Math.max(0, results.total - results.failed);
