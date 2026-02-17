@@ -37,3 +37,9 @@ export async function readJsonFile(file){
   const text = await file.text();
   try { return JSON.parse(text); } catch { return null; }
 }
+
+// Back-compat: expose clamp() as a global helper for any non-module call sites.
+// Does not affect existing imports/exports.
+try {
+  if (typeof globalThis !== "undefined" && !globalThis.clamp) globalThis.clamp = clamp;
+} catch {}
