@@ -1,6 +1,6 @@
 import { computeAll } from "./winMath.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
-import { loadState, saveState } from "./storage.js";
+import { loadState, saveState, clearState } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
@@ -219,6 +219,7 @@ const els = {
   guardrails: document.getElementById("guardrails"),
 
   btnSaveJson: document.getElementById("btnSaveJson"),
+  btnResetAll: document.getElementById("btnResetAll"),
   loadJson: document.getElementById("loadJson"),
 
   toggleTraining: document.getElementById("toggleTraining"),
@@ -822,6 +823,20 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   els.btnSaveJson.addEventListener("click", () => {
     const payload = structuredClone(state);
     downloadJson(payload, (state.scenarioName || "field-path-scenario").trim().replace(/\s+/g,"-") + ".json");
+  });
+
+  if (els.btnResetAll) els.btnResetAll.addEventListener("click", () => {
+    const ok = confirm("Reset all fields to defaults? This will clear the saved scenario in this browser.");
+    if (!ok) return;
+    state = makeDefaultState();
+    clearState();
+    applyStateToUI();
+    rebuildCandidateTable();
+    document.body.classList.toggle("training", !!state.ui.training);
+    document.body.classList.toggle("dark", !!state.ui.dark);
+    if (els.explainCard) els.explainCard.hidden = !state.ui.training;
+    render();
+    persist();
   });
 
   els.loadJson.addEventListener("change", async () => {
