@@ -1024,6 +1024,25 @@
       <div class="note">Default remains Net Votes. Turnout objective uses Phase 6 modeling when enabled.</div>
     </div>
 
+
+    <div class="field">
+      <label class="label">Timeline-Constrained Optimization</label>
+      <label class="switch">
+        <input id="tlOptEnabled" type="checkbox" />
+        <span class="slider"></span>
+        <span class="switch-label">Enable</span>
+      </label>
+      <div class="note">Adds timeline production caps (Phase 7) as hard limits per tactic. OFF preserves standard optimizer exactly.</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="tlOptObjective">Timeline objective</label>
+      <select id="tlOptObjective" class="select">
+        <option value="max_net" selected>Maximize net votes by deadline</option>
+        <option value="min_cost_goal">Minimize cost while meeting goal (if feasible)</option>
+      </select>
+      <div class="note">When goal is impossible under caps, returns the best feasible plan and flags goalFeasible=false.</div>
+    </div>
 <div class="field">
       <label class="label" for="optBudget">Budget ($)</label>
       <input id="optBudget" class="input num" type="number" min="0" step="1" placeholder="e.g., 25000" />
@@ -1089,6 +1108,35 @@
   </div>
 
   <div id="optBanner" class="banner warn" hidden></div>
+  <div id="tlOptResults" class="card mini" style="margin-top:10px;" hidden>
+    <div class="card-head">
+      <h3 style="margin:0;">Timeline-Constrained Results</h3>
+    </div>
+
+    <div class="kpis" style="margin-top:8px;">
+      <div class="kpi">
+        <div class="kpi-k">goalFeasible</div>
+        <div id="tlOptGoalFeasible" class="kpi-v">—</div>
+        <div class="kpi-s">True if goal can be met under caps</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-k">maxAchievableNetVotes</div>
+        <div id="tlOptMaxNetVotes" class="kpi-v">—</div>
+        <div class="kpi-s">Best possible under constraints</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-k">remainingGapNetVotes</div>
+        <div id="tlOptRemainingGap" class="kpi-v">—</div>
+        <div class="kpi-s">0 if goalFeasible=true</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-k">bindingConstraints</div>
+        <div id="tlOptBinding" class="kpi-v">—</div>
+        <div class="kpi-s">Timeline / budget / capacity</div>
+      </div>
+    </div>
+  </div>
+
 
   <div class="table-wrap" style="margin-top:10px;">
     <table class="table" aria-label="Optimization allocation table">
