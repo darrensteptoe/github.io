@@ -7,6 +7,23 @@ import { computeAvgLiftPP } from "./turnout.js";
 import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
+import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
+
+function downloadText(text, filename, mime){
+  try{
+    const blob = new Blob([String(text ?? "")], { type: mime || "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "export.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch {
+    // ignore
+  }
+}
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -219,8 +236,10 @@ const els = {
   guardrails: document.getElementById("guardrails"),
 
   btnSaveJson: document.getElementById("btnSaveJson"),
-  btnResetAll: document.getElementById("btnResetAll"),
   loadJson: document.getElementById("loadJson"),
+  btnExportCsv: document.getElementById("btnExportCsv"),
+  btnCopySummary: document.getElementById("btnCopySummary"),
+  btnResetAll: document.getElementById("btnResetAll"),
 
   toggleTraining: document.getElementById("toggleTraining"),
   toggleDark: document.getElementById("toggleDark"),
@@ -234,6 +253,9 @@ const DEFAULTS_BY_TEMPLATE = {
 };
 
 let state = loadState() || makeDefaultState();
+
+// Phase 9A — export snapshot cache (pure read by export.js)
+let lastResultsSnapshot = null;
 
 function makeDefaultState(){
   return {
@@ -820,9 +842,40 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     });
   });
 
-  els.btnSaveJson.addEventListener("click", () => {
-    const payload = structuredClone(state);
-    downloadJson(payload, (state.scenarioName || "field-path-scenario").trim().replace(/\s+/g,"-") + ".json");
+  if (els.btnSaveJson) els.btnSaveJson.addEventListener("click", () => {
+    const snapshot = { modelVersion: MODEL_VERSION, scenarioState: structuredClone(state) };
+    const payload = makeScenarioExport(snapshot);
+    if (hasNonFiniteNumbers(payload)){
+      alert("Export blocked: scenario contains NaN/Infinity.");
+      return;
+    }
+    const filename = makeTimestampedFilename("field-path-scenario", "json");
+    const text = deterministicStringify(payload, 2);
+    downloadText(text, filename, "application/json");
+  });
+
+  if (els.btnExportCsv) els.btnExportCsv.addEventListener("click", () => {
+    if (!lastResultsSnapshot){
+      alert("Nothing to export yet. Run a scenario first.");
+      return;
+    }
+    const csv = planRowsToCsv(lastResultsSnapshot);
+    if (/NaN|Infinity/.test(csv)){
+      alert("CSV export blocked: contains NaN/Infinity.");
+      return;
+    }
+    const filename = makeTimestampedFilename("field-path-plan", "csv");
+    downloadText(csv, filename, "text/csv");
+  });
+
+  if (els.btnCopySummary) els.btnCopySummary.addEventListener("click", async () => {
+    if (!lastResultsSnapshot){
+      alert("Nothing to copy yet. Run a scenario first.");
+      return;
+    }
+    const text = formatSummaryText(lastResultsSnapshot);
+    const r = await copyTextToClipboard(text);
+    if (!r.ok) alert(r.reason || "Copy failed.");
   });
 
   if (els.btnResetAll) els.btnResetAll.addEventListener("click", () => {
@@ -842,11 +895,35 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   els.loadJson.addEventListener("change", async () => {
     const file = els.loadJson.files?.[0];
     if (!file) return;
+
     const loaded = await readJsonFile(file);
-    if (!loaded || typeof loaded !== "object") return;
-    state = normalizeLoadedState(loaded);
+    if (!loaded || typeof loaded !== "object"){
+      alert("Import failed: invalid JSON.");
+      els.loadJson.value = "";
+      return;
+    }
+
+    const v = validateScenarioExport(loaded, MODEL_VERSION);
+    if (!v.ok){
+      alert(`Import failed: ${v.reason}`);
+      els.loadJson.value = "";
+      return;
+    }
+
+    const missing = requiredScenarioKeysMissing(v.scenario);
+    if (missing.length){
+      alert("Import failed: scenario is missing required fields: " + missing.join(", "));
+      els.loadJson.value = "";
+      return;
+    }
+
+    // Replace entire state safely (no partial merge with current state)
+    state = normalizeLoadedState(v.scenario);
     applyStateToUI();
     rebuildCandidateTable();
+    document.body.classList.toggle("training", !!state.ui.training);
+    document.body.classList.toggle("dark", !!state.ui.dark);
+    if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
     els.loadJson.value = "";
@@ -882,6 +959,22 @@ function normalizeLoadedState(s){
 
   if (!out.yourCandidateId && out.candidates[0]) out.yourCandidateId = out.candidates[0].id;
   return out;
+}
+
+function requiredScenarioKeysMissing(scen){
+  const required = [
+    "scenarioName","raceType","electionDate","weeksRemaining","mode",
+    "universeBasis","universeSize","turnoutA","turnoutB","bandWidth",
+    "candidates","undecidedPct","yourCandidateId","undecidedMode","persuasionPct",
+    "earlyVoteExp","supportRatePct","contactRatePct","turnoutReliabilityPct",
+    "mcMode","mcVolatility","mcSeed","budget","timelineEnabled","ui"
+  ];
+  const missing = [];
+  if (!scen || typeof scen !== "object") return required.slice();
+  for (const k of required){
+    if (!(k in scen)) missing.push(k);
+  }
+  return missing;
 }
 
 function derivedWeeksRemaining(){
@@ -955,6 +1048,19 @@ function render(){
   renderRoi(res, weeks);
   renderOptimization(res, weeks);
   renderTimeline(res, weeks);
+
+  // Phase 9A — build immutable results snapshot for export.js (pure serialization layer)
+  try {
+    lastResultsSnapshot = {
+      modelVersion: MODEL_VERSION,
+      scenarioState: structuredClone(state),
+      planRows: structuredClone(state.ui?.lastPlanRows || []),
+      planMeta: structuredClone(state.ui?.lastPlanMeta || {}),
+      summary: structuredClone(state.ui?.lastSummary || {})
+    };
+  } catch {
+    lastResultsSnapshot = null;
+  }
 
   els.explainCard.hidden = !state.ui.training;
 }
@@ -1920,12 +2026,21 @@ function renderOptimization(res, weeks){
     if (els.tlOptRemainingGap) els.tlOptRemainingGap.textContent = fmtInt(Math.round(meta.remainingGapNetVotes ?? 0));
     if (els.tlOptBinding) els.tlOptBinding.textContent = meta.bindingConstraints || "—";
 
+    // Cache TL optimization meta for exports (Phase 9A)
+    state.ui.lastTlMeta = structuredClone(meta);
+
     // Phase 8B — Bottlenecks & Marginal Value (diagnostic)
     const mv = computeMarginalValueDiagnostics({
       baselineInputs: tlInputs,
       baselineResult: tlOut,
       timelineInputs: capsInput
     });
+
+    // Cache bottleneck diagnostics for exports (Phase 9A)
+    state.ui.lastDiagnostics = {
+      primaryBottleneck: mv?.primaryBottleneck || null,
+      secondaryNotes: mv?.secondaryNotes || null
+    };
 
     if (els.tlMvPrimary) els.tlMvPrimary.textContent = mv?.primaryBottleneck || "—";
     if (els.tlMvSecondary) els.tlMvSecondary.textContent = mv?.secondaryNotes || "—";
@@ -2022,6 +2137,67 @@ function renderOptimization(res, weeks){
     binding: result.binding || "—"
   });
 
+  // Phase 9A — cache export-ready plan rows + meta + summary (pure formatting; no optimizer changes)
+  try {
+    const obj = (state.budget?.optimize?.objective || "net");
+    const planRows = [];
+    const alloc = result.allocation || {};
+    for (const t of tactics){
+      const a = alloc?.[t.id] ?? 0;
+      if (!a) continue;
+      const attempts = Number(a) || 0;
+      const usedCr = (t.used && Number.isFinite(t.used.cr)) ? t.used.cr : 0;
+      const expectedContacts = attempts * usedCr;
+      const vpa = (obj === "turnout") ? (t.turnoutAdjustedNetVotesPerAttempt ?? t.netVotesPerAttempt) : t.netVotesPerAttempt;
+      const expectedNetVotes = attempts * (Number.isFinite(vpa) ? vpa : 0);
+      const cost = attempts * (Number.isFinite(t.costPerAttempt) ? t.costPerAttempt : 0);
+      const costPerNetVote = (expectedNetVotes > 0) ? (cost / expectedNetVotes) : null;
+
+      planRows.push({
+        tactic: t.label,
+        attempts: Math.round(attempts),
+        expectedContacts,
+        expectedNetVotes,
+        cost,
+        costPerNetVote
+      });
+    }
+
+    const weeksMeta = (weeks != null && Number.isFinite(weeks)) ? Math.max(0, Math.floor(weeks)) : null;
+    const staffMeta = safeNum(state.timelineStaffCount) ?? null;
+    const volMeta = safeNum(state.timelineVolCount) ?? null;
+
+    const tlPct = state.ui?.lastTimeline?.percentPlanExecutable;
+    const tlGoalFeasible = state.ui?.lastTlMeta?.goalFeasible;
+    const feasible = (state.timelineEnabled)
+      ? (tlGoalFeasible === true ? true : (tlGoalFeasible === false ? false : (tlPct != null ? tlPct >= 0.999 : null)))
+      : true;
+
+    state.ui.lastPlanRows = structuredClone(planRows);
+    state.ui.lastPlanMeta = {
+      weeks: weeksMeta,
+      staff: staffMeta,
+      volunteers: volMeta,
+      objective: obj,
+      feasible
+    };
+
+    const topAllocations = planRows
+      .slice()
+      .sort((a,b) => (b.attempts||0) - (a.attempts||0))
+      .slice(0,3)
+      .map(r => `${r.tactic}: ${fmtInt(Math.round(r.attempts))} attempts`);
+
+    state.ui.lastSummary = {
+      objective: obj,
+      netVotes: Math.round(totalVotes || 0),
+      cost: Math.round(totalCost || 0),
+      feasible,
+      primaryBottleneck: state.ui?.lastDiagnostics?.primaryBottleneck || null,
+      topAllocations
+    };
+  } catch {}
+
   function setTotals(t){
     if (els.optTotalAttempts) els.optTotalAttempts.textContent = t ? fmtInt(Math.round(t.attempts)) : "—";
     if (els.optTotalCost) els.optTotalCost.textContent = t ? `$${fmtInt(Math.round(t.cost))}` : "—";
@@ -2108,6 +2284,15 @@ function renderTimeline(res, weeks){
     bindingHint,
     ramp: { enabled: !!state.timelineRampEnabled, mode: state.timelineRampMode || "linear" }
   });
+
+  // Cache timeline feasibility snapshot for exports (Phase 9A)
+  state.ui.lastTimeline = {
+    percentPlanExecutable: tl.percentPlanExecutable ?? null,
+    projectedCompletionWeek: tl.projectedCompletionWeek ?? null,
+    shortfallAttempts: tl.shortfallAttempts ?? null,
+    shortfallNetVotes: tl.shortfallNetVotes ?? null,
+    constraintType: tl.constraintType || null
+  };
 
   const pct = Math.round((tl.percentPlanExecutable ?? 0) * 100);
   els.tlPercent.textContent = `${pct}%`;

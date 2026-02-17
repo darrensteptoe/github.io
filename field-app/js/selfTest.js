@@ -10,6 +10,7 @@
 import { FIXTURES } from "./fixtures.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
+import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 
 function nowMs(){ return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
 
@@ -945,6 +946,54 @@ export function runSelfTests(engine){
 
     assert(stableStringify(a.plan.allocation) === stableStringify(b.plan.allocation), "Allocation not deterministic");
     assert(stableStringify(a.meta) === stableStringify(b.meta), "Meta not deterministic");
+    return true;
+  });
+
+  test("Phase 9A: deterministic JSON ordering", () => {
+    const obj = { b: 2, a: { d: 4, c: 3 } };
+    const s1 = deterministicStringify(obj, 2);
+    const s2 = deterministicStringify(obj, 2);
+    assert(s1 === s2, "deterministicStringify not stable");
+    // Must order keys alphabetically at each level
+    assert(s1.indexOf('"a"') < s1.indexOf('"b"'), "Top-level keys not ordered");
+    return true;
+  });
+
+  test("Phase 9A: Export → Import roundtrip preserves scenario", () => {
+    const scenario = { scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
+      universeBasis: "registered", universeSize: 1000, turnoutA: 40, turnoutB: 44, bandWidth: 4,
+      candidates: [{id:"a",name:"A",supportPct:40},{id:"b",name:"B",supportPct:40}], undecidedPct: 20, yourCandidateId:"a",
+      undecidedMode:"even", persuasionPct:30, earlyVoteExp:40,
+      supportRatePct:55, contactRatePct:22, turnoutReliabilityPct:80,
+      mcMode:"basic", mcVolatility:10, mcSeed:123,
+      budget: { overheadAmount:0, includeOverhead:false, tactics:{}, optimize:{ mode:"budget", budgetAmount:0, capacityAttempts:"", step:25, useDecay:false, objective:"net" } },
+      timelineEnabled:false, ui:{ training:false, dark:false }
+    };
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
+    const v = validateScenarioExport(payload, MODEL_VERSION);
+    assert(v.ok, "validateScenarioExport failed");
+    const sA = deterministicStringify(v.scenario, 2);
+    const sB = deterministicStringify(scenario, 2);
+    assert(sA === sB, "Scenario drift in roundtrip");
+    return true;
+  });
+
+  test("Phase 9A: CSV headers present", () => {
+    const snap = {
+      planRows: [{ tactic:"Doors", attempts:100, expectedContacts:20, expectedNetVotes:3, cost:18, costPerNetVote:6 }],
+      planMeta: { weeks: 10, staff: 1, volunteers: 5, objective: "net", feasible: true }
+    };
+    const csv = planRowsToCsv(snap);
+    for (const h of PLAN_CSV_HEADERS){
+      assert(csv.includes(h), `Missing CSV header: ${h}`);
+    }
+    assert(!/NaN|Infinity/.test(csv), "CSV contains NaN/Infinity");
+    return true;
+  });
+
+  test("Phase 9A: exports contain no NaN/Infinity", () => {
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: { a: 1 } });
+    assert(!hasNonFiniteNumbers(payload), "Non-finite numbers found");
     return true;
   });
 
