@@ -8,6 +8,8 @@
 // - No production interference (dev-triggered by app.js)
 
 import { FIXTURES } from "./fixtures.js";
+import { computeMarginalValueDiagnostics } from "./marginalValue.js";
+import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 
 function nowMs(){ return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
 
@@ -84,6 +86,99 @@ export function runSelfTests(engine){
     for (const k of required){
       assert(typeof engine[k] === "function", `Missing accessor: ${k}()`);
     }
+  });
+
+  // --- C) Phase 8B — Marginal value diagnostics (pure) ---
+  test("Phase 8B: non-binding timeline caps => deltas ~0 and no NaN", () => {
+    const tactics = [
+      { id:"doors", label:"Doors", costPerAttempt: 1.0, netVotesPerAttempt: 0.05, maxAttempts: null },
+      { id:"phones", label:"Phones", costPerAttempt: 0.8, netVotesPerAttempt: 0.03, maxAttempts: null },
+      { id:"texts", label:"Texts", costPerAttempt: 0.2, netVotesPerAttempt: 0.005, maxAttempts: null }
+    ];
+
+    const capsInput = {
+      enabled: true,
+      weeksRemaining: 12,
+      activeWeeksOverride: 12,
+      gotvWindowWeeks: 4,
+      staffing: { staff: 5, volunteers: 10, staffHours: 30, volunteerHours: 10 },
+      throughput: { doors: 25, phones: 40, texts: 200 },
+      tacticKinds: { doors:"persuasion", phones:"persuasion", texts:"persuasion" }
+    };
+    const caps = computeMaxAttemptsByTactic(capsInput);
+
+    // Capacity mode with a low ceiling ensures timeline caps are non-binding.
+    const tlInputs = {
+      mode: "capacity",
+      budgetLimit: null,
+      capacityLimit: 100,
+      capacityCeiling: null,
+      tactics,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: caps.maxAttemptsByTactic,
+      tlObjectiveMode: "max_net",
+      goalNetVotes: 10
+    };
+    const baseline = optimizeTimelineConstrained(tlInputs);
+
+    const mv = computeMarginalValueDiagnostics({ baselineInputs: tlInputs, baselineResult: baseline, timelineInputs: capsInput });
+
+    assert(mv && typeof mv === "object", "Diagnostics missing");
+    assert(typeof mv.primaryBottleneck === "string", "primaryBottleneck not string");
+    assert(Array.isArray(mv.interventions), "interventions not array");
+
+    for (const it of mv.interventions){
+      if (it.deltaMaxNetVotes != null) assert(isFiniteNum(it.deltaMaxNetVotes), "deltaMaxNetVotes NaN/Infinity");
+      if (it.deltaCost != null) assert(isFiniteNum(it.deltaCost), "deltaCost NaN/Infinity");
+      // With capacity binding, adding timeline capacity shouldn't change max net votes.
+      if (it.deltaMaxNetVotes != null) assert(Math.abs(it.deltaMaxNetVotes) <= 1e-9, "Expected ~0 deltaMaxNetVotes");
+    }
+  });
+
+  test("Phase 8B: binding timeline cap => primary is timeline and some intervention helps", () => {
+    const tactics = [
+      { id:"doors", label:"Doors", costPerAttempt: 1.0, netVotesPerAttempt: 0.20, maxAttempts: null },
+      { id:"phones", label:"Phones", costPerAttempt: 1.0, netVotesPerAttempt: 0.05, maxAttempts: null },
+      { id:"texts", label:"Texts", costPerAttempt: 1.0, netVotesPerAttempt: 0.01, maxAttempts: null }
+    ];
+
+    const capsInput = {
+      enabled: true,
+      weeksRemaining: 4,
+      activeWeeksOverride: 4,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 1, volunteers: 0, staffHours: 5, volunteerHours: 0 },
+      throughput: { doors: 10, phones: 10, texts: 10 },
+      tacticKinds: { doors:"persuasion", phones:"persuasion", texts:"persuasion" }
+    };
+    const caps = computeMaxAttemptsByTactic(capsInput);
+
+    const tlInputs = {
+      mode: "budget",
+      budgetLimit: 100000,
+      capacityLimit: null,
+      capacityCeiling: null,
+      tactics,
+      step: 25,
+      useDecay: false,
+      objective: "net",
+      maxAttemptsByTactic: caps.maxAttemptsByTactic,
+      tlObjectiveMode: "max_net",
+      goalNetVotes: 999999
+    };
+    const baseline = optimizeTimelineConstrained(tlInputs);
+    const mv1 = computeMarginalValueDiagnostics({ baselineInputs: tlInputs, baselineResult: baseline, timelineInputs: capsInput });
+    const mv2 = computeMarginalValueDiagnostics({ baselineInputs: tlInputs, baselineResult: baseline, timelineInputs: capsInput });
+
+    assert(String(mv1.primaryBottleneck).startsWith("timeline:"), `Expected timeline bottleneck, got ${mv1.primaryBottleneck}`);
+
+    const anyPositive = (mv1.interventions || []).some(it => (typeof it.deltaMaxNetVotes === "number") && it.deltaMaxNetVotes > 0);
+    assert(anyPositive, "Expected at least one positive deltaMaxNetVotes");
+
+    // Determinism: stable ordering / values
+    assert(stableStringify(mv1) === stableStringify(mv2), "Diagnostics not deterministic");
   });
 
   // Build baseline deterministic context from current state snapshot (no UI mutation)

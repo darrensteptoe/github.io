@@ -6,6 +6,7 @@ import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
 import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
+import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -157,6 +158,9 @@ const els = {
   tlOptMaxNetVotes: document.getElementById("tlOptMaxNetVotes"),
   tlOptRemainingGap: document.getElementById("tlOptRemainingGap"),
   tlOptBinding: document.getElementById("tlOptBinding"),
+  tlMvPrimary: document.getElementById("tlMvPrimary"),
+  tlMvSecondary: document.getElementById("tlMvSecondary"),
+  tlMvTbody: document.getElementById("tlMvTbody"),
   optBudget: document.getElementById("optBudget"),
   optCapacity: document.getElementById("optCapacity"),
   optStep: document.getElementById("optStep"),
@@ -1847,7 +1851,7 @@ function renderOptimization(res, weeks){
       texts: state.budget?.tactics?.texts?.kind || "persuasion",
     };
 
-    const caps = computeMaxAttemptsByTactic({
+    const capsInput = {
       enabled: !!state.timelineEnabled,
       weeksRemaining: weeks ?? 0,
       activeWeeksOverride: safeNum(state.timelineActiveWeeks),
@@ -1864,7 +1868,9 @@ function renderOptimization(res, weeks){
         texts: safeNum(state.timelineTextsPerHour) ?? 0,
       },
       tacticKinds
-    });
+    };
+
+    const caps = computeMaxAttemptsByTactic(capsInput);
 
     const budgetIn = safeNum(opt.budgetAmount) ?? 0;
     const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
@@ -1873,7 +1879,7 @@ function renderOptimization(res, weeks){
     const capLimit = (capUser != null && capUser >= 0) ? capUser : (capAttempts != null ? capAttempts : 0);
 
     const tlObj = opt.tlConstrainedObjective || "max_net";
-    const tlOut = optimizeTimelineConstrained({
+    const tlInputs = {
       mode: (opt.mode || "budget"),
       budgetLimit: (opt.mode === "capacity") ? null : budgetAvail,
       capacityLimit: (opt.mode === "capacity") ? capLimit : null,
@@ -1885,7 +1891,9 @@ function renderOptimization(res, weeks){
       maxAttemptsByTactic: (caps && caps.enabled) ? caps.maxAttemptsByTactic : null,
       tlObjectiveMode: tlObj,
       goalNetVotes: needVotes
-    });
+    };
+
+    const tlOut = optimizeTimelineConstrained(tlInputs);
 
     if (tlOut && tlOut.plan){
       result = tlOut.plan;
@@ -1896,6 +1904,51 @@ function renderOptimization(res, weeks){
     if (els.tlOptMaxNetVotes) els.tlOptMaxNetVotes.textContent = fmtInt(Math.round(meta.maxAchievableNetVotes ?? 0));
     if (els.tlOptRemainingGap) els.tlOptRemainingGap.textContent = fmtInt(Math.round(meta.remainingGapNetVotes ?? 0));
     if (els.tlOptBinding) els.tlOptBinding.textContent = meta.bindingConstraints || "—";
+
+    // Phase 8B — Bottlenecks & Marginal Value (diagnostic)
+    const mv = computeMarginalValueDiagnostics({
+      baselineInputs: tlInputs,
+      baselineResult: tlOut,
+      timelineInputs: capsInput
+    });
+
+    if (els.tlMvPrimary) els.tlMvPrimary.textContent = mv?.primaryBottleneck || "—";
+    if (els.tlMvSecondary) els.tlMvSecondary.textContent = mv?.secondaryNotes || "—";
+
+    if (els.tlMvTbody){
+      els.tlMvTbody.innerHTML = "";
+      const rows = Array.isArray(mv?.interventions) ? mv.interventions : [];
+      for (const it of rows){
+        const trEl = document.createElement("tr");
+        const td0 = document.createElement("td");
+        td0.textContent = it?.intervention || "—";
+
+        const td1 = document.createElement("td");
+        td1.className = "num";
+        const dv = (it && typeof it.deltaMaxNetVotes === "number") ? it.deltaMaxNetVotes : null;
+        td1.textContent = (dv == null) ? "—" : fmtInt(Math.round(dv));
+
+        const td2 = document.createElement("td");
+        td2.className = "num";
+        const dc = (it && typeof it.deltaCost === "number") ? it.deltaCost : null;
+        td2.textContent = (dc == null) ? "—" : `$${fmtInt(Math.round(dc))}`;
+
+        const td3 = document.createElement("td");
+        td3.className = "muted";
+        td3.textContent = it?.notes || "—";
+
+        trEl.appendChild(td0);
+        trEl.appendChild(td1);
+        trEl.appendChild(td2);
+        trEl.appendChild(td3);
+        els.tlMvTbody.appendChild(trEl);
+      }
+      if (!rows.length){
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="muted">—</td>';
+        els.tlMvTbody.appendChild(tr);
+      }
+    }
   }
 // Cache for Phase 7 feasibility (no backward coupling)
   state.ui.lastOpt = {
