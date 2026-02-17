@@ -1111,6 +1111,140 @@
   </div>
 </div>
 
+<div class="card">
+  <div class="card-head">
+    <h2>Timeline / Production (Phase 7)</h2>
+  </div>
+
+  <div class="rowline" style="margin-bottom:10px;">
+    <label class="switch">
+      <input id="timelineEnabled" type="checkbox" />
+      <span class="slider"></span>
+      <span class="switch-label">Enable timeline feasibility check</span>
+    </label>
+    <span class="muted" style="font-size:12px;">OFF does not change any Phase 1–6 outputs.</span>
+  </div>
+
+  <div class="grid3">
+    <div class="field">
+      <label class="label" for="timelineWeeksAuto">Weeks remaining (auto)</label>
+      <input id="timelineWeeksAuto" class="input num" type="number" disabled />
+      <div class="note">Derived from Election Date (or manual Weeks Remaining override).</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="timelineActiveWeeks">Active production weeks (optional override)</label>
+      <input id="timelineActiveWeeks" class="input num" type="number" min="0" step="1" placeholder="blank = use weeks remaining" />
+      <div class="note">Use when you lose weeks to onboarding, ballot access, holidays, etc.</div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="timelineGotvWeeks">GOTV window length (weeks)</label>
+      <input id="timelineGotvWeeks" class="input num" type="number" min="0" step="1" placeholder="e.g., 2" />
+      <div class="note">Applied to tactics marked as turnout (if any).</div>
+    </div>
+  </div>
+
+  <div class="divider-h"></div>
+
+  <div class="grid3">
+    <div class="field">
+      <label class="label" for="timelineStaffCount">Paid field staff (#)</label>
+      <input id="timelineStaffCount" class="input num" type="number" min="0" step="1" placeholder="e.g., 2" />
+    </div>
+    <div class="field">
+      <label class="label" for="timelineStaffHours">Avg staff hours / week</label>
+      <input id="timelineStaffHours" class="input num" type="number" min="0" step="1" placeholder="e.g., 40" />
+    </div>
+    <div class="field">
+      <label class="label" for="timelineVolCount">Active volunteers / week (#)</label>
+      <input id="timelineVolCount" class="input num" type="number" min="0" step="1" placeholder="e.g., 10" />
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-top:10px;">
+    <div class="field">
+      <label class="label" for="timelineVolHours">Avg volunteer hours / week</label>
+      <input id="timelineVolHours" class="input num" type="number" min="0" step="1" placeholder="e.g., 4" />
+      <div class="note">Total weekly hours = staff×hours + volunteers×hours.</div>
+    </div>
+    <div class="field">
+      <label class="label">Ramp-up (optional)</label>
+      <label class="switch" style="margin-top:6px;">
+        <input id="timelineRampEnabled" type="checkbox" />
+        <span class="slider"></span>
+        <span class="switch-label">Enable ramp-up distribution</span>
+      </label>
+      <div class="note">OFF by default. Does not change feasibility math; affects weekly preview only.</div>
+    </div>
+    <div class="field">
+      <label class="label" for="timelineRampMode">Ramp shape</label>
+      <select id="timelineRampMode" class="select">
+        <option value="linear" selected>Linear</option>
+        <option value="s">S-curve</option>
+      </select>
+      <div class="note">Preview-only. Keeps totals consistent.</div>
+    </div>
+  </div>
+
+  <div class="divider-h"></div>
+
+  <div class="grid3">
+    <div class="field">
+      <label class="label" for="timelineDoorsPerHour">Doors attempts / hour</label>
+      <input id="timelineDoorsPerHour" class="input num" type="number" min="0" step="1" placeholder="e.g., 30" />
+    </div>
+    <div class="field">
+      <label class="label" for="timelineCallsPerHour">Calls attempts / hour</label>
+      <input id="timelineCallsPerHour" class="input num" type="number" min="0" step="1" placeholder="e.g., 20" />
+    </div>
+    <div class="field">
+      <label class="label" for="timelineTextsPerHour">Texts attempts / hour</label>
+      <input id="timelineTextsPerHour" class="input num" type="number" min="0" step="1" placeholder="e.g., 120" />
+    </div>
+  </div>
+
+  <div class="divider-h"></div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-k">% plan executable</div>
+      <div id="tlPercent" class="kpi-v">—</div>
+      <div class="kpi-s">Based on optimizer-required attempts vs executable attempts</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-k">Projected completion week</div>
+      <div id="tlCompletionWeek" class="kpi-v">—</div>
+      <div class="kpi-s">Slowest tactic under weekly capacity</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-k">Shortfall attempts</div>
+      <div id="tlShortfallAttempts" class="kpi-v">—</div>
+      <div class="kpi-s">0 if fully executable</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-k">Constraint type</div>
+      <div id="tlConstraint" class="kpi-v">—</div>
+      <div class="kpi-s">Timeline can override budget/capacity feasibility</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:10px;">
+    <div class="field">
+      <label class="label">Shortfall net votes (est.)</label>
+      <div id="tlShortfallVotes" class="metric-v">—</div>
+      <div class="note">Uses optimizer’s blended votes/attempt (objective-aligned) when available.</div>
+    </div>
+    <div class="field">
+      <label class="label">Weekly distribution preview</label>
+      <pre id="tlWeekList" class="week-list">—</pre>
+      <div class="note">Preview only (does not re-optimize or time-simulate Monte Carlo).</div>
+    </div>
+  </div>
+
+  <div id="tlBanner" class="banner warn" hidden></div>
+</div>
+
       </section>
 
     </section>

@@ -355,6 +355,19 @@ body.training .help{ display:block; }
   border-color: color-mix(in srgb, var(--bad-fg) 30%, var(--rule));
 }
 
+.week-list{
+  margin:0;
+  padding:10px;
+  border:1px solid var(--rule);
+  border-radius:12px;
+  background: color-mix(in srgb, var(--panel2) 88%, transparent);
+  max-height:220px;
+  overflow:auto;
+  font-size:12px;
+  line-height:1.35;
+  white-space:pre;
+}
+
 .sticky-bottom{
   position:sticky;
   bottom:14px;
