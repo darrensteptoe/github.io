@@ -136,8 +136,6 @@ const els = {
   optBanner: document.getElementById("optBanner"),
   optTotalAttempts: document.getElementById("optTotalAttempts"),
   optTotalCost: document.getElementById("optTotalCost"),
-  optPersVotes: document.getElementById("optPersVotes"),
-  optTurnVotes: document.getElementById("optTurnVotes"),
   optTotalVotes: document.getElementById("optTotalVotes"),
   optBinding: document.getElementById("optBinding"),
   optGapContext: document.getElementById("optGapContext"),
@@ -169,18 +167,6 @@ const els = {
 
   toggleTraining: document.getElementById("toggleTraining"),
   toggleDark: document.getElementById("toggleDark"),
-
-  // Phase 6 — Turnout & Mobilization (GOTV)
-  gotvBasePct: document.getElementById("gotvBasePct"),
-  gotvBaseTurnoutPct: document.getElementById("gotvBaseTurnoutPct"),
-  gotvCeilingVotes: document.getElementById("gotvCeilingVotes"),
-  gotvDoorsEnabled: document.getElementById("gotvDoorsEnabled"),
-  gotvDoorsLiftPct: document.getElementById("gotvDoorsLiftPct"),
-  gotvPhonesEnabled: document.getElementById("gotvPhonesEnabled"),
-  gotvPhonesLiftPct: document.getElementById("gotvPhonesLiftPct"),
-  gotvTextsEnabled: document.getElementById("gotvTextsEnabled"),
-  gotvTextsLiftPct: document.getElementById("gotvTextsLiftPct"),
-  gotvBanner: document.getElementById("gotvBanner"),
 };
 
 const DEFAULTS_BY_TEMPLATE = {
@@ -376,20 +362,6 @@ function applyStateToUI(){
   if (els.optCapacity) els.optCapacity.value = state.budget?.optimize?.capacityAttempts ?? "";
   if (els.optStep) els.optStep.value = state.budget?.optimize?.step ?? 25;
   if (els.optUseDecay) els.optUseDecay.checked = !!state.budget?.optimize?.useDecay;
-
-  // Phase 6 — GOTV
-  if (els.gotvBasePct) els.gotvBasePct.value = state.gotv?.basePct ?? "";
-  if (els.gotvBaseTurnoutPct) els.gotvBaseTurnoutPct.value = state.gotv?.baseTurnoutPct ?? "";
-
-  if (els.gotvDoorsEnabled) els.gotvDoorsEnabled.checked = !!state.gotv?.tactics?.doors?.enabled;
-  if (els.gotvDoorsLiftPct) els.gotvDoorsLiftPct.value = state.gotv?.tactics?.doors?.liftPct ?? "";
-
-  if (els.gotvPhonesEnabled) els.gotvPhonesEnabled.checked = !!state.gotv?.tactics?.phones?.enabled;
-  if (els.gotvPhonesLiftPct) els.gotvPhonesLiftPct.value = state.gotv?.tactics?.phones?.liftPct ?? "";
-
-  if (els.gotvTextsEnabled) els.gotvTextsEnabled.checked = !!state.gotv?.tactics?.texts?.enabled;
-  if (els.gotvTextsLiftPct) els.gotvTextsLiftPct.value = state.gotv?.tactics?.texts?.liftPct ?? "";
-
 
   els.toggleTraining.checked = !!state.ui?.training;
   els.toggleDark.checked = !!state.ui?.dark;
@@ -617,17 +589,6 @@ function wireEvents(){
     // Phase 4 — ROI inputs
     const ensureBudget = () => {
       if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false } };
-
-
-    // Phase 6 — GOTV inputs (separate from persuasion)
-    const ensureGotv = () => {
-      if (!state.gotv) state.gotv = { basePct: 40, baseTurnoutPct: 60, tactics: { doors:{enabled:true,liftPct:6}, phones:{enabled:true,liftPct:3}, texts:{enabled:false,liftPct:1.5} } };
-      if (!state.gotv.tactics) state.gotv.tactics = { doors:{enabled:true,liftPct:6}, phones:{enabled:true,liftPct:3}, texts:{enabled:false,liftPct:1.5} };
-      if (!state.gotv.tactics.doors) state.gotv.tactics.doors = { enabled:true, liftPct:6 };
-      if (!state.gotv.tactics.phones) state.gotv.tactics.phones = { enabled:true, liftPct:3 };
-      if (!state.gotv.tactics.texts) state.gotv.tactics.texts = { enabled:false, liftPct:1.5 };
-    };
-
       if (!state.budget.tactics) state.budget.tactics = { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} };
       if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false };
       if (!state.budget.tactics.doors) state.budget.tactics.doors = { enabled:true, cpa:0, crPct:null, srPct:null };
@@ -643,17 +604,6 @@ function wireEvents(){
       if (!el) return;
       el.addEventListener("input", () => { ensureBudget(); fn(); render(); persist(); });
     };
-
-
-    const watchGotvBool = (el, fn) => {
-      if (!el) return;
-      el.addEventListener("change", () => { ensureGotv(); fn(); render(); persist(); });
-    };
-    const watchGotvNum = (el, fn) => {
-      if (!el) return;
-      el.addEventListener("input", () => { ensureGotv(); fn(); render(); persist(); });
-    };
-
 
     watchBool(els.roiDoorsEnabled, () => state.budget.tactics.doors.enabled = !!els.roiDoorsEnabled.checked);
     watchNum(els.roiDoorsCpa, () => state.budget.tactics.doors.cpa = safeNum(els.roiDoorsCpa.value) ?? 0);
@@ -677,22 +627,6 @@ function wireEvents(){
     watchBool(els.roiIncludeOverhead, () => state.budget.includeOverhead = !!els.roiIncludeOverhead.checked);
 
     
-
-
-
-    // Phase 6 — GOTV controls
-    watchGotvNum(els.gotvBasePct, () => state.gotv.basePct = safeNum(els.gotvBasePct.value));
-    watchGotvNum(els.gotvBaseTurnoutPct, () => state.gotv.baseTurnoutPct = safeNum(els.gotvBaseTurnoutPct.value));
-
-    watchGotvBool(els.gotvDoorsEnabled, () => state.gotv.tactics.doors.enabled = !!els.gotvDoorsEnabled.checked);
-    watchGotvNum(els.gotvDoorsLiftPct, () => state.gotv.tactics.doors.liftPct = safeNum(els.gotvDoorsLiftPct.value));
-
-    watchGotvBool(els.gotvPhonesEnabled, () => state.gotv.tactics.phones.enabled = !!els.gotvPhonesEnabled.checked);
-    watchGotvNum(els.gotvPhonesLiftPct, () => state.gotv.tactics.phones.liftPct = safeNum(els.gotvPhonesLiftPct.value));
-
-    watchGotvBool(els.gotvTextsEnabled, () => state.gotv.tactics.texts.enabled = !!els.gotvTextsEnabled.checked);
-    watchGotvNum(els.gotvTextsLiftPct, () => state.gotv.tactics.texts.liftPct = safeNum(els.gotvTextsLiftPct.value));
-
 // Phase 5 — optimization controls (top-layer only; does not change Phase 1–4 math)
 const watchOpt = (el, fn, evt="input") => {
   if (!el) return;
@@ -841,7 +775,6 @@ function render(){
   renderConversion(res, weeks);
 
   renderRoi(res, weeks);
-  renderGotvBasics(res);
   renderOptimization(res, weeks);
 
   els.explainCard.hidden = !state.ui.training;
@@ -1285,62 +1218,6 @@ function renderRoi(res, weeks){
 
 
 
-
-function renderGotvBasics(res){
-  // Phase 6 panel isn't present, fail silently.
-  if (!els.gotvCeilingVotes && !els.gotvBanner) return;
-
-  const U = safeNum(state.universeSize);
-  const basePct = safeNum(state.gotv?.basePct);
-  const baseTurnPct = safeNum(state.gotv?.baseTurnoutPct);
-
-  const persuasionPct = safeNum(state.persuasionPct);
-
-  const baseUniverse = (U != null && basePct != null) ? (U * clamp(basePct, 0, 100) / 100) : null;
-  const baseTurn = (baseTurnPct != null) ? clamp(baseTurnPct, 0, 100) / 100 : null;
-
-  const nonVoterShare = (baseTurn != null) ? clamp(1 - baseTurn, 0, 1) : null;
-  const ceilingVotes = (baseUniverse != null && nonVoterShare != null) ? (baseUniverse * nonVoterShare) : null;
-
-  if (els.gotvCeilingVotes) els.gotvCeilingVotes.textContent = (ceilingVotes == null) ? "—" : fmtInt(Math.round(ceilingVotes));
-
-  // Guardrails (transparent + defensible)
-  const bannerEl = els.gotvBanner;
-  if (!bannerEl) return;
-
-  const show = (kind, text) => {
-    bannerEl.hidden = false;
-    bannerEl.className = `banner ${kind}`;
-    bannerEl.textContent = text;
-  };
-  const hide = () => { bannerEl.hidden = true; };
-
-  // Reset if nothing entered
-  if (U == null || U <= 0){
-    hide();
-    return;
-  }
-
-  if (basePct == null || baseTurnPct == null){
-    show("warn", "Phase 6: Enter Base mobilization universe % and Baseline base turnout % to compute the GOTV ceiling.");
-    return;
-  }
-
-  const totalSeg = (persuasionPct != null ? clamp(persuasionPct, 0, 100) : 0) + clamp(basePct, 0, 100);
-  if (totalSeg > 100.0001){
-    show("bad", `Phase 6 guardrail: Base % + Persuasion % exceeds 100% (currently ${totalSeg.toFixed(1)}%). Reduce one of them to avoid overlap/double counting.`);
-    return;
-  }
-
-  if (baseTurnPct >= 95){
-    show("warn", "Phase 6: Baseline base turnout is very high (≥95%). Mobilization ceiling will be small; confirm this is realistic for your base universe and election type.");
-    return;
-  }
-
-  hide();
-}
-
-
 function renderOptimization(res, weeks){
   if (!els.optTbody) return;
 
@@ -1379,26 +1256,9 @@ function renderOptimization(res, weeks){
   const overheadAmount = safeNum(budget.overheadAmount) ?? 0;
   const includeOverhead = !!budget.includeOverhead;
 
-
-  // Phase 6 — derive GOTV config (separate attempt pool)
-  const U = safeNum(state.universeSize);
-  const basePct = safeNum(state.gotv?.basePct);
-  const baseTurnPct = safeNum(state.gotv?.baseTurnoutPct);
-
-  const baseUniverse = (U != null && basePct != null) ? (U * clamp(basePct, 0, 100) / 100) : null;
-  const baseTurn = (baseTurnPct != null) ? clamp(baseTurnPct, 0, 100) / 100 : null;
-  const nonVoterShare = (baseTurn != null) ? clamp(1 - baseTurn, 0, 1) : null;
-
-  const gotv = {
-    baseUniverse,
-    nonVoterShare,
-    tactics: state.gotv?.tactics || {}
-  };
-
   const tactics = buildOptimizationTactics({
     baseRates: { cr, sr, tr },
-    tactics: tacticsRaw,
-    gotv
+    tactics: tacticsRaw
   });
 
   const bannerEl = els.optBanner;
@@ -1413,39 +1273,6 @@ function renderOptimization(res, weeks){
     bannerEl.hidden = true;
     bannerEl.textContent = "";
   };
-
-
-
-  const useDecay = !!opt.useDecay;
-
-  const getTierMult = (t, currentAttempts) => {
-    const tiers = Array.isArray(t.decayTiers) ? t.decayTiers : null;
-    if (!tiers || tiers.length === 0) return 1;
-    for (const tier of tiers){
-      const upto = Number(tier?.upto);
-      if (!Number.isFinite(upto)) continue;
-      if (currentAttempts < upto) {
-        const m = Number(tier?.mult);
-        return Number.isFinite(m) ? m : 1;
-      }
-    }
-    const last = tiers[tiers.length - 1];
-    const lm = Number(last?.mult);
-    return Number.isFinite(lm) ? lm : 1;
-  };
-
-  const votesForAllocation = (t, attempts, step) => {
-    if (!useDecay) return attempts * t.netVotesPerAttempt;
-    const st = (step != null && step > 0) ? step : 1;
-    let v = 0;
-    for (let cur = 0; cur < attempts; cur += st){
-      const add = Math.min(st, attempts - cur);
-      const mult = getTierMult(t, cur);
-      v += add * t.netVotesPerAttempt * mult;
-    }
-    return v;
-  };
-
 
   // Mode UI (budget vs capacity)
   if (els.optMode && els.optBudget && els.optCapacity){
@@ -1522,15 +1349,9 @@ function renderOptimization(res, weeks){
 
   // Table rows
   let any = false;
-  let persVotes = 0;
-  let turnVotes = 0;
   for (const t of tactics){
     const a = result.allocation?.[t.id] ?? 0;
     if (!a) continue;
-
-    const votesHere = votesForAllocation(t, a, safeNum(opt.step) ?? 1);
-    if (String(t.id).endsWith("_gotv")) turnVotes += votesHere;
-    else persVotes += votesHere;
     any = true;
 
     const trEl = document.createElement("tr");
@@ -1548,7 +1369,7 @@ function renderOptimization(res, weeks){
 
     const td3 = document.createElement("td");
     td3.className = "num";
-    td3.textContent = fmtInt(Math.round(votesForAllocation(t, a, safeNum(opt.step) ?? 1)));
+    td3.textContent = fmtInt(Math.round(a * t.netVotesPerAttempt));
 
     trEl.appendChild(td0);
     trEl.appendChild(td1);
@@ -1570,19 +1391,14 @@ function renderOptimization(res, weeks){
     attempts: totalAttempts,
     cost: totalCost,
     votes: totalVotes,
-    persVotes,
-    turnVotes,
     binding: result.binding || "—"
   });
 
   function setTotals(t){
     if (els.optTotalAttempts) els.optTotalAttempts.textContent = t ? fmtInt(Math.round(t.attempts)) : "—";
     if (els.optTotalCost) els.optTotalCost.textContent = t ? `$${fmtInt(Math.round(t.cost))}` : "—";
-    if (els.optPersVotes) els.optPersVotes.textContent = t ? fmtInt(Math.round(t.persVotes ?? 0)) : "—";
-    if (els.optTurnVotes) els.optTurnVotes.textContent = t ? fmtInt(Math.round(t.turnVotes ?? 0)) : "—";
     if (els.optTotalVotes) els.optTotalVotes.textContent = t ? fmtInt(Math.round(t.votes)) : "—";
     if (els.optBinding) els.optBinding.textContent = t ? (t.binding || "—") : "—";
-  }
   }
 
   function stubRow(){
