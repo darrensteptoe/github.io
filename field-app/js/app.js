@@ -1,4 +1,5 @@
 import { computeAll } from "./winMath.js";
+import { computeSnapshotHash } from "./hash.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
 import { loadState, saveState, clearState } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
@@ -243,6 +244,10 @@ const els = {
 
   toggleTraining: document.getElementById("toggleTraining"),
   toggleDark: document.getElementById("toggleDark"),
+  toggleAdvDiag: document.getElementById("toggleAdvDiag"),
+  advDiagBox: document.getElementById("advDiagBox"),
+  snapshotHash: document.getElementById("snapshotHash"),
+  importHashBanner: document.getElementById("importHashBanner"),
 };
 
 const DEFAULTS_BY_TEMPLATE = {
@@ -376,6 +381,7 @@ function makeDefaultState(){
     ui: {
       training: false,
       dark: false,
+      advDiag: false,
       activeTab: "win",
     }
   };
@@ -509,6 +515,8 @@ function applyStateToUI(){
   if (els.timelineCallsPerHour) els.timelineCallsPerHour.value = state.timelineCallsPerHour ?? "";
   if (els.timelineTextsPerHour) els.timelineTextsPerHour.value = state.timelineTextsPerHour ?? "";
 
+  if (els.toggleAdvDiag) els.toggleAdvDiag.checked = !!state.ui?.advDiag;
+  if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
   els.toggleTraining.checked = !!state.ui?.training;
   els.toggleDark.checked = !!state.ui?.dark;
 
@@ -843,7 +851,9 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   });
 
   if (els.btnSaveJson) els.btnSaveJson.addEventListener("click", () => {
-    const snapshot = { modelVersion: MODEL_VERSION, scenarioState: structuredClone(state) };
+    const scenarioClone = structuredClone(state);
+    const snapshot = { modelVersion: MODEL_VERSION, scenarioState: scenarioClone };
+    snapshot.snapshotHash = computeSnapshotHash(snapshot);
     const payload = makeScenarioExport(snapshot);
     if (hasNonFiniteNumbers(payload)){
       alert("Export blocked: scenario contains NaN/Infinity.");
@@ -917,6 +927,23 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       return;
     }
 
+    // Phase 9B — snapshot integrity verification (non-blocking)
+    try{
+      const exportedHash = v.snapshotHash || loaded.snapshotHash || null;
+      const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+      if (exportedHash && exportedHash !== recomputed){
+        if (els.importHashBanner){
+          els.importHashBanner.hidden = false;
+          els.importHashBanner.textContent = "Snapshot hash differs from exported hash.";
+        }
+        console.warn("Snapshot hash mismatch", { exportedHash, recomputed });
+      } else {
+        if (els.importHashBanner) els.importHashBanner.hidden = true;
+      }
+    } catch {
+      // If hashing fails for any reason, do not block import.
+    }
+
     // Replace entire state safely (no partial merge with current state)
     state = normalizeLoadedState(v.scenario);
     applyStateToUI();
@@ -932,6 +959,8 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   els.toggleTraining.addEventListener("change", () => {
     state.ui.training = els.toggleTraining.checked;
     document.body.classList.toggle("training", !!state.ui.training);
+    if (els.snapshotHash) els.snapshotHash.textContent = lastResultsSnapshot?.snapshotHash || "—";
+  if (els.importHashBanner && els.importHashBanner.hidden === false){ /* keep until next import clears */ }
     els.explainCard.hidden = !state.ui.training;
     persist();
   });
@@ -941,6 +970,13 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
   });
+
+  if (els.toggleAdvDiag) els.toggleAdvDiag.addEventListener("change", () => {
+    state.ui.advDiag = els.toggleAdvDiag.checked;
+    if (els.advDiagBox) els.advDiagBox.hidden = !state.ui.advDiag;
+    persist();
+  });
+
 }
 
 function normalizeLoadedState(s){
@@ -1062,11 +1098,14 @@ function render(){
       planMeta: structuredClone(state.ui?.lastPlanMeta || {}),
       summary: structuredClone(state.ui?.lastSummary || {})
     };
+    lastResultsSnapshot.snapshotHash = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: lastResultsSnapshot.scenarioState });
   } catch {
     lastResultsSnapshot = null;
   }
 
-  els.explainCard.hidden = !state.ui.training;
+  if (els.snapshotHash) els.snapshotHash.textContent = lastResultsSnapshot?.snapshotHash || "—";
+  if (els.importHashBanner && els.importHashBanner.hidden === false){ /* keep until next import clears */ }
+    els.explainCard.hidden = !state.ui.training;
 }
 
 

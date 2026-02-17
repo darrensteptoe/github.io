@@ -11,6 +11,7 @@ import { FIXTURES } from "./fixtures.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
+import { computeSnapshotHash } from "./hash.js";
 
 function nowMs(){ return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
 
@@ -994,6 +995,44 @@ export function runSelfTests(engine){
   test("Phase 9A: exports contain no NaN/Infinity", () => {
     const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: { a: 1 } });
     assert(!hasNonFiniteNumbers(payload), "Non-finite numbers found");
+    return true;
+  });
+
+
+  test("Phase 9B: same snapshot → same hash", () => {
+    const snap = { modelVersion: MODEL_VERSION, scenarioState: { a: 1, b: { c: 2 } } };
+    const h1 = computeSnapshotHash(snap);
+    const h2 = computeSnapshotHash(snap);
+    assert(h1 === h2, "Hash should be stable for identical snapshot");
+    return true;
+  });
+
+  test("Phase 9B: different snapshot → different hash", () => {
+    const a = { modelVersion: MODEL_VERSION, scenarioState: { a: 1, b: 2 } };
+    const b = { modelVersion: MODEL_VERSION, scenarioState: { a: 1, b: 3 } };
+    const h1 = computeSnapshotHash(a);
+    const h2 = computeSnapshotHash(b);
+    assert(h1 !== h2, "Hash should differ when scenario changes");
+    return true;
+  });
+
+  test("Phase 9B: hash does not depend on key order", () => {
+    const a = { modelVersion: MODEL_VERSION, scenarioState: { a: 1, b: { x: 9, y: 8 } } };
+    const b = { modelVersion: MODEL_VERSION, scenarioState: { b: { y: 8, x: 9 }, a: 1 } };
+    const h1 = computeSnapshotHash(a);
+    const h2 = computeSnapshotHash(b);
+    assert(h1 === h2, "Hash should be order-independent");
+    return true;
+  });
+
+  test("Phase 9B: Export → Import → identical hash", () => {
+    const scenario = { a: 1, b: { c: 2 }, ui: { training:false, dark:false, advDiag:false, activeTab:"win" } };
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
+    assert(typeof payload.snapshotHash === "string" && payload.snapshotHash.length >= 8, "Export missing snapshotHash");
+    const v = validateScenarioExport(payload, MODEL_VERSION);
+    assert(v.ok, "validateScenarioExport failed");
+    const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+    assert(recomputed === payload.snapshotHash, "Recomputed hash differs after export/import roundtrip");
     return true;
   });
 

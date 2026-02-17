@@ -5,6 +5,8 @@
 // - Does not import optimizer / compute modules
 // - Does not mutate app state
 
+import { computeSnapshotHash } from "./hash.js";
+
 export const MODEL_VERSION = "1.0.0";
 
 function pad2(n){ return String(n).padStart(2, "0"); }
@@ -67,10 +69,16 @@ function parseMajor(ver){
 export function makeScenarioExport(snapshot){
   // snapshot must include { scenarioState, modelVersion? }
   const mv = snapshot?.modelVersion || MODEL_VERSION;
+  const scen = snapshot?.scenarioState ?? null;
+
+  // Deterministic integrity hash (Phase 9B)
+  const snapshotHash = snapshot?.snapshotHash || computeSnapshotHash({ modelVersion: mv, scenarioState: scen });
+
   return {
     modelVersion: mv,
+    snapshotHash,
     exportedAt: new Date().toISOString(),
-    scenario: snapshot?.scenarioState ?? null,
+    scenario: scen,
   };
 }
 
@@ -78,6 +86,8 @@ export function validateScenarioExport(obj, currentModelVersion = MODEL_VERSION)
   if (!obj || typeof obj !== "object") return { ok:false, reason:"Invalid JSON (not an object)." };
   const mv = obj.modelVersion;
   if (!mv) return { ok:false, reason:"Missing required field: modelVersion." };
+  const hash = obj.snapshotHash;
+  if (hash != null && typeof hash !== "string") return { ok:false, reason:"snapshotHash must be a string when provided." };
   const scen = obj.scenario;
   if (!scen || typeof scen !== "object") return { ok:false, reason:"Missing required field: scenario." };
 
@@ -86,7 +96,7 @@ export function validateScenarioExport(obj, currentModelVersion = MODEL_VERSION)
   if (a == null || b == null) return { ok:false, reason:"modelVersion is not parseable." };
   if (a !== b) return { ok:false, reason:`Incompatible modelVersion. File=${mv} App=${currentModelVersion}` };
 
-  return { ok:true, modelVersion: mv, scenario: scen };
+  return { ok:true, modelVersion: mv, scenario: scen, snapshotHash: (hash ?? null) };
 }
 
 function csvEscape(v){
@@ -143,6 +153,9 @@ export function formatSummaryText(snapshot){
   lines.push(`Expected net votes: ${s.netVotes ?? "—"}`);
   lines.push(`Total cost: ${s.cost ?? "—"}`);
   lines.push(`Feasibility: ${s.feasible ?? "—"}`);
+  if (snapshot?.snapshotHash){
+    lines.push(`Snapshot hash: ${snapshot.snapshotHash}`);
+  }
   lines.push(`Primary bottleneck: ${s.primaryBottleneck ?? "—"}`);
   lines.push("Top tactic allocations:");
 
