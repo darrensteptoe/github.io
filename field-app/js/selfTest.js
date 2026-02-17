@@ -12,6 +12,16 @@ import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 import { computeSnapshotHash } from "./hash.js";
+import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
+
+function deepFreeze(obj){
+  if (obj == null || typeof obj !== "object") return obj;
+  Object.freeze(obj);
+  for (const k of Object.keys(obj)){
+    deepFreeze(obj[k]);
+  }
+  return obj;
+}
 
 function nowMs(){ return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
 
@@ -978,6 +988,63 @@ export function runSelfTests(engine){
     const sA = deterministicStringify(v.scenario, 2);
     const sB = deterministicStringify(scenario, 2);
     assert(sA === sB, "Scenario drift in roundtrip");
+    return true;
+  });
+
+  test("Phase 10: export includes schemaVersion (and appVersion)", () => {
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, appVersion: MODEL_VERSION, scenarioState: { a: 1 } });
+    assert(payload.schemaVersion === CURRENT_SCHEMA_VERSION, "Missing/incorrect schemaVersion on export");
+    assert(typeof payload.appVersion === "string" && payload.appVersion.length > 0, "Missing appVersion on export");
+    return true;
+  });
+
+  test("Phase 10: import missing schemaVersion migrates with warnings", () => {
+    const scenario = { a: 1, ui: { training:false, dark:false } };
+    const legacy = { modelVersion: MODEL_VERSION, snapshotHash: computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: scenario }), exportedAt: new Date().toISOString(), scenario };
+    const mig = migrateSnapshot(legacy);
+    assert(mig.snapshot.schemaVersion === CURRENT_SCHEMA_VERSION, "schemaVersion default not applied");
+    assert(Array.isArray(mig.warnings) && mig.warnings.length > 0, "Expected migration warnings");
+    const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
+    assert(v.ok, "validateScenarioExport failed after migration");
+    const h = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+    assert(typeof h === "string" && h.length >= 8, "Hash recompute failed");
+    return true;
+  });
+
+  test("Phase 10: migration does not mutate inputs", () => {
+    const raw = deepFreeze({
+      modelVersion: MODEL_VERSION,
+      scenario: deepFreeze({ a: 1, b: { c: 2 } }),
+      exportedAt: "2026-01-01T00:00:00.000Z",
+      snapshotHash: "abc",
+      extraField: { x: 1 }
+    });
+    const before = stableStringify(raw);
+    const mig = migrateSnapshot(raw);
+    const after = stableStringify(raw);
+    assert(before === after, "Input mutated by migrateSnapshot");
+    assert(mig.snapshot && typeof mig.snapshot === "object", "Missing migrated snapshot");
+    return true;
+  });
+
+  test("Phase 10: Export → Import → Export roundtrip keeps schemaVersion stable and hash stable", () => {
+    const scenario = { scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
+      universeBasis: "registered", universeSize: 1000, turnoutA: 40, turnoutB: 44, bandWidth: 4,
+      candidates: [{id:"a",name:"A",supportPct:40},{id:"b",name:"B",supportPct:40}], undecidedPct: 20, yourCandidateId:"a",
+      undecidedMode:"even", persuasionPct:30, earlyVoteExp:40,
+      supportRatePct:55, contactRatePct:22, turnoutReliabilityPct:80,
+      mcMode:"basic", mcVolatility:10, mcSeed:123,
+      budget: { overheadAmount:0, includeOverhead:false, tactics:{}, optimize:{ mode:"budget", budgetAmount:0, capacityAttempts:"", step:25, useDecay:false, objective:"net" } },
+      timelineEnabled:false, ui:{ training:false, dark:false }
+    };
+    const p1 = makeScenarioExport({ modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, appVersion: MODEL_VERSION, scenarioState: scenario });
+    const mig = migrateSnapshot(p1);
+    const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
+    assert(v.ok, "validateScenarioExport failed after migration");
+    const h1 = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+    const p2 = makeScenarioExport({ modelVersion: v.modelVersion, schemaVersion: mig.snapshot.schemaVersion, appVersion: mig.snapshot.appVersion || MODEL_VERSION, scenarioState: v.scenario });
+    assert(p2.schemaVersion === CURRENT_SCHEMA_VERSION, "schemaVersion not stable across roundtrip");
+    assert(p2.snapshotHash === h1, "hash not stable across export/import/export for same effective snapshot");
     return true;
   });
 

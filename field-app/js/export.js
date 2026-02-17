@@ -6,6 +6,7 @@
 // - Does not mutate app state
 
 import { computeSnapshotHash } from "./hash.js";
+import { CURRENT_SCHEMA_VERSION } from "./migrate.js";
 
 export const MODEL_VERSION = "1.0.0";
 
@@ -69,12 +70,18 @@ function parseMajor(ver){
 export function makeScenarioExport(snapshot){
   // snapshot must include { scenarioState, modelVersion? }
   const mv = snapshot?.modelVersion || MODEL_VERSION;
+  const sv = snapshot?.schemaVersion || CURRENT_SCHEMA_VERSION;
   const scen = snapshot?.scenarioState ?? null;
+
+  // Display-only (does not control migration)
+  const appVersion = snapshot?.appVersion || mv;
 
   // Deterministic integrity hash (Phase 9B)
   const snapshotHash = snapshot?.snapshotHash || computeSnapshotHash({ modelVersion: mv, scenarioState: scen });
 
   return {
+    schemaVersion: sv,
+    appVersion,
     modelVersion: mv,
     snapshotHash,
     exportedAt: new Date().toISOString(),
@@ -149,6 +156,9 @@ export function planRowsToCsv(snapshot){
 export function formatSummaryText(snapshot){
   const s = snapshot?.summary || {};
   const lines = [];
+  if (snapshot?.schemaVersion){
+    lines.push(`Schema version: ${snapshot.schemaVersion}`);
+  }
   lines.push(`Objective: ${s.objective ?? "—"}`);
   lines.push(`Expected net votes: ${s.netVotes ?? "—"}`);
   lines.push(`Total cost: ${s.cost ?? "—"}`);

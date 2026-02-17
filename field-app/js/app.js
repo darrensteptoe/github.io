@@ -9,6 +9,7 @@ import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
+import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -248,6 +249,7 @@ const els = {
   advDiagBox: document.getElementById("advDiagBox"),
   snapshotHash: document.getElementById("snapshotHash"),
   importHashBanner: document.getElementById("importHashBanner"),
+  importWarnBanner: document.getElementById("importWarnBanner"),
 };
 
 const DEFAULTS_BY_TEMPLATE = {
@@ -913,7 +915,18 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       return;
     }
 
-    const v = validateScenarioExport(loaded, MODEL_VERSION);
+    const mig = migrateSnapshot(loaded);
+    if (els.importWarnBanner){
+      if (mig.warnings && mig.warnings.length){
+        els.importWarnBanner.hidden = false;
+        els.importWarnBanner.textContent = mig.warnings.join(" ");
+      } else {
+        els.importWarnBanner.hidden = true;
+        els.importWarnBanner.textContent = "";
+      }
+    }
+
+    const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
     if (!v.ok){
       alert(`Import failed: ${v.reason}`);
       els.loadJson.value = "";
@@ -929,7 +942,8 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
 
     // Phase 9B — snapshot integrity verification (non-blocking)
     try{
-      const exportedHash = v.snapshotHash || loaded.snapshotHash || null;
+      const exportedHash = (loaded && typeof loaded === "object") ? (loaded.snapshotHash || null) : null;
+      // Hash must be tied to the normalized snapshot used by the engine (after migration).
       const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
       if (exportedHash && exportedHash !== recomputed){
         if (els.importHashBanner){
@@ -1092,6 +1106,8 @@ function render(){
   // Phase 9A — build immutable results snapshot for export.js (pure serialization layer)
   try {
     lastResultsSnapshot = {
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      appVersion: MODEL_VERSION,
       modelVersion: MODEL_VERSION,
       scenarioState: structuredClone(state),
       planRows: structuredClone(state.ui?.lastPlanRows || []),
