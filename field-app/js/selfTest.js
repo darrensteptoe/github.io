@@ -271,6 +271,130 @@ export function runSelfTests(engine){
     assert(stableStringify(o1) === stableStringify(o2), "Outputs differed for identical inputs");
   });
 
+  // --- Phase 7) Timeline / Production feasibility ---
+  test("Timeline: OFF returns neutral outputs", () => {
+    const tl = engine.computeTimelineFeasibility({
+      enabled: false,
+      weeksRemaining: 10,
+      activeWeeksOverride: null,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 1, volunteers: 0, staffHours: 40, volunteerHours: 0 },
+      throughput: { doors: 30 },
+      required: { doors: 1000 },
+      tacticKinds: { doors: "persuasion" },
+      netVotesPerAttempt: 0.01,
+      bindingHint: "budget",
+      ramp: { enabled: false, mode: "linear" }
+    });
+    assert(tl && tl.enabled === false, "Timeline should be disabled");
+    assert(tl.percentPlanExecutable === 1, "Disabled timeline should be neutral (100%)");
+  });
+
+  test("Timeline: zero weeks => zero executable attempts", () => {
+    const tl = engine.computeTimelineFeasibility({
+      enabled: true,
+      weeksRemaining: 0,
+      activeWeeksOverride: null,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 2, volunteers: 0, staffHours: 40, volunteerHours: 0 },
+      throughput: { doors: 30 },
+      required: { doors: 1000 },
+      tacticKinds: { doors: "persuasion" },
+      netVotesPerAttempt: 0.01,
+      bindingHint: "budget",
+      ramp: { enabled: false, mode: "linear" }
+    });
+    assert((tl.executableAttemptsTotal ?? -1) === 0, `Expected 0 executable, got ${tl.executableAttemptsTotal}`);
+    assert((tl.percentPlanExecutable ?? 1) === 0, `Expected 0% executable, got ${tl.percentPlanExecutable}`);
+    assert((tl.shortfallAttempts ?? 0) === 1000, `Expected shortfall 1000, got ${tl.shortfallAttempts}`);
+  });
+
+  test("Timeline: required attempts <= capacity => 100% executable", () => {
+    const tl = engine.computeTimelineFeasibility({
+      enabled: true,
+      weeksRemaining: 4,
+      activeWeeksOverride: null,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 1, volunteers: 0, staffHours: 40, volunteerHours: 0 },
+      throughput: { doors: 10 },
+      required: { doors: 1000 },
+      tacticKinds: { doors: "persuasion" },
+      netVotesPerAttempt: 0.01,
+      bindingHint: "capacity",
+      ramp: { enabled: false, mode: "linear" }
+    });
+    assert(tl.percentPlanExecutable === 1, `Expected 100%, got ${tl.percentPlanExecutable}`);
+    assert((tl.shortfallAttempts ?? 0) === 0, `Expected 0 shortfall, got ${tl.shortfallAttempts}`);
+  });
+
+  test("Timeline: required attempts > capacity => shortfall > 0", () => {
+    const tl = engine.computeTimelineFeasibility({
+      enabled: true,
+      weeksRemaining: 2,
+      activeWeeksOverride: null,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 1, volunteers: 0, staffHours: 10, volunteerHours: 0 },
+      throughput: { doors: 10 },
+      required: { doors: 1000 },
+      tacticKinds: { doors: "persuasion" },
+      netVotesPerAttempt: 0.01,
+      bindingHint: "budget",
+      ramp: { enabled: true, mode: "linear" }
+    });
+    assert((tl.shortfallAttempts ?? 0) > 0, "Expected shortfall > 0");
+    assert(tl.constraintType === "Timeline-limited", `Expected Timeline-limited, got ${tl.constraintType}`);
+  });
+
+  test("Timeline: no NaN / Infinity in outputs", () => {
+    const tl = engine.computeTimelineFeasibility({
+      enabled: true,
+      weeksRemaining: 0,
+      activeWeeksOverride: 0,
+      gotvWindowWeeks: 0,
+      staffing: { staff: 0, volunteers: 0, staffHours: 0, volunteerHours: 0 },
+      throughput: { doors: 0, phones: 0, texts: 0 },
+      required: { doors: 0, phones: 0, texts: 0 },
+      tacticKinds: { doors: "persuasion", phones: "persuasion", texts: "turnout" },
+      netVotesPerAttempt: 0,
+      bindingHint: "caps",
+      ramp: { enabled: false, mode: "linear" }
+    });
+    const scalars = [
+      tl.requiredAttemptsTotal,
+      tl.executableAttemptsTotal,
+      tl.percentPlanExecutable,
+      tl.shortfallAttempts
+    ];
+    for (const v of scalars){
+      assert(v == null || Number.isFinite(v), `Non-finite scalar: ${v}`);
+    }
+    if (Array.isArray(tl.weekly)){
+      for (const w of tl.weekly){
+        assert(Number.isFinite(w.week), `Non-finite week index: ${w.week}`);
+        assert(Number.isFinite(w.attempts), `Non-finite week attempts: ${w.attempts}`);
+      }
+    }
+  });
+
+  test("Timeline: deterministic reproducibility", () => {
+    const args = {
+      enabled: true,
+      weeksRemaining: 5,
+      activeWeeksOverride: 5,
+      gotvWindowWeeks: 2,
+      staffing: { staff: 2, volunteers: 5, staffHours: 35, volunteerHours: 3 },
+      throughput: { doors: 28, phones: 18, texts: 120 },
+      required: { doors: 1200, phones: 2000, texts: 5000 },
+      tacticKinds: { doors: "persuasion", phones: "persuasion", texts: "turnout" },
+      netVotesPerAttempt: 0.02,
+      bindingHint: "budget",
+      ramp: { enabled: true, mode: "s" }
+    };
+    const a = engine.computeTimelineFeasibility(args);
+    const b = engine.computeTimelineFeasibility(args);
+    assert(stableStringify(a) === stableStringify(b), "Timeline outputs differed for identical inputs");
+  });
+
   // --- C) Monte Carlo Stability ---
   test("Monte Carlo: same seed => identical summary output", () => {
     assert(baseline.res, "Baseline computeAll result missing");

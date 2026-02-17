@@ -4,6 +4,7 @@ import { loadState, saveState } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
+import { computeTimelineFeasibility } from "./timeline.js";
 
 const els = {
   scenarioName: document.getElementById("scenarioName"),
@@ -161,6 +162,28 @@ const els = {
   optBinding: document.getElementById("optBinding"),
   optGapContext: document.getElementById("optGapContext"),
 
+  // Phase 7 — timeline / production
+  timelineEnabled: document.getElementById("timelineEnabled"),
+  timelineWeeksAuto: document.getElementById("timelineWeeksAuto"),
+  timelineActiveWeeks: document.getElementById("timelineActiveWeeks"),
+  timelineGotvWeeks: document.getElementById("timelineGotvWeeks"),
+  timelineStaffCount: document.getElementById("timelineStaffCount"),
+  timelineStaffHours: document.getElementById("timelineStaffHours"),
+  timelineVolCount: document.getElementById("timelineVolCount"),
+  timelineVolHours: document.getElementById("timelineVolHours"),
+  timelineRampEnabled: document.getElementById("timelineRampEnabled"),
+  timelineRampMode: document.getElementById("timelineRampMode"),
+  timelineDoorsPerHour: document.getElementById("timelineDoorsPerHour"),
+  timelineCallsPerHour: document.getElementById("timelineCallsPerHour"),
+  timelineTextsPerHour: document.getElementById("timelineTextsPerHour"),
+  tlPercent: document.getElementById("tlPercent"),
+  tlCompletionWeek: document.getElementById("tlCompletionWeek"),
+  tlShortfallAttempts: document.getElementById("tlShortfallAttempts"),
+  tlConstraint: document.getElementById("tlConstraint"),
+  tlShortfallVotes: document.getElementById("tlShortfallVotes"),
+  tlWeekList: document.getElementById("tlWeekList"),
+  tlBanner: document.getElementById("tlBanner"),
+
   validationList: document.getElementById("validationList"),
 
   kpiTurnoutVotes: document.getElementById("kpiTurnoutVotes"),
@@ -253,6 +276,20 @@ function makeDefaultState(){
     gotvLiftMax: 2.0,
     gotvMaxLiftPP2: 10,
     gotvDiminishing2: false,
+
+    // Phase 7 — timeline / production (feasibility layer)
+    timelineEnabled: false,
+    timelineActiveWeeks: "",
+    timelineGotvWeeks: 2,
+    timelineStaffCount: 0,
+    timelineStaffHours: 40,
+    timelineVolCount: 0,
+    timelineVolHours: 4,
+    timelineRampEnabled: false,
+    timelineRampMode: "linear",
+    timelineDoorsPerHour: 30,
+    timelineCallsPerHour: 20,
+    timelineTextsPerHour: 120,
 
 
     mcMode: "basic",
@@ -418,6 +455,20 @@ function applyStateToUI(){
   if (els.optCapacity) els.optCapacity.value = state.budget?.optimize?.capacityAttempts ?? "";
   if (els.optStep) els.optStep.value = state.budget?.optimize?.step ?? 25;
   if (els.optUseDecay) els.optUseDecay.checked = !!state.budget?.optimize?.useDecay;
+
+  // Phase 7 — timeline / production
+  if (els.timelineEnabled) els.timelineEnabled.checked = !!state.timelineEnabled;
+  if (els.timelineActiveWeeks) els.timelineActiveWeeks.value = state.timelineActiveWeeks ?? "";
+  if (els.timelineGotvWeeks) els.timelineGotvWeeks.value = state.timelineGotvWeeks ?? "";
+  if (els.timelineStaffCount) els.timelineStaffCount.value = state.timelineStaffCount ?? "";
+  if (els.timelineStaffHours) els.timelineStaffHours.value = state.timelineStaffHours ?? "";
+  if (els.timelineVolCount) els.timelineVolCount.value = state.timelineVolCount ?? "";
+  if (els.timelineVolHours) els.timelineVolHours.value = state.timelineVolHours ?? "";
+  if (els.timelineRampEnabled) els.timelineRampEnabled.checked = !!state.timelineRampEnabled;
+  if (els.timelineRampMode) els.timelineRampMode.value = state.timelineRampMode || "linear";
+  if (els.timelineDoorsPerHour) els.timelineDoorsPerHour.value = state.timelineDoorsPerHour ?? "";
+  if (els.timelineCallsPerHour) els.timelineCallsPerHour.value = state.timelineCallsPerHour ?? "";
+  if (els.timelineTextsPerHour) els.timelineTextsPerHour.value = state.timelineTextsPerHour ?? "";
 
   els.toggleTraining.checked = !!state.ui?.training;
   els.toggleDark.checked = !!state.ui?.dark;
@@ -662,9 +713,9 @@ function wireEvents(){
 
     // Phase 4 — ROI inputs
     const ensureBudget = () => {
-      if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false } };
+      if (!state.budget) state.budget = { overheadAmount: 0, includeOverhead: false, tactics: { doors:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, phones:{enabled:true,cpa:0,crPct:null,srPct:null,kind:"persuasion"}, texts:{enabled:false,cpa:0,crPct:null,srPct:null,kind:"persuasion"} }, optimize: { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net" } };
       if (!state.budget.tactics) state.budget.tactics = { doors:{enabled:true,cpa:0,crPct:null,srPct:null}, phones:{enabled:true,cpa:0,crPct:null,srPct:null}, texts:{enabled:false,cpa:0,crPct:null,srPct:null} };
-      if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false };
+      if (!state.budget.optimize) state.budget.optimize = { mode:"budget", budgetAmount:10000, capacityAttempts:"", step:25, useDecay:false, objective:"net" };
       if (!state.budget.tactics.doors) state.budget.tactics.doors = { enabled:true, cpa:0, crPct:null, srPct:null };
       if (!state.budget.tactics.phones) state.budget.tactics.phones = { enabled:true, cpa:0, crPct:null, srPct:null };
       if (!state.budget.tactics.texts) state.budget.tactics.texts = { enabled:false, cpa:0, crPct:null, srPct:null };
@@ -708,10 +759,30 @@ const watchOpt = (el, fn, evt="input") => {
 };
 
 watchOpt(els.optMode, () => state.budget.optimize.mode = els.optMode.value, "change");
+watchOpt(els.optObjective, () => state.budget.optimize.objective = els.optObjective.value, "change");
 watchOpt(els.optBudget, () => state.budget.optimize.budgetAmount = safeNum(els.optBudget.value) ?? 0);
 watchOpt(els.optCapacity, () => state.budget.optimize.capacityAttempts = els.optCapacity.value ?? "");
 watchOpt(els.optStep, () => state.budget.optimize.step = safeNum(els.optStep.value) ?? 25);
 watchOpt(els.optUseDecay, () => state.budget.optimize.useDecay = !!els.optUseDecay.checked, "change");
+
+// Phase 7 — timeline / production (feasibility only; never re-optimizes)
+const watchTL = (el, fn, evt="input") => {
+  if (!el) return;
+  el.addEventListener(evt, () => { fn(); render(); persist(); });
+};
+
+watchTL(els.timelineEnabled, () => state.timelineEnabled = !!els.timelineEnabled.checked, "change");
+watchTL(els.timelineActiveWeeks, () => state.timelineActiveWeeks = els.timelineActiveWeeks.value ?? "");
+watchTL(els.timelineGotvWeeks, () => state.timelineGotvWeeks = safeNum(els.timelineGotvWeeks.value));
+watchTL(els.timelineStaffCount, () => state.timelineStaffCount = safeNum(els.timelineStaffCount.value) ?? 0);
+watchTL(els.timelineStaffHours, () => state.timelineStaffHours = safeNum(els.timelineStaffHours.value) ?? 0);
+watchTL(els.timelineVolCount, () => state.timelineVolCount = safeNum(els.timelineVolCount.value) ?? 0);
+watchTL(els.timelineVolHours, () => state.timelineVolHours = safeNum(els.timelineVolHours.value) ?? 0);
+watchTL(els.timelineRampEnabled, () => state.timelineRampEnabled = !!els.timelineRampEnabled.checked, "change");
+watchTL(els.timelineRampMode, () => state.timelineRampMode = els.timelineRampMode.value || "linear", "change");
+watchTL(els.timelineDoorsPerHour, () => state.timelineDoorsPerHour = safeNum(els.timelineDoorsPerHour.value) ?? 0);
+watchTL(els.timelineCallsPerHour, () => state.timelineCallsPerHour = safeNum(els.timelineCallsPerHour.value) ?? 0);
+watchTL(els.timelineTextsPerHour, () => state.timelineTextsPerHour = safeNum(els.timelineTextsPerHour.value) ?? 0);
 
 if (els.optRun) els.optRun.addEventListener("click", () => { render(); });
 if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); });
@@ -850,6 +921,7 @@ function render(){
 
   renderRoi(res, weeks);
   renderOptimization(res, weeks);
+  renderTimeline(res, weeks);
 
   els.explainCard.hidden = !state.ui.training;
 }
@@ -1331,6 +1403,9 @@ export function getSelfTestAccessors(){
     optimizeMixBudget,
     optimizeMixCapacity,
 
+    // Phase 7
+    computeTimelineFeasibility,
+
     // capacity helpers
     computeCapacityBreakdown,
     computeCapacityContacts,
@@ -1696,6 +1771,7 @@ function renderOptimization(res, weeks){
   }
 
   const step = safeNum(opt.step) ?? 25;
+  const objective = opt.objective || "net";
   let result = null;
 
   if ((opt.mode || "budget") === "capacity"){
@@ -1706,7 +1782,8 @@ function renderOptimization(res, weeks){
       capacity: cap,
       tactics,
       step,
-      useDecay: !!opt.useDecay
+      useDecay: !!opt.useDecay,
+      objective
     });
 
     hideBanner();
@@ -1722,7 +1799,8 @@ function renderOptimization(res, weeks){
       tactics,
       step,
       capacityCeiling: capAttempts,
-      useDecay: !!opt.useDecay
+      useDecay: !!opt.useDecay,
+      objective
     });
 
     hideBanner();
@@ -1738,6 +1816,14 @@ function renderOptimization(res, weeks){
     stubRow();
     return;
   }
+
+  // Cache for Phase 7 feasibility (no backward coupling)
+  state.ui.lastOpt = {
+    allocation: structuredClone(result.allocation || {}),
+    totals: structuredClone(result.totals || {}),
+    binding: result.binding || "caps",
+    objective
+  };
 
   // Table rows
   let any = false;
@@ -1799,6 +1885,104 @@ function renderOptimization(res, weeks){
     const tr = document.createElement("tr");
     tr.innerHTML = '<td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td>';
     els.optTbody.appendChild(tr);
+  }
+}
+
+function renderTimeline(res, weeks){
+  if (!els.timelineEnabled || !els.tlPercent) return;
+
+  // Weeks auto display
+  if (els.timelineWeeksAuto) els.timelineWeeksAuto.value = (weeks == null) ? "" : String(Math.max(0, Math.floor(weeks)));
+
+  const enabled = !!state.timelineEnabled;
+  const banner = els.tlBanner;
+  const setBanner = (kind, text) => {
+    if (!banner) return;
+    banner.hidden = false;
+    banner.className = `banner ${kind}`;
+    banner.textContent = text;
+  };
+  const hideBanner = () => {
+    if (!banner) return;
+    banner.hidden = true;
+    banner.textContent = "";
+  };
+
+  if (!enabled){
+    els.tlPercent.textContent = "—";
+    els.tlCompletionWeek.textContent = "—";
+    els.tlShortfallAttempts.textContent = "—";
+    els.tlConstraint.textContent = "—";
+    if (els.tlShortfallVotes) els.tlShortfallVotes.textContent = "—";
+    if (els.tlWeekList) els.tlWeekList.textContent = "—";
+    hideBanner();
+    return;
+  }
+
+  const lastOpt = state.ui?.lastOpt || null;
+  const required = (lastOpt && lastOpt.allocation && typeof lastOpt.allocation === "object") ? lastOpt.allocation : {};
+  const bindingHint = lastOpt?.binding || "caps";
+
+  const totals = lastOpt?.totals || {};
+  const attemptsTotal = safeNum(totals.attempts) ?? null;
+  const netVotesTotal = safeNum(totals.netVotes) ?? null;
+  const netVotesPerAttempt = (attemptsTotal != null && attemptsTotal > 0 && netVotesTotal != null)
+    ? (netVotesTotal / attemptsTotal)
+    : null;
+
+  const activeOverride = safeNum(state.timelineActiveWeeks);
+
+  const tacticKinds = {
+    doors: state.budget?.tactics?.doors?.kind || "persuasion",
+    phones: state.budget?.tactics?.phones?.kind || "persuasion",
+    texts: state.budget?.tactics?.texts?.kind || "persuasion",
+  };
+
+  const tl = computeTimelineFeasibility({
+    enabled: true,
+    weeksRemaining: weeks ?? 0,
+    activeWeeksOverride: (activeOverride == null ? null : activeOverride),
+    gotvWindowWeeks: safeNum(state.timelineGotvWeeks),
+    staffing: {
+      staff: safeNum(state.timelineStaffCount) ?? 0,
+      volunteers: safeNum(state.timelineVolCount) ?? 0,
+      staffHours: safeNum(state.timelineStaffHours) ?? 0,
+      volunteerHours: safeNum(state.timelineVolHours) ?? 0,
+    },
+    throughput: {
+      doors: safeNum(state.timelineDoorsPerHour) ?? 0,
+      phones: safeNum(state.timelineCallsPerHour) ?? 0,
+      texts: safeNum(state.timelineTextsPerHour) ?? 0,
+    },
+    required,
+    tacticKinds,
+    netVotesPerAttempt,
+    bindingHint,
+    ramp: { enabled: !!state.timelineRampEnabled, mode: state.timelineRampMode || "linear" }
+  });
+
+  const pct = Math.round((tl.percentPlanExecutable ?? 0) * 100);
+  els.tlPercent.textContent = `${pct}%`;
+  els.tlCompletionWeek.textContent = (tl.projectedCompletionWeek == null) ? "—" : String(tl.projectedCompletionWeek);
+  els.tlShortfallAttempts.textContent = fmtInt(Math.round(tl.shortfallAttempts ?? 0));
+  els.tlConstraint.textContent = tl.constraintType || "—";
+
+  if (els.tlShortfallVotes){
+    els.tlShortfallVotes.textContent = (tl.shortfallNetVotes == null) ? "—" : fmtInt(Math.round(tl.shortfallNetVotes));
+  }
+
+  if (els.tlWeekList){
+    if (!tl.weekly || !tl.weekly.length){
+      els.tlWeekList.textContent = "—";
+    } else {
+      els.tlWeekList.textContent = tl.weekly.map(w => `Week ${w.week}: ${fmtInt(Math.round(w.attempts || 0))} attempts`).join("\n");
+    }
+  }
+
+  if (tl.percentPlanExecutable < 1){
+    setBanner("warn", `Timeline feasibility: ${pct}% executable · shortfall ${fmtInt(Math.round(tl.shortfallAttempts || 0))} attempts.`);
+  } else {
+    hideBanner();
   }
 }
 
