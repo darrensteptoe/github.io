@@ -79,10 +79,6 @@ body.dark{
   --p6:#5eead4;
 }
 
-/* Dev-only helpers (hidden unless dev mode enabled) */
-.dev-only{ display:none !important; }
-body.dev .dev-only{ display: revert !important; }
-
 .topbar{
   position:fixed;
   top:0;
@@ -397,10 +393,8 @@ body.training .help{ display:block; }
   color:var(--muted2);
   font-weight:650;
   background: color-mix(in srgb, var(--panel2) 92%, transparent);
-  /* Sticky header inside scroll containers (prevents global fixed headers stacking across tables) */
-  position:sticky;
+  position:fixed;
   top:0;
-  z-index:2;
 }
 .table td.num, .table th.num{ text-align:right; }
 .table tfoot td{ border-bottom:none; }

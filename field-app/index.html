@@ -26,7 +26,6 @@
         <button id="btnSaveJson" class="btn btn-sm" type="button">Save JSON</button>
         <label class="btn btn-sm btn-ghost" for="loadJson">Load JSON</label>
         <input id="loadJson" type="file" accept="application/json" hidden />
-        <button id="btnSelfTest" class="btn btn-sm btn-ghost dev-only" type="button" title="Run internal integrity checks">Self‑Test</button>
         <span class="divider"></span>
         <label class="switch">
           <input id="toggleTraining" type="checkbox" />
@@ -1147,19 +1146,6 @@
   <div id="hireBanner" class="banner warn" hidden></div>
 
   <div class="note">This simulation adds capacity only (attempts). It does not assume higher persuasion skill or better targeting from more staff.</div>
-</div>
-
-
-<div id="selfTestCard" class="card dev-only" hidden>
-  <div class="card-head">
-    <h2>Integrity self-test</h2>
-    <div class="card-actions">
-      <span id="selfTestStatus" class="chip">Idle</span>
-    </div>
-  </div>
-  <div id="selfTestSummary" class="banner" hidden></div>
-  <ul id="selfTestList" class="validation" style="margin-top:10px;"></ul>
-  <div class="note">Dev-only. Enables deterministic regression checks so future UI-only changes don’t drift Phase 1–8 logic.</div>
 </div>
 
 
