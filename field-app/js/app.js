@@ -1473,10 +1473,10 @@ function initDevTools(){
         line += "Last good: (none)";
       }
       if (lastHash){
-        line += ` · hash ${String(lastHash).slice(0,12)}`;
+        line += ` · fixture ${String(lastHash)}`;
       }
       if (currentHash){
-        line += ` · current ${String(currentHash).slice(0,12)}`;
+        line += ` · current ${String(currentHash)}`;
       }
       if (lastHash && currentHash){
         line += (lastHash === currentHash) ? " · no drift" : " · DRIFT";

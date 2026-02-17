@@ -672,7 +672,9 @@ export function runSelfTests(engine){
   };
   results.signature = signature;
   try{
-    results.signatureHash = stableStringify(signature);
+    // A true, deterministic hash for drift diagnostics (do NOT stringify objects into the UI).
+    // Uses the Phase 9B snapshot hasher (canonical + FNV-1a 64-bit).
+    results.signatureHash = computeSnapshotHash(signature);
   } catch {
     results.signatureHash = null;
   }
