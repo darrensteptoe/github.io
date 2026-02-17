@@ -44,6 +44,8 @@
     </div>
   </header>
 
+  <div id="importHashBanner" class="banner warn" hidden>Snapshot hash differs from exported hash.</div>
+
   <main class="shell">
     <section class="left">
       <div class="card">
@@ -1143,6 +1145,27 @@
 
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <div class="muted" style="font-weight:700;">Bottlenecks &amp; Marginal Value</div>
+    </div>
+
+    <div class="rowline" style="margin-top:8px;justify-content:flex-start;">
+      <label class="switch">
+        <input id="toggleAdvDiag" type="checkbox" />
+        <span class="slider"></span>
+        <span class="switch-label">Advanced diagnostics</span>
+      </label>
+    </div>
+
+    <div id="advDiagBox" class="card" hidden style="margin-top:10px;">
+      <div class="card-head">
+        <h2>Snapshot integrity</h2>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label class="label">Snapshot hash (read-only)</label>
+          <div class="mono" id="snapshotHash">—</div>
+          <div class="note">Deterministic hash of the exported snapshot. Changes whenever inputs/toggles/objective/seed/timeline change.</div>
+        </div>
+      </div>
     </div>
 
     <div class="kpis" style="margin-top:8px;">

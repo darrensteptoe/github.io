@@ -678,3 +678,14 @@ body.training .help{ display:block; }
   line-height: 1.35;
   opacity: 0.95;
 }
+
+
+.mono{
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size:12px;
+  padding:8px 10px;
+  border:1px solid var(--rule);
+  border-radius:10px;
+  background: color-mix(in srgb, var(--panel) 92%, var(--bg));
+  overflow-x:auto;
+}
