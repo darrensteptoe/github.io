@@ -1180,14 +1180,22 @@ body.training .help{ display:block; }
 .topbar .switch{ min-width: 140px; }
 
 
-/* ===== Header separators: use literal '|' characters ===== */
-.topbar .divider{
-  display:inline-block;
-  width:auto;
-  height:auto;
-  background:transparent !important;
-  margin:0 4px;
-  opacity:0.4;
-  font-weight:600;
-  color:var(--muted2);
+/* ===== Force header into single straight line ===== */
+.topbar-actions,
+.topbar .toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;           /* prevent wrapping */
+  white-space: nowrap;         /* prevent text wrap */
+}
+
+.topbar .toolbar > * {
+  flex-shrink: 0;              /* prevent squishing */
+}
+
+.topbar .divider {
+  opacity: 0.35;
+  font-weight: 600;
+  margin: 0 2px;
 }
