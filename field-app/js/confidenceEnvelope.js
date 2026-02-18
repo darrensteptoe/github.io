@@ -161,8 +161,11 @@ export function computeConfidenceEnvelope({ margins, sortedMargins, winProb, win
   out.risk.shocks.lossProb25 = Math.max(0, pBase - p25s);
   out.risk.shocks.lossProb50 = Math.max(0, pBase - p50s);
 
+  // Precompute summary stats for advisor framing + fragility
+
+
   // Phase 14.1 — Advisor grade + narrative (deterministic)
-  const tol = Math.max(10, Math.round(0.10 * (sd || 0)));
+  const tol = Math.max(10, Math.round(0.10 * (out.diagnostics.stdev || 0)));
   let grade = "";
   let narrative = "";
   if (p10 >= 0){
@@ -184,8 +187,6 @@ export function computeConfidenceEnvelope({ margins, sortedMargins, winProb, win
   // Diagnostics
   out.diagnostics.min = sorted[0];
   out.diagnostics.max = sorted[n-1];
-  out.diagnostics.mean = mean(arr);
-  out.diagnostics.stdev = stdev(arr);
   if (n < 200) out.diagnostics.skewHint = "low_n";
 
   // Fragility
