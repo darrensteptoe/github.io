@@ -1,10 +1,24 @@
 const KEY = "dsc_field_engine_state_v1";
 
+function stripEphemeral(state){
+  try{
+    if (state && state.ui && Object.prototype.hasOwnProperty.call(state.ui, "dark")){
+      const ui = { ...state.ui };
+      delete ui.dark;
+      return { ...state, ui };
+    }
+    return state;
+  } catch {
+    return state;
+  }
+}
+
 export function loadState(){
   try{
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return stripEphemeral(parsed);
   } catch {
     return null;
   }
@@ -12,7 +26,8 @@ export function loadState(){
 
 export function saveState(state){
   try{
-    localStorage.setItem(KEY, JSON.stringify(state));
+    const clean = stripEphemeral(state);
+    localStorage.setItem(KEY, JSON.stringify(clean));
   } catch {
     // ignore
   }
@@ -26,38 +41,25 @@ export function clearState(){
   }
 }
 
-
-// Phase 11 — auto-backup snapshots (rolling 5, fail-soft)
-const BACKUP_KEY = "fpe_backups_v1";
-const MAX_BACKUPS = 5;
-
-function safeGet(storage, key){
-  try{ return storage.getItem(key); } catch { return null; }
-}
-function safeSet(storage, key, value){
-  try{ storage.setItem(key, value); return true; } catch { return false; }
-}
-
-export function readBackups(storageOverride){
-  const store = storageOverride || localStorage;
+export function readBackups(){
   try{
-    const raw = safeGet(store, BACKUP_KEY);
+    const raw = localStorage.getItem(KEY + "__backups");
     if (!raw) return [];
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr.slice(0, MAX_BACKUPS) : [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
   } catch {
     return [];
   }
 }
 
-export function writeBackupEntry(entry, storageOverride){
-  const store = storageOverride || localStorage;
+export function writeBackupEntry(entry){
   try{
-    const prev = readBackups(store);
-    const next = [entry, ...prev].slice(0, MAX_BACKUPS);
-    safeSet(store, BACKUP_KEY, JSON.stringify(next));
-    return next;
+    const backups = readBackups();
+    backups.unshift(entry);
+    const trimmed = backups.slice(0, 5);
+    localStorage.setItem(KEY + "__backups", JSON.stringify(trimmed));
   } catch {
-    return [];
+    // ignore
   }
 }
