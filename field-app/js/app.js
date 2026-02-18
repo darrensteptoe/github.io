@@ -427,6 +427,20 @@ const els = {
   diProbTbody: document.getElementById("diProbTbody"),
 };
 
+// Phase 13 — DOM preflight (prevents silent boot failures)
+function preflightEls(){
+  try{
+    const missing = [];
+    for (const [k,v] of Object.entries(els)){
+      if (v == null) missing.push(k);
+    }
+    if (missing.length){
+      recordError("dom-preflight", `Missing bound element(s): ${missing.join(", ")}`);
+    }
+  } catch { /* ignore */ }
+}
+
+
 const DEFAULTS_BY_TEMPLATE = {
   federal: { bandWidth: 4, persuasionPct: 28, earlyVoteExp: 45 },
   state_leg: { bandWidth: 4, persuasionPct: 30, earlyVoteExp: 38 },
@@ -703,8 +717,8 @@ function applyStateToUI(){
 
   if (els.toggleAdvDiag) els.toggleAdvDiag.checked = !!state.ui?.advDiag;
   if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
-  els.toggleTraining.checked = !!state.ui?.training;
-  els.toggleDark.checked = !!state.ui?.dark;
+  if (els.toggleTraining) els.toggleTraining.checked = !!state.ui?.training;
+  if (els.toggleDark) els.toggleDark.checked = !!state.ui?.dark;
 
   document.body.classList.toggle("training", !!state.ui?.training);
   document.body.classList.toggle("dark", !!state.ui?.dark);
@@ -1220,7 +1234,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     els.loadJson.value = "";
   });
 
-  els.toggleTraining.addEventListener("change", () => {
+  if (els.toggleTraining) els.toggleTraining.addEventListener("change", () => {
     state.ui.training = els.toggleTraining.checked;
     document.body.classList.toggle("training", !!state.ui.training);
     if (els.snapshotHash) els.snapshotHash.textContent = lastResultsSnapshot?.snapshotHash || "—";
@@ -1229,7 +1243,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     persist();
   });
 
-  els.toggleDark.addEventListener("change", () => {
+  if (els.toggleDark) els.toggleDark.addEventListener("change", () => {
     state.ui.dark = els.toggleDark.checked;
     document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
@@ -2069,6 +2083,7 @@ function initDevTools(){
 
 function init(){
   installGlobalErrorCapture();
+  preflightEls();
   wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
