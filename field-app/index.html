@@ -1361,6 +1361,77 @@
     </div>
   </div>
 
+
+  <div class="card" id="decisionIntelCard">
+    <div class="card-head">
+      <h2>Decision Intelligence (Phase 12)</h2>
+    </div>
+
+    <div id="diWarn" class="banner warn" hidden></div>
+
+    <div class="grid2" style="margin-top:10px;">
+      <div>
+        <div class="muted" style="font-size:12px; margin-bottom:6px;">Bottleneck summary</div>
+        <div class="rowline" style="gap:10px; align-items:flex-start;">
+          <div style="min-width:140px;">
+            <div class="muted" style="font-size:11px;">Primary</div>
+            <div id="diPrimary" style="font-weight:650;">—</div>
+          </div>
+          <div style="min-width:140px;">
+            <div class="muted" style="font-size:11px;">Secondary</div>
+            <div id="diSecondary" style="font-weight:650;">—</div>
+          </div>
+          <div style="flex:1;">
+            <div class="muted" style="font-size:11px;">Not binding</div>
+            <div id="diNotBinding" class="muted">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="muted" style="font-size:12px; margin-bottom:6px;">Recommendations</div>
+        <div id="diRecVol" class="note">—</div>
+        <div id="diRecCost" class="note" style="margin-top:6px;">—</div>
+        <div id="diRecProb" class="note" style="margin-top:6px;">—</div>
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:12px;">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Top levers — Volunteer load</th><th class="num">Δ volunteers</th></tr>
+          </thead>
+          <tbody id="diVolTbody">
+            <tr><td class="muted">—</td><td class="num muted">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Top levers — Cost</th><th class="num">Δ cost</th></tr>
+          </thead>
+          <tbody id="diCostTbody">
+            <tr><td class="muted">—</td><td class="num muted">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Top levers — Win probability</th><th class="num">Δ prob</th></tr>
+          </thead>
+          <tbody id="diProbTbody">
+            <tr><td class="muted">—</td><td class="num muted">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="tlBanner" class="banner warn" hidden></div>
 </div>
 
