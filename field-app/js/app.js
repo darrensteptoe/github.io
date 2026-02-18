@@ -15,6 +15,7 @@ import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
 import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
+import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -3206,6 +3207,7 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     median,
     p5,
     p95,
+    confidenceEnvelope: computeConfidenceEnvelope({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
     sensitivity: sens,
     riskLabel: riskLabelFromWinProb(winProb),
     needVotes,
@@ -3260,6 +3262,22 @@ function renderMcResults(summary){
   els.mcMedian.textContent = fmtSigned(summary.median);
   els.mcP5.textContent = fmtSigned(summary.p5);
   els.mcP95.textContent = fmtSigned(summary.p95);
+
+  // Phase 14 — Confidence Envelope
+  if (summary.confidenceEnvelope){
+    const ce = summary.confidenceEnvelope;
+    if (els.mcP10) els.mcP10.textContent = fmtSigned(ce.percentiles?.p10);
+    if (els.mcP50) els.mcP50.textContent = fmtSigned(ce.percentiles?.p50);
+    if (els.mcP90) els.mcP90.textContent = fmtSigned(ce.percentiles?.p90);
+    if (els.mcMoS) els.mcMoS.textContent = fmtSigned(ce.risk?.marginOfSafety);
+    if (els.mcDownside) els.mcDownside.textContent = `${((ce.risk?.downsideRiskMass ?? 0) * 100).toFixed(1)}%`;
+    if (els.mcES10) els.mcES10.textContent = fmtSigned(ce.risk?.expectedShortfall10);
+    if (els.mcShiftP50) els.mcShiftP50.textContent = fmtInt(Math.round(ce.risk?.breakEven?.requiredShiftP50 ?? 0));
+    if (els.mcShiftP10) els.mcShiftP10.textContent = fmtInt(Math.round(ce.risk?.breakEven?.requiredShiftP10 ?? 0));
+    if (els.mcFragility) els.mcFragility.textContent = (ce.risk?.fragility?.fragilityIndex ?? 0).toFixed(3);
+    if (els.mcCliff) els.mcCliff.textContent = `${((ce.risk?.fragility?.cliffRisk ?? 0) * 100).toFixed(1)}%`;
+  }
+
 
   if (els.mcRiskLabel){
     let extra = "";

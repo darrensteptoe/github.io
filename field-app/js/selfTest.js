@@ -19,6 +19,7 @@ import { APP_VERSION, BUILD_ID } from "./build.js";
 import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
 import { readBackups, writeBackupEntry } from "./storage.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
+import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 
 
 function deepFreeze(obj){
@@ -1354,6 +1355,43 @@ export function runSelfTests(engine){
     return true;
   });
 
+
+  // Phase 14 — Confidence Envelope invariants
+  test("Phase14: percentiles monotonic + probability bounds", () => {
+    const margins = [];
+    // symmetric distribution around 0
+    for (let i=0;i<200;i++){
+      margins.push(-2,-1,0,1,2);
+    }
+    const wins = margins.filter(m => m >= 0).length;
+    const winProb = wins / margins.length;
+    const ce = computeConfidenceEnvelope({ margins, winProb, winRule: "gte0" });
+    assert(ce && ce.percentiles, "Missing confidence envelope");
+    assert(ce.percentiles.p10 <= ce.percentiles.p50 && ce.percentiles.p50 <= ce.percentiles.p90, "Non-monotonic percentiles");
+    assert(ce.winProb >= 0 && ce.winProb <= 1, "winProb out of bounds");
+    assert(ce.risk.downsideRiskMass >= 0 && ce.risk.downsideRiskMass <= 1, "downside mass out of bounds");
+    return true;
+  });
+
+  test("Phase14: strong win case requires zero shift", () => {
+    const margins = new Array(1000).fill(50);
+    const ce = computeConfidenceEnvelope({ margins, winProb: 1, winRule: "gte0" });
+    assert(ce.risk.breakEven.requiredShiftP50 === 0, "P50 shift should be 0");
+    assert(ce.risk.breakEven.requiredShiftP10 === 0, "P10 shift should be 0");
+    assert(ce.risk.fragility.cliffRisk === 0, "cliff risk should be 0 for constant far from 0");
+    return true;
+  });
+
+  test("Phase14: knife-edge has non-trivial cliff risk", () => {
+    const margins = [];
+    for (let i=0;i<500;i++){
+      margins.push(-5,-3,-1,0,1,3,5);
+    }
+    const wins = margins.filter(m => m >= 0).length;
+    const ce = computeConfidenceEnvelope({ margins, winProb: wins/margins.length, winRule: "gte0" });
+    assert(ce.risk.fragility.cliffRisk > 0.10, "expected cliff risk to be noticeable");
+    return true;
+  });
 
 
 results.durationMs = Math.round(nowMs() - started);
