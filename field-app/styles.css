@@ -856,3 +856,133 @@ body.dark .help,
 body.dark .hint{
   color: rgba(255,255,255,0.68) !important;
 }
+
+/* =========================
+   UI CONSOLIDATED OVERRIDES (DO NOT DELETE)
+   Keeps: red buttons, pastel phase stripes, nested-computed gray tiles, dark-mode friendliness,
+   and strict-import toggle sizing.
+   ========================= */
+
+/* Pastel palette (user-provided) */
+:root{
+  --soft-apricot: #f8dcbfff;
+  --champagne-mist: #f9e2c7ff;
+  --champagne-mist-2: #fae9ceff;
+  --papaya-whip: #fbefd6ff;
+  --frosted-mint: #cfeed6ff;
+  --aquamarine: #a2edd6ff;
+  --pearl-aqua: #92ead6ff;
+  --pearl-aqua-2: #81e7d7ff;
+  --turquoise: #71e4d7ff;
+
+  --btn-red: #ea6472;
+  --card-shadow: 0 2px 10px rgba(0,0,0,0.04), 0 10px 30px rgba(0,0,0,0.06);
+  --tile-bg: #f4f6f7;
+  --tile-border: #e2e6e8;
+  --control-h: 40px;
+}
+
+/* Dark-mode computed surfaces */
+body.dark{
+  --tile-bg: rgba(255,255,255,0.06);
+  --tile-border: rgba(255,255,255,0.14);
+  --input-bg: rgba(255,255,255,0.08);
+  --input-border: rgba(255,255,255,0.16);
+}
+
+/* Uniform card shadow to separate from background */
+.card{ box-shadow: var(--card-shadow); }
+
+/* Make all buttons red w/ white text */
+.btn,
+button.btn,
+input[type="button"].btn,
+input[type="submit"].btn{
+  background: var(--btn-red) !important;
+  border-color: color-mix(in srgb, var(--btn-red) 70%, var(--rule)) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.btn:hover{
+  filter: brightness(0.97);
+}
+.btn-ghost{
+  background: transparent !important;
+  color: var(--btn-red) !important;
+  border-color: color-mix(in srgb, var(--btn-red) 55%, var(--rule)) !important;
+}
+.btn:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tabs: treat as buttons */
+.tabs{ background: transparent !important; border: none !important; padding: 0 !important; }
+.tab{
+  background: var(--btn-red) !important;
+  color: #fff !important;
+  border: 1px solid color-mix(in srgb, var(--btn-red) 70%, var(--rule)) !important;
+  height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+}
+.tab.active{
+  filter: brightness(0.92);
+}
+
+/* Phase stripe system (white card + colored left border) */
+.card{ border-left: 6px solid transparent; }
+.phase-universe{ border-left-color: var(--soft-apricot) !important; }
+.phase-validation{ border-left-color: var(--soft-apricot) !important; }
+.phase-persuasion{ border-left-color: var(--champagne-mist-2) !important; }
+.phase-winpath{ border-left-color: var(--champagne-mist-2) !important; }
+.phase-2{ border-left-color: var(--frosted-mint) !important; }
+.phase-3{ border-left-color: var(--aquamarine) !important; }
+.phase-4{ border-left-color: var(--pearl-aqua) !important; }
+/* Add missing stripes */
+.phase-5{ border-left-color: var(--pearl-aqua-2) !important; }
+.phase-6{ border-left-color: var(--frosted-mint) !important; }
+.phase-7{ border-left-color: var(--turquoise) !important; }
+.phase-12{ border-left-color: var(--papaya-whip) !important; }  /* per your note: #fbefd6 */
+.phase-13{ border-left-color: var(--turquoise) !important; }
+
+/* Gray any card-within-card (computed tiles) */
+.card .card,
+.card .kpi,
+.card .mini,
+.card .metric,
+.card .tile,
+.card .table-wrap,
+.card .user-split,
+.card .stress-item{
+  background: var(--tile-bg) !important;
+  border-color: var(--tile-border) !important;
+  box-shadow: none !important;
+}
+
+/* Inputs consistent height (including selects) */
+.input, .select, select, input[type="text"], input[type="number"], input[type="date"], textarea{
+  min-height: var(--control-h);
+}
+
+/* Strict import toggle: correct size + no wonk */
+.switch{ min-height: var(--control-h); }
+.slider{
+  width: 44px !important;
+  height: 24px !important;
+  border-radius: 999px !important;
+  background: color-mix(in srgb, var(--rule) 60%, transparent) !important;
+}
+.slider::after{
+  width: 18px !important;
+  height: 18px !important;
+  top: 3px !important;
+  left: 3px !important;
+  background: #fff !important;
+  opacity: 0.95 !important;
+}
+.switch input:checked + .slider{
+  background: var(--btn-red) !important;
+  border-color: color-mix(in srgb, var(--btn-red) 65%, var(--rule)) !important;
+}
+.switch input:checked + .slider::after{ transform: translateX(20px) !important; }
