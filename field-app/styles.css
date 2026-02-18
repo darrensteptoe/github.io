@@ -350,6 +350,34 @@ body.training .help{ display:block; }
   gap:8px;
 }
 
+
+.toolbar.toolbar-top{
+  flex-wrap:wrap;
+  gap:14px;
+  row-gap:10px;
+}
+
+.topbar-group{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* Topbar buttons: unified red CTA style */
+.topbar .toolbar-top .btn{
+  background:#e85b63;
+  color:#fff;
+  border-color:transparent;
+  box-shadow:var(--shadow2);
+}
+.topbar .toolbar-top .btn:hover{ filter:brightness(0.97); }
+.topbar .toolbar-top .btn:active{ transform: translateY(1px); }
+
+/* Keep file import label styled like buttons */
+.topbar .toolbar-top label.btn{
+  display:inline-flex;
+  align-items:center;
+}
 /* Topbar: keep everything on one clean line */
 .topbar .scenario{ display:flex; align-items:center; }
 .topbar .scenario .label{ display:none; }
@@ -658,7 +686,7 @@ body.training .help{ display:block; }
 
 .mc-actions{
   display:flex;
-  align-items:center;
+  align-items:flex-end;
   gap:8px;
   flex-wrap:wrap;
 }
@@ -1074,3 +1102,10 @@ body.training .help{ display:block; }
   opacity: .55;
   cursor: not-allowed;
 }
+
+
+/* Scenario input inside grouped toolbar */
+.topbar .scenario-inline{ display:flex; align-items:center; gap:8px; }
+.topbar .scenario-inline .label{ display:none; }
+.topbar .scenario-inline .input{ width:260px; }
+@media (max-width: 980px){ .topbar .scenario-inline .input{ width:200px; } }

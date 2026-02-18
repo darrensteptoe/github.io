@@ -16,34 +16,49 @@
       <div class="brand-sub">Darren Steptoe Consulting — Internal Use Only</div>
     </div>
 
-    <div class="topbar-actions">
-      <div class="scenario">
-        <label class="label" for="scenarioName">Scenario</label>
-        <input id="scenarioName" class="input input-sm" type="text" placeholder="e.g., IL HD-XX — Primary Path" />
-      </div>
+        <div class="topbar-actions">
+      <div class="toolbar toolbar-top">
+        <div class="topbar-group">
+          <label class="switch switch-compact">
+            <input id="toggleTraining" type="checkbox" />
+            <span class="slider"></span>
+            <span class="switch-label">Training</span>
+          </label>
+        </div>
 
-      <div class="toolbar">
-        <button id="btnSaveJson" class="btn btn-sm" type="button">Export Scenario</button>
-        <label class="btn btn-sm btn-ghost" for="loadJson">Import Scenario</label>
-        <input id="loadJson" type="file" accept="application/json" hidden />
-        <select id="restoreBackup" class="input input-sm" title="Restore one of the last 5 auto-backups">
-          <option value="">Restore backup…</option>
-        </select>
-        <label class="switch switch-compact">
-  <input id="strictImport" type="checkbox">
-  <span class="slider"></span>
-  <span class="switch-label">Strict import</span>
-</label>
-        <button id="btnDiagnostics" class="btn btn-sm btn-ghost" type="button">Diagnostics</button>
-        <button id="btnExportCsv" class="btn btn-sm btn-ghost" type="button">Export Plan CSV</button>
-        <button id="btnCopySummary" class="btn btn-sm btn-ghost" type="button">Copy Summary</button>
-        <button id="btnResetAll" class="btn btn-sm btn-ghost" type="button" title="Reset all fields">Reset</button>
-        <span class="divider"></span>
-        <label class="switch">
-          <input id="toggleTraining" type="checkbox" />
-          <span class="slider"></span>
-          <span class="switch-label">Training</span>
-        </label>
+        <div class="topbar-group">
+          <button id="btnDiagnostics" class="btn btn-sm" type="button">Diagnostics</button>
+        </div>
+
+        <div class="topbar-group">
+          <select id="restoreBackup" class="input input-sm" title="Restore one of the last 5 auto-backups">
+            <option value="">Restore backup…</option>
+          </select>
+          <label class="switch switch-compact">
+            <input id="strictImport" type="checkbox" />
+            <span class="slider"></span>
+            <span class="switch-label">Strict import</span>
+          </label>
+        </div>
+
+        <div class="topbar-group">
+          <div class="scenario scenario-inline">
+            <label class="label" for="scenarioName">Scenario</label>
+            <input id="scenarioName" class="input input-sm" type="text" placeholder="e.g., IL HD-XX — Primary Path" />
+          </div>
+          <button id="btnSaveJson" class="btn btn-sm" type="button">Export Scenario</button>
+          <label class="btn btn-sm" for="loadJson">Import Scenario</label>
+          <input id="loadJson" type="file" accept="application/json" hidden />
+        </div>
+
+        <div class="topbar-group">
+          <button id="btnCopySummary" class="btn btn-sm" type="button">Copy Summary</button>
+          <button id="btnExportCsv" class="btn btn-sm" type="button">Export Plan CSV</button>
+        </div>
+
+        <div class="topbar-group">
+          <button id="btnResetAll" class="btn btn-sm" type="button" title="Reset all fields">Reset</button>
+        </div>
       </div>
     </div>
   </header>
