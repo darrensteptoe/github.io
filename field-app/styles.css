@@ -1180,22 +1180,51 @@ body.training .help{ display:block; }
 .topbar .switch{ min-width: 140px; }
 
 
-/* ===== Force header into single straight line ===== */
-.topbar-actions,
-.topbar .toolbar {
+/* ===== HEADER FIT (no spillover, clean wrap) ===== */
+
+.topbar .toolbar,
+.topbar-actions {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: nowrap;           /* prevent wrapping */
-  white-space: nowrap;         /* prevent text wrap */
+  flex-wrap: wrap;          /* allow wrap instead of overflow */
+  white-space: normal;
+  max-width: 100%;
 }
 
-.topbar .toolbar > * {
-  flex-shrink: 0;              /* prevent squishing */
+.topbar .toolbar > *,
+.topbar-actions > * {
+  flex: 0 0 auto;
 }
 
+/* Make restore dropdown elastic so it absorbs width */
+.topbar #restoreBackup,
+.topbar select#restoreBackup {
+  flex: 1 1 420px;
+  min-width: 240px;
+  max-width: 820px;
+}
+
+/* Keep switches compact */
+.topbar .switch {
+  flex: 0 0 auto;
+}
+
+/* Buttons stay readable and aligned */
+.topbar .btn,
+.topbar button {
+  flex: 0 0 auto;
+}
+
+/* Divider spacing */
 .topbar .divider {
-  opacity: 0.35;
+  margin: 0 4px;
+  opacity: 0.4;
   font-weight: 600;
-  margin: 0 2px;
+}
+
+/* Prevent horizontal scroll from header */
+header.topbar,
+body {
+  overflow-x: hidden;
 }
