@@ -446,6 +446,18 @@ const els = {
   diVolTbody: document.getElementById("diVolTbody"),
   diCostTbody: document.getElementById("diCostTbody"),
   diProbTbody: document.getElementById("diProbTbody"),
+
+  // Phase 15 — Sensitivity Surface
+  surfaceLever: document.getElementById("surfaceLever"),
+  surfaceMode: document.getElementById("surfaceMode"),
+  surfaceMin: document.getElementById("surfaceMin"),
+  surfaceMax: document.getElementById("surfaceMax"),
+  surfaceSteps: document.getElementById("surfaceSteps"),
+  surfaceTarget: document.getElementById("surfaceTarget"),
+  btnComputeSurface: document.getElementById("btnComputeSurface"),
+  surfaceStatus: document.getElementById("surfaceStatus"),
+  surfaceTbody: document.getElementById("surfaceTbody"),
+  surfaceSummary: document.getElementById("surfaceSummary"),
 };
 
 // Phase 13 — DOM preflight (prevents silent boot failures)
