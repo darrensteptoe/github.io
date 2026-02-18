@@ -38,19 +38,33 @@
   --control-h:42px;
   --card-pad:16px;
 
-  /* Soft phase accents */
-  --phase-setup: rgba(59,130,246,0.18);
-  --phase-universe: rgba(16,185,129,0.16);
-  --phase-persuasion: rgba(245,158,11,0.16);
-  --phase-candidates: rgba(168,85,247,0.16);
-  --phase-p3: rgba(236,72,153,0.14);
-  --phase-di: rgba(14,165,233,0.14);
-  --phase-scenarios: rgba(34,197,94,0.14);
+  /* Pastel palette (provided) */
+  --soft-apricot: #f8dcbf;
+  --champagne-mist: #f9e2c7;
+  --champagne-mist-2: #fae9ce;
+  --papaya-whip: #fbefd6;
+  --frosted-mint: #cfeed6;
+  --aquamarine: #a2edd6;
+  --pearl-aqua: #92ead6;
+  --pearl-aqua-2: #81e7d7;
+  --turquoise: #71e4d7;
+
+  /* Phase color mapping (relational) */
+  --phase-setup: var(--champagne-mist-2);
+  --phase-universe: var(--soft-apricot);
+  --phase-persuasion: var(--papaya-whip);
+  --phase-candidates: var(--champagne-mist);
+  --phase-phase2: var(--frosted-mint);
+  --phase-p3: var(--aquamarine);
+  --phase-roi: var(--pearl-aqua);
+  --phase-di: var(--turquoise);
+  --phase-scenarios: var(--pearl-aqua-2);
 
   --rail-bg:#f1f2f4;
 
   /* Output chip / auto-populated surfaces */
-  --auto-surface: color-mix(in srgb, var(--bg) 78%, #fff);
+  --auto-surface: #f4f6f7;
+  --auto-border: #e2e6e8;
 
 }
 
@@ -88,7 +102,7 @@ body.dark{
   top:0;
   z-index:10;
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   justify-content:space-between;
   gap:16px;
   padding:14px 16px;
@@ -119,8 +133,9 @@ body.dark{
 
 .topbar-actions{
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   gap:14px;
+  flex-wrap:wrap;
 }
 
 .shell{
@@ -139,13 +154,13 @@ body.dark{
 .left{
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap: var(--space-5);
 }
 
 .right{
   display:flex;
   flex-direction:column;
-  gap:14px;
+  gap: var(--space-5);
 }
 
 .card{
@@ -276,7 +291,7 @@ body.training .help{ display:block; }
   border-color: color-mix(in srgb, var(--rule) 40%, var(--fg));
 }
 .btn:active{ transform: translateY(1px); }
-.btn-sm{ padding:8px 10px; border-radius:11px; font-size:12px; box-shadow:none; }
+.btn-sm{ min-height: var(--control-h); padding:0 12px; border-radius:11px; font-size:12px; box-shadow:none; display:inline-flex; align-items:center; justify-content:center; }
 .btn-ghost{ background: transparent; box-shadow:none; }
 
 .divider{
@@ -291,6 +306,14 @@ body.training .help{ display:block; }
   display:flex;
   align-items:center;
   gap:8px;
+}
+
+/* Topbar: keep everything on one clean line */
+.topbar .scenario{ display:flex; align-items:center; }
+.topbar .scenario .label{ display:none; }
+.topbar .scenario .input{ width: 260px; }
+@media (max-width: 980px){
+  .topbar .scenario .input{ width: 200px; }
 }
 
 .switch{
@@ -430,8 +453,9 @@ body.training .help{ display:block; }
   gap:8px;
   padding:6px;
   border:1px solid var(--rule);
-  border-radius:14px;
-  background: color-mix(in srgb, var(--panel2) 92%, transparent);
+  border-radius: var(--radius-2);
+  background: var(--panel);
+  box-shadow: var(--shadow2);
 }
 .tab{
   flex:0 0 auto;
@@ -811,10 +835,22 @@ body.training .help{ display:block; }
   padding: var(--card-pad);
   border-radius: var(--radius-2);
   box-shadow: var(--shadow2);
+  border-left: 6px solid transparent;
 }
 
 /* Subtle separation from background */
 .card{ background: var(--panel); }
+
+/* Relational phase coloring (uniform system) */
+.card.phase-setup{ border-left-color: var(--phase-setup); }
+.card.phase-universe{ border-left-color: var(--phase-universe); }
+.card.phase-persuasion{ border-left-color: var(--phase-persuasion); }
+.card.phase-candidates{ border-left-color: var(--phase-candidates); }
+.card.phase-phase2{ border-left-color: var(--phase-phase2); }
+.card.phase-p3{ border-left-color: var(--phase-p3); }
+.card.phase-roi{ border-left-color: var(--phase-roi); }
+.card.phase-di{ border-left-color: var(--phase-di); }
+.card.phase-scenarios{ border-left-color: var(--phase-scenarios); }
 
 /* Phase accent bars removed (uniform cards) */
 .card[data-accent]::before,
@@ -876,7 +912,7 @@ body.training .help{ display:block; }
 .rail{
   display:flex;
   flex-direction:column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   position: sticky;
   top: var(--space-4);
   align-self:start;
@@ -902,21 +938,22 @@ body.training .help{ display:block; }
   padding: 0;
   display:flex;
   flex-direction:column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 .tabs{
-  /* REMOVE ME: no big tab-container slab. Tabs float on the page. */
-  background: transparent;
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
+  /* Tabs should feel like a normal card surface (not a gray slab). */
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-2);
+  padding: 6px;
+  box-shadow: var(--shadow2);
 }
 
 /* Make panels breathe */
 .panel{ margin-top: 0; }
 
 /* Ensure cards never visually touch */
-.panel > .card{ margin-bottom: var(--space-4); }
+.panel > .card{ margin-bottom: var(--space-5); }
 .panel > .card:last-child{ margin-bottom: 0; }
 
 /* Output tiles (auto-populated) get light gray surface */
@@ -925,7 +962,7 @@ body.training .help{ display:block; }
 .metric,
 .stress-item{
   background: var(--auto-surface) !important;
-  border: 1px solid color-mix(in srgb, var(--rule) 80%, transparent);
+  border: 1px solid var(--auto-border);
 }
 
 /* Ensure KPI/minis have breathing room inside cards */

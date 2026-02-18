@@ -58,7 +58,7 @@
 
   <main class="shell">
     <section class="left">
-      <div class="card" style="--accent-bar: var(--phase-setup);" data-accent>
+      <div class="card phase-setup">
               <div class="card-head">
                 <h2>Scenario setup</h2>
               </div>
@@ -109,7 +109,7 @@
               </div>
             </div>
       
-      <div class="card" style="--accent-bar: var(--phase-universe);" data-accent>
+      <div class="card phase-universe">
               <div class="card-head">
                 <h2>Universe</h2>
               </div>
@@ -142,7 +142,7 @@
               </div>
             </div>
       
-      <div class="card" style="--accent-bar: var(--phase-persuasion);" data-accent>
+      <div class="card phase-persuasion">
               <div class="card-head">
                 <h2>Persuasion universe</h2>
               </div>
@@ -167,7 +167,7 @@
               </div>
             </div>
       
-      <div class="card" style="--accent-bar: var(--phase-candidates);" data-accent>
+      <div class="card phase-candidates">
               <div class="card-head">
                 <h2>Candidates & vote landscape</h2>
                 <div class="card-actions">
@@ -230,7 +230,7 @@
               <div class="banner warn" id="candWarn" hidden></div>
             </div>
       
-      <div class="card" style="--accent-bar: var(--phase-di);" data-accent>
+      <div class="card phase-p3">
               <div class="card-head">
                 <h2>Turnout baseline (last two comparable cycles)</h2>
               </div>
@@ -362,7 +362,7 @@
           </div>
         </div>
 
-        <div class="card" id="phase3Card">
+        <div class="card phase-p3" id="phase3Card">
           <div class="mc-details">
             <div class="mc-summary">
               <span class="mc-summary-title">Execution + Risk (Phase 3)</span>
@@ -606,7 +606,7 @@
       </section>
 
       <section class="panel" id="tab-assumptions">
-        <div class="card">
+        <div class="card phase-setup">
           <div class="card-head">
             <h2>Assumptions snapshot</h2>
           </div>
@@ -616,7 +616,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card phase-setup">
           <div class="card-head">
             <h2>Warnings & guardrails</h2>
           </div>
@@ -625,7 +625,7 @@
       </section>
 
       <section class="panel" id="tab-roi">
-        <div class="card">
+        <div class="card phase-roi">
           <div class="card-head">
             <h2>Budget inputs (Phase 4)</h2>
           </div>
@@ -767,7 +767,7 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card phase-roi">
           <div class="card-head">
             <h2>ROI comparison</h2>
             <div class="card-actions">
@@ -1357,7 +1357,7 @@
 
 
     <aside class="rail" aria-label="Status rail">
-      <div class="card" style="--accent-bar: var(--phase-di);" data-accent>
+      <div class="card phase-di">
                 <div class="card-head">
                   <h2>Stress test summary (client style)</h2>
                 </div>
@@ -1368,9 +1368,14 @@
                   Export mode B (future) can include full tables; Version 1 output keeps this summary concise.
                 </div>
               </div>
-      
-              
-              <div class="card" id="conversionCard">
+      <div class="card phase-universe">
+              <div class="card-head">
+                <h2>Validation</h2>
+              </div>
+              <ul id="validationList" class="validation"></ul>
+            </div>
+
+              <div class="card phase-phase2" id="conversionCard">
                 <div class="card-head">
                   <h2>Conversion + contact math (Phase 2)</h2>
                 </div>
@@ -1440,15 +1445,7 @@
                 </div>
 
               </div>
-
-      <div class="card" data-accent style="--accent-bar: var(--phase-di);">
-              <div class="card-head">
-                <h2>Validation</h2>
-              </div>
-              <ul id="validationList" class="validation"></ul>
-            </div>
-
-      <div class="card" id="scenarioCompareCard" style="--accent-bar: var(--phase-scenarios);" data-accent>
+      <div class="card phase-scenarios" id="scenarioCompareCard">
           <div class="card-head">
             <h2>Scenario Compare (Phase 13)</h2>
           </div>
