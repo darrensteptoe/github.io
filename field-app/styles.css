@@ -1112,3 +1112,53 @@ body.training .help{ display:block; }
   align-self:flex-end;
   height:38px;
 }
+/* ===== HEADER OVERRIDE (single-row, no spill, no weird wrapping) =====
+   Goal: keep ALL header controls on one line by letting Restore dropdown shrink.
+*/
+.topbar .toolbar,
+.topbar-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap !important;      /* keep one row */
+  white-space:nowrap;
+  max-width:100%;
+  min-width:0;                      /* allow children to shrink */
+}
+
+.topbar .toolbar{
+  overflow:hidden;                  /* prevent spill */
+}
+
+.topbar .toolbar > *,
+.topbar-actions > *{
+  flex:0 0 auto;
+  min-width:0;
+}
+
+/* Restore dropdown is the elastic item; it shrinks first */
+.topbar #restoreBackup,
+.topbar select#restoreBackup{
+  flex:1 1 260px !important;
+  min-width:160px !important;
+  max-width:520px !important;
+  width:auto;
+}
+
+/* Keep header buttons compact so everything fits */
+.topbar .btn.btn-sm,
+.topbar button.btn.btn-sm{
+  padding:6px 10px;
+  font-size:12px;
+  border-radius:12px;
+}
+
+/* Divider stays tight */
+.topbar .divider{
+  margin:0 2px !important;
+  opacity:0.4;
+  font-weight:600;
+}
+
+/* Safety: prevent any horizontal scrollbars from the header itself */
+header.topbar{ overflow-x:hidden; }
