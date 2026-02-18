@@ -905,10 +905,11 @@ body.training .help{ display:block; }
   gap: var(--space-4);
 }
 .tabs{
-  background: color-mix(in srgb, var(--panel2) 92%, transparent);
-  border-radius: var(--radius-2);
-  padding: var(--space-2);
-  box-shadow: var(--shadow2);
+  /* REMOVE ME: no big tab-container slab. Tabs float on the page. */
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 /* Make panels breathe */
@@ -923,8 +924,13 @@ body.training .help{ display:block; }
 .mini,
 .metric,
 .stress-item{
-  background: var(--auto-surface);
+  background: var(--auto-surface) !important;
+  border: 1px solid color-mix(in srgb, var(--rule) 80%, transparent);
 }
+
+/* Ensure KPI/minis have breathing room inside cards */
+.kpis{ gap: var(--space-3) !important; }
+.subgrid{ gap: var(--space-3) !important; }
 
 /* Right rail is narrow: keep internal grids from overflowing */
 .rail .kpis{ grid-template-columns: 1fr; }
