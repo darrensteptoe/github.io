@@ -407,6 +407,7 @@ const els = {
   btnResetAll: document.getElementById("btnResetAll"),
 
   toggleTraining: document.getElementById("toggleTraining"),
+  toggleDark: document.getElementById("toggleDark"),
   toggleAdvDiag: document.getElementById("toggleAdvDiag"),
   advDiagBox: document.getElementById("advDiagBox"),
   snapshotHash: document.getElementById("snapshotHash"),
@@ -703,8 +704,10 @@ function applyStateToUI(){
   if (els.toggleAdvDiag) els.toggleAdvDiag.checked = !!state.ui?.advDiag;
   if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
   els.toggleTraining.checked = !!state.ui?.training;
+  els.toggleDark.checked = !!state.ui?.dark;
 
   document.body.classList.toggle("training", !!state.ui?.training);
+  document.body.classList.toggle("dark", !!state.ui?.dark);
 }
 
 function rebuildCandidateTable(){
@@ -1223,6 +1226,12 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     if (els.snapshotHash) els.snapshotHash.textContent = lastResultsSnapshot?.snapshotHash || "—";
   if (els.importHashBanner && els.importHashBanner.hidden === false){ /* keep until next import clears */ }
     els.explainCard.hidden = !state.ui.training;
+    persist();
+  });
+
+  els.toggleDark.addEventListener("change", () => {
+    state.ui.dark = els.toggleDark.checked;
+    document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
   });
 
@@ -2058,46 +2067,12 @@ function initDevTools(){
   document.body.appendChild(host);
 }
 
-
-function initSystemTheme(){
-  // System-only theme. No UI toggle, no persistence.
-  try{
-    const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-
-    const apply = (isDark) => {
-      document.body.classList.toggle("dark", !!isDark);
-      if (!state.ui) state.ui = {};
-      state.ui.dark = !!isDark; // ephemeral (storage strips this)
-    };
-
-    if (mq){
-      apply(mq.matches);
-
-      // Modern + legacy listener support
-      if (typeof mq.addEventListener === "function"){
-        mq.addEventListener("change", (e) => apply(e.matches));
-      } else if (typeof mq.addListener === "function"){
-        mq.addListener((e) => apply(e.matches));
-      }
-    } else {
-      apply(false);
-    }
-  } catch {
-    // fail-soft: default light
-    if (document.body) document.body.classList.remove("dark");
-    if (!state.ui) state.ui = {};
-    state.ui.dark = false;
-  }
-}
-
 function init(){
   installGlobalErrorCapture();
   wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
   refreshBackupDropdown();
-
-  initSystemTheme();
 
   applyStateToUI();
   rebuildCandidateTable();
