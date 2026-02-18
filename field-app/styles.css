@@ -21,66 +21,6 @@
   --bad-fg:#8a1f1f;
 
   --grid:rgba(17,17,17,0.06);
-
-  --space-1:6px;
-  --space-2:10px;
-  --space-3:14px;
-  --space-4:18px;
-  --space-5:24px;
-  --space-6:32px;
-
-  --radius-1:12px;
-  --radius-2:14px;
-  --radius-3:18px;
-
-  --shadow-rail:0 6px 22px rgba(0,0,0,0.06);
-
-  --control-h:42px;
-  --card-pad:16px;
-
-  /* Pastel palette (provided) */
-  --soft-apricot: #f8dcbf;
-  --champagne-mist: #f9e2c7;
-  --champagne-mist-2: #fae9ce;
-  --papaya-whip: #fbefd6;
-  --frosted-mint: #cfeed6;
-  --aquamarine: #a2edd6;
-  --pearl-aqua: #92ead6;
-  --pearl-aqua-2: #81e7d7;
-  --turquoise: #71e4d7;
-
-  /* Computed / read-only surfaces */
-  --computed-bg:#f4f6f7;
-  --computed-border:#e2e6e8;
-
-  /* Phase color mapping (relational) */
-  --phase-setup: var(--champagne-mist-2);
-  --phase-universe: var(--soft-apricot);
-  --phase-persuasion: var(--papaya-whip);
-  --phase-candidates: var(--champagne-mist);
-  --phase-phase2: var(--frosted-mint);
-  --phase-p3: var(--aquamarine);
-  --phase-roi: var(--pearl-aqua);
-  --phase-di: var(--turquoise);
-  --phase-scenarios: var(--pearl-aqua-2);
-
-  
-  --phase-winpath: var(--champagne-mist-2);
-  --phase-p5: var(--pearl-aqua);
-  --phase-p6: var(--frosted-mint);
-  --phase-p7: var(--pearl-aqua-2);
-
-  --btn-hot: #ea6472;
-  --btn-hot-hover: #d85a67;
-  --btn-hot-active: #c9525f;
---rail-bg:#f1f2f4;
-
-  /* Output chip / auto-populated surfaces */
-  --auto-surface: #f4f6f7;
-  --auto-border: #e2e6e8;
-
-  --computed-surface:#f4f6f7;
-  --computed-border:rgba(17,17,17,0.10);
 }
 
 html,body{
@@ -117,7 +57,7 @@ body.dark{
   top:0;
   z-index:10;
   display:flex;
-  align-items:center;
+  align-items:flex-end;
   justify-content:space-between;
   gap:16px;
   padding:14px 16px;
@@ -148,17 +88,15 @@ body.dark{
 
 .topbar-actions{
   display:flex;
-  align-items:center;
+  align-items:flex-end;
   gap:14px;
-  flex-wrap:wrap;
 }
 
 .shell{
   display:grid;
-  grid-template-columns: 380px 1fr 320px;
-  gap:var(--space-4);
-  padding:var(--space-4);
-  align-items:start;
+  grid-template-columns: 420px 1fr;
+  gap:16px;
+  padding:16px;
 }
 
 @media (max-width: 980px){
@@ -169,37 +107,22 @@ body.dark{
 .left{
   display:flex;
   flex-direction:column;
-  gap: var(--space-5);
+  gap:14px;
 }
 
 .right{
   display:flex;
   flex-direction:column;
-  gap: var(--space-5);
+  gap:14px;
 }
 
 .card{
   background:var(--panel);
   border:1px solid var(--rule);
-  border-left:6px solid transparent;
   border-radius:var(--radius);
   box-shadow:var(--shadow2);
   padding:14px;
 }
-
-/* Any card/boxed tile inside a card should read as computed (gray) */
-.card .card,
-.card .kpi,
-.card .mini,
-.card .metric,
-.card .tile,
-.card .pillbox,
-.card .table-wrap{
-  background:var(--computed-bg);
-  border-color:var(--computed-border);
-}
-/* Keep nested surfaces visually subordinate */
-.card .card{ box-shadow:none; }
 
 .card-head{
   display:flex;
@@ -295,8 +218,7 @@ body.training .help{ display:block; }
   border:1px solid var(--rule);
   border-radius:12px;
   padding:10px;
-  background:var(--computed-surface);
-  border-color:var(--computed-border);
+  background: color-mix(in srgb, var(--panel2) 88%, transparent);
 }
 .metric-k{
   font-size:11px;
@@ -322,7 +244,7 @@ body.training .help{ display:block; }
   border-color: color-mix(in srgb, var(--rule) 40%, var(--fg));
 }
 .btn:active{ transform: translateY(1px); }
-.btn-sm{ min-height: var(--control-h); padding:0 12px; border-radius:11px; font-size:12px; box-shadow:none; display:inline-flex; align-items:center; justify-content:center; }
+.btn-sm{ padding:8px 10px; border-radius:11px; font-size:12px; box-shadow:none; }
 .btn-ghost{ background: transparent; box-shadow:none; }
 
 .divider{
@@ -339,14 +261,6 @@ body.training .help{ display:block; }
   gap:8px;
 }
 
-/* Topbar: keep everything on one clean line */
-.topbar .scenario{ display:flex; align-items:center; }
-.topbar .scenario .label{ display:none; }
-.topbar .scenario .input{ width: 260px; }
-@media (max-width: 980px){
-  .topbar .scenario .input{ width: 200px; }
-}
-
 .switch{
   display:inline-flex;
   align-items:center;
@@ -357,32 +271,27 @@ body.training .help{ display:block; }
 }
 .switch input{ display:none; }
 .slider{
-  width:40px;
+  width:38px;
   height:22px;
   border:1px solid var(--rule);
   border-radius:999px;
   position:relative;
   background: color-mix(in srgb, var(--panel2) 88%, transparent);
-  transition: background 160ms ease, border-color 160ms ease;
 }
 .slider::after{
   content:"";
   position:absolute;
-  top:2px;
-  left:2px;
-  width:18px;
-  height:18px;
+  top:3px;
+  left:3px;
+  width:16px;
+  height:16px;
   border-radius:50%;
-  background:#fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  background: var(--fg);
+  opacity:0.8;
   transition: transform 160ms ease;
 }
-.switch input:checked + .slider{
-  background:#ea6472;
-  border-color:#ea6472;
-}
 .switch input:checked + .slider::after{
-  transform: translateX(18px);
+  transform: translateX(16px);
 }
 .switch-label{ color:var(--muted); }
 
@@ -489,9 +398,8 @@ body.training .help{ display:block; }
   gap:8px;
   padding:6px;
   border:1px solid var(--rule);
-  border-radius: var(--radius-2);
-  background: var(--panel);
-  box-shadow: var(--shadow2);
+  border-radius:14px;
+  background: color-mix(in srgb, var(--panel2) 88%, transparent);
 }
 .tab{
   flex:0 0 auto;
@@ -524,8 +432,7 @@ body.training .help{ display:block; }
   border:1px solid var(--rule);
   border-radius:12px;
   padding:12px;
-  background:var(--computed-surface);
-  border-color:var(--computed-border);
+  background: color-mix(in srgb, var(--panel2) 88%, transparent);
 }
 .kpi-k{ font-size:12px; color:var(--muted2); }
 .kpi-v{ font-size:18px; font-weight:800; margin-top:6px; }
@@ -544,8 +451,7 @@ body.training .help{ display:block; }
   border:1px solid var(--rule);
   border-radius:12px;
   padding:10px;
-  background:var(--computed-surface);
-  border-color:var(--computed-border);
+  background: color-mix(in srgb, var(--panel2) 88%, transparent);
 }
 .mini-k{ font-size:12px; color:var(--muted2); }
 .mini-v{ font-size:14px; font-weight:750; margin-top:6px; }
@@ -804,20 +710,7 @@ body.training .help{ display:block; }
 .badge-verified{ border-color:rgba(20,140,60,0.35); }
 .badge-failed{ border-color:rgba(200,40,40,0.35); }
 
-.switch.switch-compact{
-  border:1px solid var(--rule);
-  background: var(--panel);
-  border-radius:12px;
-  padding:6px 10px;
-  height:var(--control-h);
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  box-shadow:var(--shadow2);
-  color:var(--muted);
-}
-.switch.switch-compact .switch-label{ color:var(--muted); }
-
+.switch-compact{ transform:scale(0.95); transform-origin:center; }
 
 .modal[hidden]{ display:none !important; }
 .modal{
@@ -880,186 +773,86 @@ body.training .help{ display:block; }
 }
 
 
-/* ===== UI-1A: Layout + readability (engine frozen) ===== */
+/* === UI PATCH: Dark mode polish + nested-card gray + strict import toggle sizing === */
 
-.card{
-  padding: var(--card-pad);
-  border-radius: var(--radius-2);
-  box-shadow: var(--shadow2);
-  border-left: 6px solid transparent;
+/* Surfaces for computed/nested tiles */
+:root{
+  --tile-bg: #f4f6f7;
+  --tile-border: #e2e6e8;
+  --input-bg: #ffffff;
+  --input-border: rgba(17,17,17,0.14);
+  --toggle-off: rgba(17,17,17,0.18);
+  --toggle-on: #ea6472;
 }
 
-/* Subtle separation from background */
-.card{ background: var(--panel); }
-
-/* Relational phase coloring (uniform system) */
-.card.phase-setup{ border-left-color: var(--phase-setup); }
-.card.phase-universe{ border-left-color: var(--phase-universe); }
-.card.phase-persuasion{ border-left-color: var(--phase-persuasion); }
-.card.phase-candidates{ border-left-color: var(--phase-candidates); }
-.card.phase-phase2{ border-left-color: var(--phase-phase2); }
-.card.phase-p3{ border-left-color: var(--phase-p3); }
-.card.phase-roi{ border-left-color: var(--phase-roi); }
-.card.phase-di{ border-left-color: var(--phase-di); }
-.card.phase-scenarios{ border-left-color: var(--phase-scenarios); }
-
-
-.card.phase-winpath{ border-left-color: var(--phase-winpath); }
-.card.phase-p5{ border-left-color: var(--phase-p5); }
-.card.phase-p6{ border-left-color: var(--phase-p6); }
-.card.phase-p7{ border-left-color: var(--phase-p7); }
-/* Phase accent bars removed (uniform cards) */
-.card[data-accent]::before,
-#phase3Card::before,
-#scenarioCompareCard::before{ display:none !important; }
-
-/* Card header row w/ chip */
-.card-head-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: var(--space-3);
-}
-.card-head-row .chip{ flex:0 0 auto; }
-
-/* Consistent spacing inside common blocks */
-.grid2, .grid3{ gap: var(--space-3); }
-.field{ margin:0; }
-.label{ margin-bottom:6px; }
-.help, .note{ margin-top:8px; }
-.note{ padding:10px 12px; border-radius:12px; }
-
-/* Vertical rhythm between major blocks inside cards */
-.card > .kpis + .subgrid{ margin-top: var(--space-4); }
-.card > .subgrid + .banner{ margin-top: var(--space-4); }
-.card > .banner + .note{ margin-top: var(--space-4); }
-.card > .table-wrap{ margin-top: var(--space-3); }
-.card > .grid2, .card > .grid3{ margin-top: var(--space-2); }
-
-/* Form control normalization */
-.input, .select{
-  min-height: var(--control-h);
-  height: var(--control-h);
-  padding: 10px 12px;
-  background: #fff;
-}
-.select{
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--fg) 55%, transparent) 50%),
-    linear-gradient(135deg, color-mix(in srgb, var(--fg) 55%, transparent) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 50%,
-    calc(100% - 12px) 50%;
-  background-size:6px 6px, 6px 6px;
-  background-repeat:no-repeat;
-  padding-right:34px;
+body.dark{
+  /* Keep cards dark, but avoid harsh white tiles */
+  --tile-bg: rgba(255,255,255,0.06);
+  --tile-border: rgba(255,255,255,0.14);
+  --input-bg: rgba(255,255,255,0.08);
+  --input-border: rgba(255,255,255,0.16);
+  --toggle-off: rgba(255,255,255,0.14);
 }
 
-/* Prevent mobile bleed/overflow */
-.grid2 > *, .grid3 > *{ min-width:0; }
-.field .input, .field .select{ width:100%; max-width:100%; box-sizing:border-box; }
-.rowline{ gap: var(--space-2) !important; }
-.table-wrap{ overflow-x:auto; }
-
-/* Right rail */
-.rail{
-  display:flex;
-  flex-direction:column;
-  gap: var(--space-5);
-  position: sticky;
-  top: var(--space-4);
-  align-self:start;
-  padding: 0;
-}
-.rail .card{
-  background: var(--panel);
-  box-shadow: var(--shadow-rail);
+/* Gray any card-within-card (computed blocks) */
+.card .card,
+.card .kpi,
+.card .mini,
+.card .metric,
+.card .tile,
+.card .table-wrap{
+  background: var(--tile-bg) !important;
+  border-color: var(--tile-border) !important;
+  box-shadow: none !important;
 }
 
-/* Make Validation + Stress feel “client-style” */
-#stressSummaryBody{
-  font-size:13px;
-  line-height:1.35;
+/* Inputs should not be bright white in dark mode */
+body.dark input,
+body.dark select,
+body.dark textarea{
+  background: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--fg) !important;
 }
-#stressSummaryCard .muted{
-  color: var(--muted2);
-}
-
-/* Right content surface (no gray slab; rely on card shadows + spacing) */
-.right{
-  background: transparent;
-  padding: 0;
-  display:flex;
-  flex-direction:column;
-  gap: var(--space-5);
-}
-.tabs{
-  /* Tabs should feel like a normal card surface (not a gray slab). */
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-2);
-  padding: 6px;
-  box-shadow: var(--shadow2);
+body.dark input::placeholder,
+body.dark textarea::placeholder{
+  color: rgba(255,255,255,0.55) !important;
 }
 
-/* Make panels breathe */
-.panel{ margin-top: 0; }
-
-/* Ensure cards never visually touch */
-.panel > .card{ margin-bottom: var(--space-5); }
-.panel > .card:last-child{ margin-bottom: 0; }
-
-/* Output tiles (auto-populated) get light gray surface */
-.kpi,
-.mini,
-.metric,
-.stress-item{
-  background: var(--auto-surface) !important;
-  border: 1px solid var(--auto-border);
+/* Strict import toggle: normalize size + eliminate wonk */
+.switch{
+  min-height: 36px;
+}
+.slider{
+  width: 44px !important;
+  height: 24px !important;
+  border-radius: 999px !important;
+  background: var(--toggle-off) !important;
+  border-color: var(--rule) !important;
+}
+.slider::after{
+  width: 18px !important;
+  height: 18px !important;
+  top: 3px !important;
+  left: 3px !important;
+  background: #fff !important;
+  opacity: 0.95 !important;
+  transition: transform 160ms ease, background 160ms ease !important;
+}
+.switch input:checked + .slider{
+  background: var(--toggle-on) !important;
+  border-color: color-mix(in srgb, var(--toggle-on) 65%, var(--rule)) !important;
+}
+.switch input:checked + .slider::after{
+  transform: translateX(20px) !important;
 }
 
-/* Ensure KPI/minis have breathing room inside cards */
-.kpis{ gap: var(--space-3) !important; }
-.subgrid{ gap: var(--space-3) !important; }
-
-/* Right rail is narrow: keep internal grids from overflowing */
-.rail .kpis{ grid-template-columns: 1fr; }
-.rail .subgrid{ grid-template-columns: 1fr; }
-.rail .grid3{ grid-template-columns: 1fr; }
-
-/* Desktop-wide: keep 3-column internal grids where used */
-@media (max-width: 1200px){
-  .shell{ grid-template-columns: 360px 1fr 300px; }
+/* Reduce harsh contrast inside dark cards (titles + small help text) */
+body.dark .card{
+  border-color: rgba(255,255,255,0.10) !important;
 }
-@media (max-width: 980px){
-  .shell{ grid-template-columns: 1fr; }
-  .right{ padding: var(--space-3); }
-  .rail{ position: static; top:auto; }
-}
-@media (max-width: 520px){
-  .grid2{ grid-template-columns: 1fr; }
-  .grid3{ grid-template-columns: 1fr; }
-  .tabs{ overflow-x:auto; }
-}
-
-
-/* Hot button theme (global) */
-:where(button, .btn, .tab, input[type="button"], input[type="submit"]){
-  background: var(--btn-hot) !important;
-  color: #fff !important;
-  border-color: transparent !important;
-}
-:where(button, .btn, .tab, input[type="button"], input[type="submit"]):hover{
-  background: var(--btn-hot-hover) !important;
-}
-:where(button, .btn, .tab, input[type="button"], input[type="submit"]):active{
-  background: var(--btn-hot-active) !important;
-}
-:where(button, .btn, .tab, input[type="button"], input[type="submit"]):disabled,
-:where(button[disabled], .btn[disabled], .tab[disabled]){
-  opacity: .55;
-  cursor: not-allowed;
+body.dark .small,
+body.dark .help,
+body.dark .hint{
+  color: rgba(255,255,255,0.68) !important;
 }
