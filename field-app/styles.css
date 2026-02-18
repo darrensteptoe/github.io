@@ -12,6 +12,7 @@
   --radius-sm:12px;
   --focus:rgba(17,17,17,0.85);
   --accent:#1f2a44;
+  --danger:#e85b63;
 
   --ok-bg:rgba(34,197,94,0.12);
   --ok-fg:#0a3;
@@ -349,6 +350,61 @@ body.training .help{ display:block; }
   align-items:center;
   gap:8px;
 }
+
+
+/* ===== Topbar layout tweaks (stable JS) ===== */
+.toolbar{
+  flex-wrap:wrap;
+  row-gap:10px;
+}
+
+/* Make topbar action buttons consistently red */
+.topbar .toolbar .btn,
+.topbar .toolbar .btn.btn-ghost{
+  background: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 70%, var(--rule));
+  color:#fff;
+}
+.topbar .toolbar .btn:hover,
+.topbar .toolbar .btn.btn-ghost:hover{
+  filter: brightness(0.97);
+}
+
+/* Keep switches neutral (not solid red blocks) */
+.topbar .toolbar .switch.switch-compact,
+.topbar .toolbar .switch{
+  background: var(--panel);
+  border-color: var(--rule);
+  color: var(--muted);
+}
+
+/* Strict import should never collapse */
+.topbar .toolbar .switch.switch-compact{
+  min-width: 150px;
+  justify-content: space-between;
+}
+
+/* Scenario Compare: scenario name + export/import live here */
+.sc-controls{
+  display:flex;
+  align-items:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.sc-controls .scenario{ display:flex; flex-direction:column; gap:6px; }
+.sc-controls .scenario .input{ width: 260px; }
+.sc-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+
+@media (max-width: 980px){
+  .sc-controls .scenario .input{ width: 220px; }
+}
+
+/* Monte Carlo: align run button with fields */
+.mc-actions{
+  align-items:flex-end;
+}
+.mc-actions .btn{ margin-bottom: 0; }
 
 /* Topbar: keep everything on one clean line */
 .topbar .scenario{ display:flex; align-items:center; }
@@ -1074,31 +1130,3 @@ body.training .help{ display:block; }
   opacity: .55;
   cursor: not-allowed;
 }
-
-/* Scenario Compare: scenario import/export tools */
-.sc-tools{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-.sc-scenario{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:260px;
-  flex:1 1 320px;
-}
-.sc-scenario .label{ font-size:12px; color:var(--muted2); }
-.sc-actions{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-/* Topbar: allow toolbar to wrap nicely with consistent spacing */
-.toolbar{ flex-wrap:wrap; }
-
