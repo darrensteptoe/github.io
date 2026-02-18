@@ -29,11 +29,11 @@
         <select id="restoreBackup" class="input input-sm" title="Restore one of the last 5 auto-backups">
           <option value="">Restore backup…</option>
         </select>
-        <label class="switch switch-compact" title="Strict import blocks newer schema + hash mismatches">
-          <input id="toggleStrictImport" type="checkbox" />
-          <span class="slider"></span>
-          <span class="switch-label">Strict import</span>
-        </label>
+        <label class="switch switch-compact">
+  <input id="strictImport" type="checkbox">
+  <span class="slider"></span>
+  <span class="switch-label">Strict import</span>
+</label>
         <button id="btnDiagnostics" class="btn btn-sm btn-ghost" type="button">Diagnostics</button>
         <button id="btnExportCsv" class="btn btn-sm btn-ghost" type="button">Export Plan CSV</button>
         <button id="btnCopySummary" class="btn btn-sm btn-ghost" type="button">Copy Summary</button>
@@ -43,11 +43,6 @@
           <input id="toggleTraining" type="checkbox" />
           <span class="slider"></span>
           <span class="switch-label">Training</span>
-        </label>
-        <label class="switch">
-          <input id="toggleDark" type="checkbox" />
-          <span class="slider"></span>
-          <span class="switch-label">Dark</span>
         </label>
       </div>
     </div>
