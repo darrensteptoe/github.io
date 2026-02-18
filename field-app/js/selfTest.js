@@ -20,6 +20,7 @@ import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
 import { readBackups, writeBackupEntry } from "./storage.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
 import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
+import { computeSensitivitySurface } from "./sensitivitySurface.js";
 
 
 function deepFreeze(obj){
@@ -1396,6 +1397,111 @@ export function runSelfTests(engine){
     assert(ce.risk.fragility.cliffRisk > 0.10, "expected cliff risk to be noticeable");
     return true;
   });
+
+
+
+
+  // --- Phase 15) Sensitivity Surface (on-demand) ---
+  test("Phase15 surface: returns points + bounds + ordering", () => {
+    assert(engine && typeof engine.withPatchedState === "function", "withPatchedState missing");
+    assert(engine && typeof engine.runMonteCarloSim === "function", "runMonteCarloSim missing");
+    assert(typeof computeSensitivitySurface === "function", "computeSensitivitySurface missing");
+
+    // Use a stable baseline (small runs for test speed).
+    // Patch minimal MC-relevant state (rates + capacity bases).
+    const patch = {
+      contactRatePct: 22,
+      supportRatePct: 55,
+      turnoutReliabilityPct: 80,
+      volunteerMultBase: 1.0,
+      mcMode: "basic",
+      mcSeed: "phase15-test",
+      turnoutEnabled: false
+    };
+
+    const mi = {
+      universeSize: 50000,
+      turnoutA: 35,
+      turnoutB: 55,
+      bandWidth: 4,
+      candidates: [{ id:"a", name:"A", supportPct:35 }, { id:"b", name:"B", supportPct:35 }],
+      undecidedPct: 30,
+      yourCandidateId: "a",
+      undecidedMode: "proportional",
+      userSplit: {},
+      persuasionPct: 30,
+      earlyVoteExp: 40
+    };
+
+    const res = engine.computeAll(mi);
+    const needVotes = res?.expected?.persuasionNeed ?? 0;
+
+    const out = engine.withPatchedState(patch, () => {
+      return computeSensitivitySurface({
+        engine,
+        baseline: { res, weeks: 10, needVotes },
+        sweep: { leverKey: "supportRate", minValue: 45, maxValue: 65, steps: 9 },
+        options: { runs: 400, seed: "phase15-test", targetWinProb: 0.70 }
+      });
+    });
+
+    assert(out && Array.isArray(out.points), "points missing");
+    assert(out.points.length === 9, "unexpected point count");
+
+    for (const p of out.points){
+      assert(p.winProb == null || (p.winProb >= 0 && p.winProb <= 1), "winProb out of bounds");
+      if (p.p10 != null && p.p50 != null) assert(p.p10 <= p.p50 + 1e-9, "p10>p50");
+      if (p.p50 != null && p.p90 != null) assert(p.p50 <= p.p90 + 1e-9, "p50>p90");
+    }
+
+    return true;
+  });
+
+  test("Phase15 surface: safe zone detection returns null or range", () => {
+    const patch = {
+      contactRatePct: 22,
+      supportRatePct: 55,
+      turnoutReliabilityPct: 80,
+      volunteerMultBase: 1.0,
+      mcMode: "basic",
+      mcSeed: "phase15-test2",
+      turnoutEnabled: false
+    };
+
+    const mi = {
+      universeSize: 50000,
+      turnoutA: 35,
+      turnoutB: 55,
+      bandWidth: 4,
+      candidates: [{ id:"a", name:"A", supportPct:35 }, { id:"b", name:"B", supportPct:35 }],
+      undecidedPct: 30,
+      yourCandidateId: "a",
+      undecidedMode: "proportional",
+      userSplit: {},
+      persuasionPct: 30,
+      earlyVoteExp: 40
+    };
+
+    const res = engine.computeAll(mi);
+    const needVotes = res?.expected?.persuasionNeed ?? 0;
+
+    const out = engine.withPatchedState(patch, () => {
+      return computeSensitivitySurface({
+        engine,
+        baseline: { res, weeks: 10, needVotes },
+        sweep: { leverKey: "volunteerMultiplier", minValue: 0.6, maxValue: 1.4, steps: 7 },
+        options: { runs: 400, seed: "phase15-test2", targetWinProb: 0.70 }
+      });
+    });
+
+    const z = out?.analysis?.safeZone ?? null;
+    if (z != null){
+      assert(isFiniteNum(z.min) && isFiniteNum(z.max), "safeZone not numeric");
+      assert(z.max >= z.min, "safeZone inverted");
+    }
+    return true;
+  });
+
 
 
 results.durationMs = Math.round(nowMs() - started);

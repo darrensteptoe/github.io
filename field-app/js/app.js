@@ -1890,8 +1890,205 @@ function wireScenarioComparePanel(){
       renderScenarioComparePanel({ res, weeks });
     } catch { /* ignore */ }
   });
+
+  // Phase 15 — Sensitivity Surface
+  safeCall(() => { wireSensitivitySurface(); });
 }
 
+
+
+// =========================
+// Phase 15 — Sensitivity Surface (on-demand)
+// =========================
+
+function surfaceLeverSpec(key){
+  const k = String(key || "");
+  const specs = {
+    volunteerMultiplier: { label: "Volunteer multiplier", stateKey: "volunteerMultBase", clampLo: 0.1, clampHi: 6.0, step: 0.01, fmt: (v)=> (v==null||!isFinite(v))?"—":Number(v).toFixed(2) },
+    supportRate: { label: "Support rate (%)", stateKey: "supportRatePct", clampLo: 0, clampHi: 100, step: 0.1, fmt: (v)=> (v==null||!isFinite(v))?"—":Number(v).toFixed(1) },
+    contactRate: { label: "Contact rate (%)", stateKey: "contactRatePct", clampLo: 0, clampHi: 100, step: 0.1, fmt: (v)=> (v==null||!isFinite(v))?"—":Number(v).toFixed(1) },
+    turnoutReliability: { label: "Turnout reliability (%)", stateKey: "turnoutReliabilityPct", clampLo: 0, clampHi: 100, step: 0.1, fmt: (v)=> (v==null||!isFinite(v))?"—":Number(v).toFixed(1) },
+  };
+  return specs[k] || null;
+}
+
+function surfaceClamp(v, lo, hi){
+  const n = Number(v);
+  if (!Number.isFinite(n)) return lo;
+  return Math.min(hi, Math.max(lo, n));
+}
+
+function surfaceBaselineValue(spec){
+  if (!spec) return null;
+  const v = Number(state?.[spec.stateKey]);
+  if (Number.isFinite(v)) return v;
+  // fallbacks aligned with MC defaults
+  if (spec.stateKey === "supportRatePct") return 55;
+  if (spec.stateKey === "contactRatePct") return 22;
+  if (spec.stateKey === "turnoutReliabilityPct") return 80;
+  if (spec.stateKey === "volunteerMultBase") return 1.0;
+  return null;
+}
+
+function applySurfaceDefaults(){
+  if (!els.surfaceLever || !els.surfaceMin || !els.surfaceMax) return;
+  const spec = surfaceLeverSpec(els.surfaceLever.value);
+  if (!spec) return;
+
+  const base = surfaceBaselineValue(spec);
+  const lo = (base != null) ? (base * 0.8) : spec.clampLo;
+  const hi = (base != null) ? (base * 1.2) : spec.clampHi;
+
+  const minV = surfaceClamp(lo, spec.clampLo, spec.clampHi);
+  const maxV = surfaceClamp(hi, spec.clampLo, spec.clampHi);
+
+  els.surfaceMin.step = String(spec.step);
+  els.surfaceMax.step = String(spec.step);
+
+  els.surfaceMin.value = String(minV);
+  els.surfaceMax.value = String(maxV);
+}
+
+function renderSurfaceStub(){
+  if (!els.surfaceTbody) return;
+  els.surfaceTbody.innerHTML = '<tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td></tr>';
+  if (els.surfaceSummary) els.surfaceSummary.textContent = "Compute to see safe zones, cliffs, and diminishing returns.";
+  if (els.surfaceStatus) els.surfaceStatus.textContent = "";
+}
+
+function renderSurfaceResult({ spec, result }){
+  if (!els.surfaceTbody) return;
+
+  const pts = Array.isArray(result?.points) ? result.points : [];
+  const analysis = result?.analysis || null;
+
+  els.surfaceTbody.innerHTML = "";
+  if (!pts.length){
+    renderSurfaceStub();
+    if (els.surfaceSummary) els.surfaceSummary.textContent = result?.warning ? String(result.warning) : "No points returned.";
+    return;
+  }
+
+  for (const p of pts){
+    const tr = document.createElement("tr");
+
+    const td0 = document.createElement("td");
+    td0.textContent = spec?.fmt ? spec.fmt(p.leverValue) : String(p.leverValue);
+
+    const td1 = document.createElement("td");
+    td1.className = "num";
+    td1.textContent = (p.winProb == null || !isFinite(p.winProb)) ? "—" : `${(p.winProb * 100).toFixed(1)}%`;
+
+    const td2 = document.createElement("td"); td2.className = "num"; td2.textContent = fmtSigned(p.p10);
+    const td3 = document.createElement("td"); td3.className = "num"; td3.textContent = fmtSigned(p.p50);
+    const td4 = document.createElement("td"); td4.className = "num"; td4.textContent = fmtSigned(p.p90);
+
+    tr.appendChild(td0); tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+    els.surfaceTbody.appendChild(tr);
+  }
+
+  const parts = [];
+  const T = Number(els.surfaceTarget?.value);
+  const target = (Number.isFinite(T) ? (T/100) : 0.70);
+
+  if (analysis?.safeZone){
+    const z = analysis.safeZone;
+    parts.push(`Safe zone (≥ ${Math.round(target*100)}%): ${spec.fmt(z.min)} to ${spec.fmt(z.max)}`);
+  } else {
+    parts.push(`Safe zone (≥ ${Math.round(target*100)}%): none`);
+  }
+
+  const cliffs = Array.isArray(analysis?.cliffPoints) ? analysis.cliffPoints : [];
+  if (cliffs.length){
+    const xs = cliffs.slice(0, 3).map(c => spec.fmt(c.at)).join(", ");
+    parts.push(`Cliff edges: ${xs}${cliffs.length > 3 ? "…" : ""}`);
+  } else {
+    parts.push("Cliff edges: none");
+  }
+
+  const dims = Array.isArray(analysis?.diminishingZones) ? analysis.diminishingZones : [];
+  if (dims.length){
+    const r = dims[0];
+    parts.push(`Diminishing returns: ${spec.fmt(r.min)} to ${spec.fmt(r.max)}${dims.length > 1 ? "…" : ""}`);
+  } else {
+    parts.push("Diminishing returns: none");
+  }
+
+  const fr = Array.isArray(analysis?.fragilityPoints) ? analysis.fragilityPoints : [];
+  if (fr.length){
+    const xs = fr.slice(0, 3).map(c => spec.fmt(c.at)).join(", ");
+    parts.push(`Fragility points: ${xs}${fr.length > 3 ? "…" : ""}`);
+  } else {
+    parts.push("Fragility points: none");
+  }
+
+  if (els.surfaceSummary) els.surfaceSummary.textContent = parts.join(" • ");
+}
+
+function wireSensitivitySurface(){
+  if (!els.surfaceLever || !els.btnComputeSurface) return;
+
+  // defaults (does not compute)
+  applySurfaceDefaults();
+  renderSurfaceStub();
+
+  els.surfaceLever.addEventListener("change", () => {
+    applySurfaceDefaults();
+    renderSurfaceStub();
+  });
+
+  els.btnComputeSurface.addEventListener("click", async () => {
+    try{
+      if (els.btnComputeSurface) els.btnComputeSurface.disabled = true;
+      if (els.surfaceStatus) els.surfaceStatus.textContent = "Computing…";
+
+      const leverKey = els.surfaceLever.value;
+      const spec = surfaceLeverSpec(leverKey);
+      if (!spec){
+        if (els.surfaceStatus) els.surfaceStatus.textContent = "Unknown lever.";
+        return;
+      }
+
+      const minV = surfaceClamp(els.surfaceMin?.value, spec.clampLo, spec.clampHi);
+      const maxV = surfaceClamp(els.surfaceMax?.value, spec.clampLo, spec.clampHi);
+      const steps = Math.max(5, Math.floor(Number(els.surfaceSteps?.value) || 21));
+
+      const mode = els.surfaceMode?.value || "fast";
+      const runs = (mode === "full") ? 10000 : 2000;
+
+      const tPct = Number(els.surfaceTarget?.value);
+      const targetWinProb = Number.isFinite(tPct) ? surfaceClamp(tPct, 50, 99) / 100 : 0.70;
+
+      const snap = getStateSnapshot();
+      const res = computeAll(snap);
+      const weeks = derivedWeeksRemaining();
+      const needVotes = deriveNeedVotes(res);
+
+      // Keep seed behavior aligned with MC: user-provided seed (or empty)
+      const seed = state.mcSeed || "";
+
+      const engine = { withPatchedState, runMonteCarloSim };
+
+      const result = computeSensitivitySurface({
+        engine,
+        baseline: { res, weeks, needVotes },
+        sweep: { leverKey, minValue: minV, maxValue: maxV, steps },
+        options: { runs, seed, targetWinProb }
+      });
+
+      renderSurfaceResult({ spec, result });
+
+      if (els.surfaceStatus){
+        els.surfaceStatus.textContent = `Done (${runs.toLocaleString()} runs × ${steps} points)`;
+      }
+    } catch (err){
+      renderSurfaceStub();
+      if (els.surfaceStatus) els.surfaceStatus.textContent = err?.message ? err.message : String(err || "Error");
+    } finally {
+      if (els.btnComputeSurface) els.btnComputeSurface.disabled = false;
+    }
+  });
+}
 
 function initTabs(){
   const tab = state.ui?.activeTab || "win";
