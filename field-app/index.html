@@ -50,72 +50,7 @@
 
   <main class="shell">
     <section class="left">
-
-
-<div class="card phase-setup">
-              <div class="card-head">
-                <h2>Scenario setup</h2>
-              </div>
-              
-
-<div class="card phase-setup">
-              <div class="card-head">
-                <h2>Scenario setup</h2>
-              </div>
-              <div class="grid2">
-                <div class="field">
-                  <label class="label" for="raceType">Race template</label>
-                  <select id="raceType" class="select">
-                    <option value="federal">Federal (US House)</option>
-                    <option value="state_leg" selected>State legislative</option>
-                    <option value="municipal">Municipal / ward</option>
-                    <option value="county">County / regional</option>
-                  </select>
-                  <div class="help" data-help="Template sets conservative default ranges. You can override anything.">
-                    <span class="help-title">What this is</span>
-                    <span class="help-text">Select a baseline assumptions profile (turnout band width defaults, etc.).</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="electionDate">Election date</label>
-                  <input id="electionDate" class="input" type="date" />
-                  <div class="help" data-help="Used to estimate weeks remaining. You can override weeks manually below.">
-                    <span class="help-title">Why it matters</span>
-                    <span class="help-text">Timeline affects later production planning (Phase 3+). For Phase 1 it’s reference only.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="weeksRemaining">Weeks remaining (override)</label>
-                  <input id="weeksRemaining" class="input" type="number" min="0" step="1" placeholder="auto" />
-                  <div class="help" data-help="If blank, the dashboard estimates based on election date.">
-                    <span class="help-title">If unsure</span>
-                    <span class="help-text">Leave blank; you can set it later when production planning is added.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="mode">Mode</label>
-                  <select id="mode" class="select">
-                    <option value="persuasion" selected>Persuasion-first (default)</option>
-                    <option value="late_start">Late-start / turnout-heavy</option>
-                  </select>
-                  <div class="help" data-help="Mode influences defaults later. Phase 1 remains the same.">
-                    <span class="help-title">What this changes</span>
-                    <span class="help-text">In later phases, persuasion-first emphasizes persuasion volume before GOTV surge.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-      
-      <div class="card phase-universe">
-              <div class="card-head">
-                <h2>Universe</h2>
-              </div>
-              
-
-<div class="card phase-setup">
+      <div class="card phase-setup">
               <div class="card-head">
                 <h2>Scenario setup</h2>
               </div>
@@ -292,215 +227,48 @@
                 <h2>Turnout baseline (last two comparable cycles)</h2>
               </div>
       
-              
-
-<div class="card phase-setup">
-              <div class="card-head">
-                <h2>Scenario setup</h2>
-              </div>
-              <div class="grid2">
+              <div class="grid3">
                 <div class="field">
-                  <label class="label" for="raceType">Race template</label>
-                  <select id="raceType" class="select">
-                    <option value="federal">Federal (US House)</option>
-                    <option value="state_leg" selected>State legislative</option>
-                    <option value="municipal">Municipal / ward</option>
-                    <option value="county">County / regional</option>
-                  </select>
-                  <div class="help" data-help="Template sets conservative default ranges. You can override anything.">
-                    <span class="help-title">What this is</span>
-                    <span class="help-text">Select a baseline assumptions profile (turnout band width defaults, etc.).</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="electionDate">Election date</label>
-                  <input id="electionDate" class="input" type="date" />
-                  <div class="help" data-help="Used to estimate weeks remaining. You can override weeks manually below.">
-                    <span class="help-title">Why it matters</span>
-                    <span class="help-text">Timeline affects later production planning (Phase 3+). For Phase 1 it’s reference only.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="weeksRemaining">Weeks remaining (override)</label>
-                  <input id="weeksRemaining" class="input" type="number" min="0" step="1" placeholder="auto" />
-                  <div class="help" data-help="If blank, the dashboard estimates based on election date.">
+                  <label class="label" for="turnoutA">Cycle A turnout %</label>
+                  <input id="turnoutA" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 39" />
+                  <div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
                     <span class="help-title">If unsure</span>
-                    <span class="help-text">Leave blank; you can set it later when production planning is added.</span>
+                    <span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
                   </div>
                 </div>
       
                 <div class="field">
-                  <label class="label" for="mode">Mode</label>
-                  <select id="mode" class="select">
-                    <option value="persuasion" selected>Persuasion-first (default)</option>
-                    <option value="late_start">Late-start / turnout-heavy</option>
-                  </select>
-                  <div class="help" data-help="Mode influences defaults later. Phase 1 remains the same.">
-                    <span class="help-title">What this changes</span>
-                    <span class="help-text">In later phases, persuasion-first emphasizes persuasion volume before GOTV surge.</span>
+                  <label class="label" for="turnoutB">Cycle B turnout %</label>
+                  <input id="turnoutB" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 43" />
+                </div>
+      
+                <div class="field">
+                  <label class="label" for="bandWidth">Band width (±)</label>
+                  <input id="bandWidth" class="input" type="number" min="0" max="25" step="0.5" placeholder="e.g., 4" />
+                  <div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
+                    <span class="help-title">Typical</span>
+                    <span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
+                  </div>
+                </div>
+      
+                <div class="field span3 inline-metrics">
+                  <div class="metric">
+                    <div class="metric-k">Expected turnout %</div>
+                    <div id="turnoutExpected" class="metric-v">—</div>
+                  </div>
+                  <div class="metric">
+                    <div class="metric-k">Best / Worst turnout %</div>
+                    <div id="turnoutBand" class="metric-v">—</div>
+                  </div>
+                  <div class="metric">
+                    <div class="metric-k">Votes per 1% turnout</div>
+                    <div id="votesPer1pct" class="metric-v">—</div>
                   </div>
                 </div>
               </div>
             </div>
-      
-      <div class="card phase-universe">
-              <div class="card-head">
-                <h2>Universe</h2>
-              </div>
-              <div class="grid2">
-                <div class="field">
-                  <label class="label" for="universeBasis">Universe basis</label>
-                  <select id="universeBasis" class="select">
-                    <option value="registered" selected>Registered (default)</option>
-                    <option value="active">Active (advanced)</option>
-                  </select>
-                  <div class="help" data-help="Registered is most publicly defensible. Active can be used when file hygiene is strong.">
-                    <span class="help-title">Best practice</span>
-                    <span class="help-text">Use Registered in client-facing work unless Active is clearly sourced and agreed.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="universeSize">Universe size (U)</label>
-                  <input id="universeSize" class="input" type="number" min="0" step="1" placeholder="e.g., 52000" />
-                  <div class="help" data-help="U is the base for turnout votes and persuasion universe.">
-                    <span class="help-title">How it’s used</span>
-                    <span class="help-text">Turnout votes = U × turnout %. Persuasion universe = U × persuasion %.</span>
-                  </div>
-                </div>
-      
-                <div class="field span2">
-                  <label class="label" for="sourceNote">Source note (optional)</label>
-                  <input id="sourceNote" class="input" type="text" placeholder="e.g., VAN export dated 2026-02-01 or Elections dept file" />
-                </div>
-              </div>
-            </div>
-      
-      <div class="card phase-persuasion">
-              <div class="card-head">
-                <h2>Persuasion universe</h2>
-              </div>
-              <div class="grid2">
-                <div class="field">
-                  <label class="label" for="persuasionPct">Persuasion % of universe</label>
-                  <input id="persuasionPct" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 30" />
-                  <div class="help" data-help="A modeling assumption: portion of registered voters who are not locked and could move.">
-                    <span class="help-title">If unsure</span>
-                    <span class="help-text">Use 30% for competitive/open; 25% for incumbent race; higher for chaotic municipal fields.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="earlyVoteExp">Early vote % of turnout (Expected)</label>
-                  <input id="earlyVoteExp" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 38" />
-                  <div class="help" data-help="Used as a risk lever; later phases will model chase and timeline compression more deeply.">
-                    <span class="help-title">Risk lever</span>
-                    <span class="help-text">Higher early vote compresses persuasion window and increases early workload.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-      
-      <div class="card phase-candidates">
-              <div class="card-head">
-                <h2>Candidates & vote landscape</h2>
-                <div class="card-actions">
-                  <button id="btnAddCandidate" class="btn btn-sm btn-ghost" type="button">Add candidate</button>
-                </div>
-              
-
-<div class="card phase-setup">
-              <div class="card-head">
-                <h2>Scenario setup</h2>
-              </div>
-              <div class="grid2">
-                <div class="field">
-                  <label class="label" for="raceType">Race template</label>
-                  <select id="raceType" class="select">
-                    <option value="federal">Federal (US House)</option>
-                    <option value="state_leg" selected>State legislative</option>
-                    <option value="municipal">Municipal / ward</option>
-                    <option value="county">County / regional</option>
-                  </select>
-                  <div class="help" data-help="Template sets conservative default ranges. You can override anything.">
-                    <span class="help-title">What this is</span>
-                    <span class="help-text">Select a baseline assumptions profile (turnout band width defaults, etc.).</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="electionDate">Election date</label>
-                  <input id="electionDate" class="input" type="date" />
-                  <div class="help" data-help="Used to estimate weeks remaining. You can override weeks manually below.">
-                    <span class="help-title">Why it matters</span>
-                    <span class="help-text">Timeline affects later production planning (Phase 3+). For Phase 1 it’s reference only.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="weeksRemaining">Weeks remaining (override)</label>
-                  <input id="weeksRemaining" class="input" type="number" min="0" step="1" placeholder="auto" />
-                  <div class="help" data-help="If blank, the dashboard estimates based on election date.">
-                    <span class="help-title">If unsure</span>
-                    <span class="help-text">Leave blank; you can set it later when production planning is added.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="mode">Mode</label>
-                  <select id="mode" class="select">
-                    <option value="persuasion" selected>Persuasion-first (default)</option>
-                    <option value="late_start">Late-start / turnout-heavy</option>
-                  </select>
-                  <div class="help" data-help="Mode influences defaults later. Phase 1 remains the same.">
-                    <span class="help-title">What this changes</span>
-                    <span class="help-text">In later phases, persuasion-first emphasizes persuasion volume before GOTV surge.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-      
-      <div class="card phase-universe">
-              <div class="card-head">
-                <h2>Universe</h2>
-              </div>
-              <div class="grid2">
-                <div class="field">
-                  <label class="label" for="universeBasis">Universe basis</label>
-                  <select id="universeBasis" class="select">
-                    <option value="registered" selected>Registered (default)</option>
-                    <option value="active">Active (advanced)</option>
-                  </select>
-                  <div class="help" data-help="Registered is most publicly defensible. Active can be used when file hygiene is strong.">
-                    <span class="help-title">Best practice</span>
-                    <span class="help-text">Use Registered in client-facing work unless Active is clearly sourced and agreed.</span>
-                  </div>
-                </div>
-      
-                <div class="field">
-                  <label class="label" for="universeSize">Universe size (U)</label>
-                  <input id="universeSize" class="input" type="number" min="0" step="1" placeholder="e.g., 52000" />
-                  <div class="help" data-help="U is the base for turnout votes and persuasion universe.">
-                    <span class="help-title">How it’s used</span>
-                    <span class="help-text">Turnout votes = U × turnout %. Persuasion universe = U × persuasion %.</span>
-                  </div>
-                </div>
-      
-                <div class="field span2">
-                  <label class="label" for="sourceNote">Source note (optional)</label>
-                  <input id="sourceNote" class="input" type="text" placeholder="e.g., VAN export dated 2026-02-01 or Elections dept file" />
-                </div>
-              </div>
-            </div>
-      
-      <div class="card phase-persuasion">
-              <div class="card-head">
-                <h2>Persuasion universe</h2>
-              </div>
-              
-</section>
+    
+    </section>
 
     <section class="right">
       <nav class="tabs" aria-label="Output tabs">
@@ -555,6 +323,9 @@
               <div class="mini-s" id="miniPersCheck">—</div>
             </div>
           </div>
+        </div>
+
+        
 
           <div class="subgrid">
             <div class="mini">
@@ -1026,9 +797,7 @@
     <h2>Turnout / GOTV (Phase 6)</h2>
   </div>
 
-          <hr class="divider sc-divider" />
-
-          <div class="rowline" style="margin-bottom:10px;">
+  <div class="rowline" style="margin-bottom:10px;">
     <label class="switch">
       <input id="turnoutEnabled" type="checkbox" />
       <span class="slider"></span>
