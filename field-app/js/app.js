@@ -16,6 +16,7 @@ import { APP_VERSION, BUILD_ID } from "./build.js";
 import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
 import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
+import { computeSensitivitySurface } from "./sensitivitySurface.js";
 
 function downloadText(text, filename, mime){
   try{
