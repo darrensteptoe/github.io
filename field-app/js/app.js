@@ -59,6 +59,54 @@ function installGlobalErrorCapture(){
   } catch { /* ignore */ }
 }
 
+
+// Phase 11 — system theme (fail-soft)
+// Theme always follows OS settings. We still mirror the state flag for transparency,
+// but we do not rely on any manual UI toggle existing.
+let _themeMql = null;
+let _themeListenerInstalled = false;
+
+function getSystemPrefersDark(){
+  try{
+    if (window.matchMedia) return !!window.matchMedia("(prefers-color-scheme: dark)").matches;
+  } catch { /* ignore */ }
+  return false;
+}
+
+function applySystemTheme(){
+  try{
+    const isDark = _themeMql ? !!_themeMql.matches : getSystemPrefersDark();
+    if (!state.ui) state.ui = {};
+    state.ui.dark = isDark;
+    document.body.classList.toggle("dark", isDark);
+    if (els.toggleDark) els.toggleDark.checked = isDark;
+  } catch (e){
+    recordError("theme", e?.message || String(e || "theme error"));
+  }
+}
+
+function initSystemTheme(){
+  try{
+    _themeMql = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    applySystemTheme();
+
+    if (_themeMql && !_themeListenerInstalled){
+      const handler = () => {
+        applySystemTheme();
+        // Persist is safe here; it keeps state snapshots consistent without letting the user override OS theme.
+        persist();
+      };
+
+      if (typeof _themeMql.addEventListener === "function") _themeMql.addEventListener("change", handler);
+      else if (typeof _themeMql.addListener === "function") _themeMql.addListener(handler);
+
+      _themeListenerInstalled = true;
+    }
+  } catch (e){
+    recordError("theme", e?.message || String(e || "theme init error"));
+  }
+}
+
 function updateBuildStamp(){
   try{
     if (els.buildStamp) els.buildStamp.textContent = `build ${BUILD_ID}`;
@@ -703,8 +751,8 @@ function applyStateToUI(){
 
   if (els.toggleAdvDiag) els.toggleAdvDiag.checked = !!state.ui?.advDiag;
   if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
-  els.toggleTraining.checked = !!state.ui?.training;
-  els.toggleDark.checked = !!state.ui?.dark;
+  if (els.toggleTraining) els.toggleTraining.checked = !!state.ui?.training;
+  if (els.toggleDark) els.toggleDark.checked = !!state.ui?.dark;
 
   document.body.classList.toggle("training", !!state.ui?.training);
   document.body.classList.toggle("dark", !!state.ui?.dark);
@@ -868,6 +916,7 @@ function wireEvents(){
     state.bandWidth = state.bandWidth || defs.bandWidth;
     state.persuasionPct = state.persuasionPct || defs.persuasionPct;
     state.earlyVoteExp = state.earlyVoteExp || defs.earlyVoteExp;
+  initSystemTheme();
     applyStateToUI();
     render();
     persist();
@@ -1113,7 +1162,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    document.body.classList.toggle("dark", !!state.ui.dark);
+    applySystemTheme();
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1213,7 +1262,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    document.body.classList.toggle("dark", !!state.ui.dark);
+    applySystemTheme();
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1228,12 +1277,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     els.explainCard.hidden = !state.ui.training;
     persist();
   });
-
-  els.toggleDark.addEventListener("change", () => {
-    state.ui.dark = els.toggleDark.checked;
-    document.body.classList.toggle("dark", !!state.ui.dark);
-    persist();
-  });
+  // Theme follows system settings (prefers-color-scheme). Manual toggle (if present) is ignored.
 
   if (els.toggleAdvDiag) els.toggleAdvDiag.addEventListener("change", () => {
     state.ui.advDiag = els.toggleAdvDiag.checked;
@@ -2068,7 +2112,7 @@ function initDevTools(){
 }
 
 function init(){
-  installGlobalErrorCapture();
+  // global error capture is installed before init() is invoked
   wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
@@ -2085,7 +2129,14 @@ function init(){
 }
 
 
-init();
+// Install error capture before boot so init failures are recorded.
+installGlobalErrorCapture();
+try{
+  init();
+} catch (e){
+  recordError("init", e?.message || String(e || "init error"));
+  try{ alert("App failed to initialize. Open Diagnostics for details."); } catch { /* ignore */ }
+}
 
 
 // =========================
