@@ -9,6 +9,7 @@ import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { computeDecisionIntelligence } from "./decisionIntelligence.js";
+import { createScenarioManager } from "./scenarioManager.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
@@ -183,6 +184,10 @@ const els = {
   restoreBackup: document.getElementById("restoreBackup"),
   toggleStrictImport: document.getElementById("toggleStrictImport"),
   btnDiagnostics: document.getElementById("btnDiagnostics"),
+  btnSaveScenario: document.getElementById("btnSaveScenario"),
+  scCompareTbody: document.getElementById("scCompareTbody"),
+  scOverall: document.getElementById("scOverall"),
+  scWarn: document.getElementById("scWarn"),
   diagModal: document.getElementById("diagModal"),
   diagErrors: document.getElementById("diagErrors"),
   btnDiagClose: document.getElementById("btnDiagClose"),
@@ -437,6 +442,7 @@ let lastResultsSnapshot = null;
 // Phase 11 — session-only safety rails
 let selfTestGateStatus = SELFTEST_GATE.UNVERIFIED;
 let lastExportHash = null;
+const scenarioMgr = createScenarioManager({ max: 5 });
 const recentErrors = [];
 const MAX_ERRORS = 20;
 let backupTimer = null;
@@ -1553,6 +1559,74 @@ function renderDecisionIntelligencePanel({ res, weeks }){
 
 
 
+
+function renderScenarioComparePanel({ res, weeks }){
+  if (!els.scCompareTbody) return;
+
+  const showWarn = (msg) => {
+    if (!els.scWarn) return;
+    if (msg){
+      els.scWarn.hidden = false;
+      els.scWarn.textContent = msg;
+    } else {
+      els.scWarn.hidden = true;
+      els.scWarn.textContent = "";
+    }
+  };
+
+  try{
+    const cmp = scenarioMgr.compare();
+    const rows = cmp.rows || [];
+    const hi = cmp.highlights || {};
+
+    if (!rows.length){
+      els.scCompareTbody.innerHTML = '<tr><td colspan="7" class="muted">No scenarios saved yet.</td></tr>';
+      if (els.scOverall) els.scOverall.textContent = 'Most efficient scenario overall: —';
+      showWarn(null);
+      return;
+    }
+
+    const fmtMaybeInt = (v) => (v == null || !isFinite(v)) ? "—" : String(Math.ceil(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const fmtMoney = (v) => (v == null || !isFinite(v)) ? "—" : ('$' + String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+    const fmtPct = (v) => (v == null || !isFinite(v)) ? "—" : ((v * 100).toFixed(1) + "%");
+
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const makeBtn = (id) => `<button class="btn btn-sm btn-ghost" type="button" data-sc-del="${esc(id)}">Delete</button>`;
+    const makeInput = (id, label) => `<input class="input input-sm input-inline" type="text" value="${esc(label)}" data-sc-label="${esc(id)}" />`;
+
+    const tr = rows.map(r => {
+      const bestVol = (hi.bestVol && r.id === hi.bestVol);
+      const bestCost = (hi.bestCost && r.id === hi.bestCost);
+      const bestWin = (hi.bestWin && r.id === hi.bestWin);
+
+      return `<tr data-sc-row="${esc(r.id)}">
+        <td>${esc(r.label)}</td>
+        <td>${makeInput(r.id, r.label)}</td>
+        <td class="${bestVol ? 'cell-best' : ''}">${fmtMaybeInt(r.volunteers)}</td>
+        <td class="${bestCost ? 'cell-best' : ''}">${fmtMoney(r.cost)}</td>
+        <td class="${bestWin ? 'cell-best' : ''}">${fmtPct(r.winProb)}</td>
+        <td>${esc(r.primaryBottleneck || '—')}</td>
+        <td class="sc-row-actions">${makeBtn(r.id)}</td>
+      </tr>`;
+    }).join("");
+
+    els.scCompareTbody.innerHTML = tr;
+
+    // Overall winner summary
+    const overallId = cmp.overall;
+    const overallRow = rows.find(r => r.id === overallId);
+    if (els.scOverall){
+      els.scOverall.textContent = `Most efficient scenario overall: ${overallRow ? overallRow.label : "—"}`;
+    }
+
+    showWarn(null);
+  } catch {
+    showWarn("Scenario compare unavailable (analysis error).");
+  }
+}
+
+
+
 function renderStress(res){
   if (!els.stressBox) return;
   const lines = res.stressSummary || [];
@@ -1719,6 +1793,71 @@ function getYourName(){
   const c = state.candidates.find(x => x.id === state.yourCandidateId);
   return c?.name || null;
 }
+
+
+function onSaveScenarioClick(){
+  try{
+    const snap = getStateSnapshot();
+    const engine = {
+      getStateSnapshot,
+      withPatchedState,
+      computeAll,
+      derivedWeeksRemaining,
+      deriveNeedVotes,
+      runMonteCarloSim,
+      computeMaxAttemptsByTactic,
+      computeTimelineFeasibility,
+    };
+    scenarioMgr.add({
+      label: (snap.scenarioName || "").trim() || `Scenario ${scenarioMgr.list().length + 1}`,
+      snapshot: snap,
+      engine,
+      modelVersion: MODEL_VERSION,
+    });
+    // Re-render using current res/weeks if available
+    try{
+      const res = computeAll(snap);
+      const weeks = derivedWeeksRemaining();
+      renderScenarioComparePanel({ res, weeks });
+    } catch { /* ignore */ }
+  } catch {
+    // fail-soft
+  }
+}
+
+function wireScenarioComparePanel(){
+  if (!els.btnSaveScenario || !els.scCompareTbody) return;
+
+  els.btnSaveScenario.addEventListener("click", () => onSaveScenarioClick());
+
+  // delegate label edits + deletes
+  els.scCompareTbody.addEventListener("input", (e) => {
+    const t = e.target;
+    const id = t?.getAttribute?.("data-sc-label");
+    if (!id) return;
+    scenarioMgr.setLabel(id, t.value);
+    // Keep scenario name column in sync
+    try{
+      const row = els.scCompareTbody.querySelector(`tr[data-sc-row="${CSS.escape(id)}"] td:first-child`);
+      if (row) row.textContent = t.value;
+      if (els.scOverall && els.scOverall.textContent.includes(id)) { /* ignore */ }
+    } catch { /* ignore */ }
+  });
+
+  els.scCompareTbody.addEventListener("click", (e) => {
+    const btn = e.target?.closest?.("[data-sc-del]");
+    const id = btn?.getAttribute?.("data-sc-del");
+    if (!id) return;
+    scenarioMgr.remove(id);
+    try{
+      const snap = getStateSnapshot();
+      const res = computeAll(snap);
+      const weeks = derivedWeeksRemaining();
+      renderScenarioComparePanel({ res, weeks });
+    } catch { /* ignore */ }
+  });
+}
+
 
 function initTabs(){
   const tab = state.ui?.activeTab || "win";
@@ -1920,6 +2059,7 @@ function initDevTools(){
 
 function init(){
   installGlobalErrorCapture();
+  wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
   refreshBackupDropdown();

@@ -13,6 +13,7 @@ import { computeDecisionIntelligence } from "./decisionIntelligence.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 import { computeSnapshotHash } from "./hash.js";
+import { createScenarioManager } from "./scenarioManager.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
 import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
@@ -1249,7 +1250,77 @@ export function runSelfTests(engine){
   });
 
 
-  results.durationMs = Math.round(nowMs() - started);
+  
+
+  // Phase 13 — Scenario Manager / Compare Engine
+  test("Phase 13: Saving a scenario does not mutate current state", () => {
+    const before = engine.getStateSnapshot();
+    const beforeHash = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: before });
+    const mgr = createScenarioManager({ max: 5 });
+    mgr.add({ label: "A", snapshot: before, engine, modelVersion: MODEL_VERSION });
+    const after = engine.getStateSnapshot();
+    const afterHash = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: after });
+    if (beforeHash !== afterHash) throw new Error("State mutated by save");
+    return true;
+  });
+
+  test("Phase 13: Stored snapshot hash equals baseline hash at save time", () => {
+    const snap = engine.getStateSnapshot();
+    const mgr = createScenarioManager({ max: 5 });
+    const item = mgr.add({ label: "A", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    const expected = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: snap });
+    if (item.savedHash !== expected) throw new Error("Saved hash mismatch");
+    return true;
+  });
+
+  test("Phase 13: Comparison ordering is deterministic across re-run", () => {
+    const snap = engine.getStateSnapshot();
+    const mgr = createScenarioManager({ max: 5 });
+    mgr.add({ label: "A", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    mgr.add({ label: "B", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    const a = mgr.compare().rows.map(r => r.id).join(",");
+    const b = mgr.compare().rows.map(r => r.id).join(",");
+    if (a !== b) throw new Error("Ordering changed across re-run");
+    return true;
+  });
+
+  test("Phase 13: MC win probability stable across identical scenarios", () => {
+    const snap = engine.getStateSnapshot();
+    const mgr = createScenarioManager({ max: 5 });
+    mgr.add({ label: "A", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    mgr.add({ label: "B", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    const rows = mgr.compare().rows;
+    const w1 = rows[0]?.winProb;
+    const w2 = rows[1]?.winProb;
+    if (w1 == null || w2 == null) throw new Error("Missing winProb");
+    if (Math.abs(w1 - w2) > 1e-12) throw new Error("WinProb differs");
+    return true;
+  });
+
+  test("Phase 13: Deleting a scenario does not affect others", () => {
+    const snap = engine.getStateSnapshot();
+    const mgr = createScenarioManager({ max: 5 });
+    const a = mgr.add({ label: "A", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    const b = mgr.add({ label: "B", snapshot: snap, engine, modelVersion: MODEL_VERSION });
+    mgr.remove(a.id);
+    const ids = mgr.list().map(x => x.id);
+    if (ids.includes(a.id)) throw new Error("Delete failed");
+    if (!ids.includes(b.id)) throw new Error("Other scenario affected");
+    return true;
+  });
+
+  test("Phase 13: Baseline fixture hash unchanged after scenario saves", () => {
+    const base = JSON.parse(JSON.stringify(FIXTURES[0]));
+    const baseHash = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: base });
+    const mgr = createScenarioManager({ max: 5 });
+    mgr.add({ label: "A", snapshot: base, engine, modelVersion: MODEL_VERSION });
+    const baseHash2 = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: base });
+    if (baseHash !== baseHash2) throw new Error("Fixture mutated");
+    return true;
+  });
+
+
+results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
   results.passed = Math.max(0, results.total - results.failed);
 
