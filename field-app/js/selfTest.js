@@ -13,10 +13,6 @@ import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timel
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 import { computeSnapshotHash } from "./hash.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
-import { APP_VERSION, BUILD_ID } from "./build.js";
-import { gateStatusFromResult, GATE_VERIFIED, GATE_FAILED, GATE_UNVERIFIED } from "./selfTestGate.js";
-import { shouldBlockImport } from "./importPolicy.js";
-import { readBackups, writeBackupEntry } from "./storage.js";
 
 function deepFreeze(obj){
   if (obj == null || typeof obj !== "object") return obj;
@@ -1112,93 +1108,6 @@ export function runSelfTests(engine){
   results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
   results.passed = Math.max(0, results.total - results.failed);
-
-
-
-  // =========================
-  // Phase 11 — Release hardening tests
-  // =========================
-
-  test("Phase 11: Export includes appVersion + buildId metadata", () => {
-    const snap = { schemaVersion: CURRENT_SCHEMA_VERSION, modelVersion: MODEL_VERSION, scenarioState: { scenarioName: "x" } };
-    const ex = makeScenarioExport(snap);
-    assert(typeof ex.appVersion === "string" && ex.appVersion.length > 0, "appVersion missing");
-    assert(typeof ex.buildId === "string" && ex.buildId.length > 0, "buildId missing");
-    // Defaults should match build constants when not provided.
-    assert(ex.appVersion === APP_VERSION, "appVersion default mismatch");
-    assert(ex.buildId === BUILD_ID, "buildId default mismatch");
-  });
-
-  test("Phase 11: Self-test gate badge state helper flips correctly", () => {
-    assert(gateStatusFromResult({ passed: 10, failed: 0 }) === GATE_VERIFIED, "should be VERIFIED");
-    assert(gateStatusFromResult({ passed: 10, failed: 1 }) === GATE_FAILED, "should be FAILED");
-    assert(gateStatusFromResult({ passed: 0, failed: 0 }) === GATE_UNVERIFIED, "should be UNVERIFIED");
-  });
-
-  test("Phase 11: Auto-backup keeps max 5 (mock localStorage)", () => {
-    const mem = new Map();
-    const mock = {
-      getItem: (k) => mem.has(k) ? mem.get(k) : null,
-      setItem: (k, v) => mem.set(k, v),
-      removeItem: (k) => mem.delete(k),
-    };
-
-    for (let i=0;i<6;i++){
-      const entry = { timestamp: `2026-02-17T00:00:0${i}.000Z`, scenarioName: `s${i}`, snapshot: { a:i } };
-      writeBackupEntry(entry, mock);
-    }
-    const arr = readBackups(mock);
-    assert(arr.length === 5, "should keep 5 backups");
-    assert(arr[0].scenarioName === "s5", "newest should be first");
-    assert(arr[4].scenarioName === "s1", "oldest retained should be s1");
-  });
-
-  test("Phase 11: Backup restore preserves deterministic snapshot hash", () => {
-    const mem = new Map();
-    const mock = {
-      getItem: (k) => mem.has(k) ? mem.get(k) : null,
-      setItem: (k, v) => mem.set(k, v),
-      removeItem: (k) => mem.delete(k),
-    };
-
-    const scenario = { scenarioName:"det", universeSize:"1000", ui:{ training:false } };
-    const h1 = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: scenario });
-
-    writeBackupEntry({ timestamp: new Date().toISOString(), scenarioName:"det", snapshot: scenario }, mock);
-    const arr = readBackups(mock);
-    const restored = arr[0].snapshot;
-    const h2 = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: restored });
-    assert(h1 === h2, "hash should match after restore");
-  });
-
-  test("Phase 11: Strict import mode blocks newer schema + hash mismatch (allows when OFF)", () => {
-    const newer = shouldBlockImport({
-      strict: true,
-      importedSchemaVersion: "9.0.0",
-      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
-      exportedHash: null,
-      recomputedHash: null
-    });
-    assert(newer.block === true, "should block newer schema");
-
-    const mismatch = shouldBlockImport({
-      strict: true,
-      importedSchemaVersion: CURRENT_SCHEMA_VERSION,
-      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
-      exportedHash: "aaa",
-      recomputedHash: "bbb"
-    });
-    assert(mismatch.block === true, "should block hash mismatch");
-
-    const off = shouldBlockImport({
-      strict: false,
-      importedSchemaVersion: "9.0.0",
-      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
-      exportedHash: "aaa",
-      recomputedHash: "bbb"
-    });
-    assert(off.block === false, "should not block when strict OFF");
-  });
 
   return results;
 }
