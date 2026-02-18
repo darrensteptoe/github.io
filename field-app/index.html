@@ -1438,7 +1438,42 @@
       </section>
 
     </section>
-  </main>
+  
+  <div class="card" id="scenarioCompareCard">
+    <div class="card-head">
+      <h2>Scenario Compare (Phase 13)</h2>
+    </div>
+
+    <div id="scWarn" class="banner warn" hidden></div>
+
+    <div class="rowline" style="gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+      <button id="btnSaveScenario" class="btn btn-sm" type="button">Save Current Scenario</button>
+      <div class="muted" style="font-size:12px;">Saved scenarios are session-only (memory). Max 5.</div>
+    </div>
+
+    <div class="table-wrap" style="margin-top:10px;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="min-width:180px;">Scenario</th>
+            <th style="min-width:120px;">Label</th>
+            <th style="min-width:110px;">Volunteers</th>
+            <th style="min-width:110px;">Cost</th>
+            <th style="min-width:90px;">Win %</th>
+            <th style="min-width:160px;">Primary bottleneck</th>
+            <th style="min-width:90px;"></th>
+          </tr>
+        </thead>
+        <tbody id="scCompareTbody">
+          <tr><td colspan="7" class="muted">No scenarios saved yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="scOverall" class="note" style="margin-top:10px;">Most efficient scenario overall: —</div>
+  </div>
+
+</main>
 
   <script type="module" src="./js/app.js"></script>
 
