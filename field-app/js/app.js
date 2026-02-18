@@ -307,6 +307,17 @@ const els = {
   mcMedian: document.getElementById("mcMedian"),
   mcP5: document.getElementById("mcP5"),
   mcP95: document.getElementById("mcP95"),
+  // Phase 14 — confidence envelope
+  mcP10: document.getElementById("mcP10"),
+  mcP50: document.getElementById("mcP50"),
+  mcP90: document.getElementById("mcP90"),
+  mcMoS: document.getElementById("mcMoS"),
+  mcDownside: document.getElementById("mcDownside"),
+  mcES10: document.getElementById("mcES10"),
+  mcShiftP50: document.getElementById("mcShiftP50"),
+  mcShiftP10: document.getElementById("mcShiftP10"),
+  mcFragility: document.getElementById("mcFragility"),
+  mcCliff: document.getElementById("mcCliff"),
   mcRiskLabel: document.getElementById("mcRiskLabel"),
   mcSensitivity: document.getElementById("mcSensitivity"),
     // Phase 4 — budget + ROI
