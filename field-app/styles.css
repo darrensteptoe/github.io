@@ -60,7 +60,16 @@
   --phase-di: var(--turquoise);
   --phase-scenarios: var(--pearl-aqua-2);
 
-  --rail-bg:#f1f2f4;
+  
+  --phase-winpath: var(--champagne-mist-2);
+  --phase-p5: var(--pearl-aqua);
+  --phase-p6: var(--frosted-mint);
+  --phase-p7: var(--pearl-aqua-2);
+
+  --btn-hot: #ea6472;
+  --btn-hot-hover: #d85a67;
+  --btn-hot-active: #c9525f;
+--rail-bg:#f1f2f4;
 
   /* Output chip / auto-populated surfaces */
   --auto-surface: #f4f6f7;
@@ -166,6 +175,7 @@ body.dark{
 .card{
   background:var(--panel);
   border:1px solid var(--rule);
+  border-left:6px solid transparent;
   border-radius:var(--radius);
   box-shadow:var(--shadow2);
   padding:14px;
@@ -852,6 +862,11 @@ body.training .help{ display:block; }
 .card.phase-di{ border-left-color: var(--phase-di); }
 .card.phase-scenarios{ border-left-color: var(--phase-scenarios); }
 
+
+.card.phase-winpath{ border-left-color: var(--phase-winpath); }
+.card.phase-p5{ border-left-color: var(--phase-p5); }
+.card.phase-p6{ border-left-color: var(--phase-p6); }
+.card.phase-p7{ border-left-color: var(--phase-p7); }
 /* Phase accent bars removed (uniform cards) */
 .card[data-accent]::before,
 #phase3Card::before,
@@ -987,4 +1002,23 @@ body.training .help{ display:block; }
   .grid2{ grid-template-columns: 1fr; }
   .grid3{ grid-template-columns: 1fr; }
   .tabs{ overflow-x:auto; }
+}
+
+
+/* Hot button theme (global) */
+:where(button, .btn, .tab, input[type="button"], input[type="submit"]){
+  background: var(--btn-hot) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+:where(button, .btn, .tab, input[type="button"], input[type="submit"]):hover{
+  background: var(--btn-hot-hover) !important;
+}
+:where(button, .btn, .tab, input[type="button"], input[type="submit"]):active{
+  background: var(--btn-hot-active) !important;
+}
+:where(button, .btn, .tab, input[type="button"], input[type="submit"]):disabled,
+:where(button[disabled], .btn[disabled], .tab[disabled]){
+  opacity: .55;
+  cursor: not-allowed;
 }
