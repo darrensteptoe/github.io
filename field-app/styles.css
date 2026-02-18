@@ -363,6 +363,19 @@ body.training .help{ display:block; }
   gap:10px;
 }
 
+/* Restore + Strict import group: prevent the switch from getting squished */
+.topbar-restore{
+  flex-wrap:wrap;
+  align-items:center;
+}
+.topbar-restore #restoreBackup{
+  min-width: 190px;
+}
+.topbar-restore .switch{
+  flex: 0 0 auto;
+  min-width: 128px;
+}
+
 /* Topbar buttons: unified red CTA style */
 .topbar .toolbar-top .btn{
   background:#e85b63;
@@ -394,6 +407,8 @@ body.training .help{ display:block; }
   color:var(--muted);
   user-select:none;
 }
+
+.switch-label{ white-space:nowrap; }
 .switch input{ display:none; }
 .slider{
   width:40px;
