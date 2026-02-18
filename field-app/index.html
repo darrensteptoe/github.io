@@ -608,6 +608,76 @@
                 </div>
                 <div class="note">Impact uses correlation strength with margin across simulations (higher = more important).</div>
               </div>
+              <div class="card" id="surfaceCard">
+                <div class="card-head" style="margin-bottom:8px;">
+                  <h2>Sensitivity Surface (Phase 15)</h2>
+                </div>
+
+                <div class="grid2">
+                  <div class="field">
+                    <label class="label" for="surfaceLever">Lever</label>
+                    <select id="surfaceLever" class="select">
+                      <option value="volunteerMultiplier">Volunteer multiplier</option>
+                      <option value="supportRate">Support rate (%)</option>
+                      <option value="contactRate">Contact rate (%)</option>
+                      <option value="turnoutReliability">Turnout reliability (%)</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="surfaceMode">Run mode</label>
+                    <select id="surfaceMode" class="select">
+                      <option value="fast">Fast (2k runs)</option>
+                      <option value="full">Full (10k runs)</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="surfaceMin">Min</label>
+                    <input id="surfaceMin" class="input num" type="number" step="0.01" />
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="surfaceMax">Max</label>
+                    <input id="surfaceMax" class="input num" type="number" step="0.01" />
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="surfaceSteps">Points</label>
+                    <input id="surfaceSteps" class="input num" type="number" min="5" max="51" step="1" value="21" />
+                  </div>
+
+                  <div class="field">
+                    <label class="label" for="surfaceTarget">Target win %</label>
+                    <input id="surfaceTarget" class="input num" type="number" min="50" max="99" step="1" value="70" />
+                  </div>
+                </div>
+
+                <div class="row" style="margin-top:10px; align-items:center; gap:10px;">
+                  <button id="btnComputeSurface" class="btn">Compute Surface</button>
+                  <div id="surfaceStatus" class="muted" aria-live="polite"></div>
+                </div>
+
+                <div class="table-wrap" style="margin-top:10px;">
+                  <table class="table" aria-label="Sensitivity surface results">
+                    <thead>
+                      <tr>
+                        <th>Lever</th>
+                        <th class="num">Win%</th>
+                        <th class="num">P10</th>
+                        <th class="num">P50</th>
+                        <th class="num">P90</th>
+                      </tr>
+                    </thead>
+                    <tbody id="surfaceTbody">
+                      <tr><td class="muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td><td class="num muted">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="note" id="surfaceSummary">Compute to see safe zones, cliffs, and diminishing returns.</div>
+              </div>
+
             </div>
           </div>
         </div>
