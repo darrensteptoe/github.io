@@ -12,7 +12,7 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="brand-title">Field Path Engine <span class="chip">v1.0</span></div>
+      <div class="brand-title">Field Path Engine <span class="chip">v1.0</span> <span id="buildStamp" class="chip chip-subtle">build</span> <span id="selfTestGate" class="badge badge-unverified">UNVERIFIED</span></div>
       <div class="brand-sub">Darren Steptoe Consulting — Internal Use Only</div>
     </div>
 
@@ -26,6 +26,15 @@
         <button id="btnSaveJson" class="btn btn-sm" type="button">Export Scenario</button>
         <label class="btn btn-sm btn-ghost" for="loadJson">Import Scenario</label>
         <input id="loadJson" type="file" accept="application/json" hidden />
+        <select id="restoreBackup" class="input input-sm" title="Restore one of the last 5 auto-backups">
+          <option value="">Restore backup…</option>
+        </select>
+        <label class="switch switch-compact" title="Strict import blocks newer schema + hash mismatches">
+          <input id="toggleStrictImport" type="checkbox" />
+          <span class="slider"></span>
+          <span class="switch-label">Strict import</span>
+        </label>
+        <button id="btnDiagnostics" class="btn btn-sm btn-ghost" type="button">Diagnostics</button>
         <button id="btnExportCsv" class="btn btn-sm btn-ghost" type="button">Export Plan CSV</button>
         <button id="btnCopySummary" class="btn btn-sm btn-ghost" type="button">Copy Summary</button>
         <button id="btnResetAll" class="btn btn-sm btn-ghost" type="button" title="Reset all fields">Reset</button>
@@ -1361,5 +1370,23 @@
   </main>
 
   <script type="module" src="./js/app.js"></script>
+
+  <div id="diagModal" class="modal" hidden>
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="diagTitle">
+      <div class="modal-head">
+        <div id="diagTitle" class="modal-title">Diagnostics</div>
+        <button id="btnDiagClose" class="btn btn-sm btn-ghost" type="button">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="muted" style="margin-bottom:8px;">Recent errors (last 20, this session only)</div>
+        <div id="diagErrors" class="mono diag-errors"></div>
+      </div>
+      <div class="modal-foot">
+        <button id="btnCopyDebug" class="btn btn-sm" type="button">Copy debug bundle</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

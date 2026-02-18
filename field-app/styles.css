@@ -689,3 +689,68 @@ body.training .help{ display:block; }
   background: color-mix(in srgb, var(--panel) 92%, var(--bg));
   overflow-x:auto;
 }
+
+
+/* Phase 11 — release hardening UI bits (minimal) */
+.chip-subtle{ opacity:0.75; font-weight:600; }
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1;
+  border:1px solid var(--panel-border);
+  background:var(--panel);
+  box-shadow:var(--panel-highlight);
+  user-select:none;
+}
+.badge-unverified{ opacity:0.8; }
+.badge-verified{ border-color:rgba(20,140,60,0.35); }
+.badge-failed{ border-color:rgba(200,40,40,0.35); }
+
+.switch-compact{ transform:scale(0.95); transform-origin:center; }
+
+.modal[hidden]{ display:none !important; }
+.modal{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+}
+.modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.25);
+}
+.modal-card{
+  position:relative;
+  width:min(680px, calc(100% - 24px));
+  margin:60px auto;
+  background:var(--panel);
+  border:1px solid var(--panel-border);
+  border-radius:14px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.15);
+  overflow:hidden;
+}
+.modal-head, .modal-foot{
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border-bottom:1px solid var(--rule);
+}
+.modal-foot{ border-bottom:none; border-top:1px solid var(--rule); }
+.modal-title{ font-weight:700; }
+.modal-body{ padding:12px; }
+.diag-errors{
+  white-space:pre-wrap;
+  padding:10px;
+  border:1px solid var(--rule);
+  border-radius:12px;
+  min-height:120px;
+  max-height:320px;
+  overflow:auto;
+  background:rgba(0,0,0,0.02);
+}
