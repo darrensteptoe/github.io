@@ -1996,6 +1996,16 @@ function initDevTools(){
         line += (lastHash === currentHash) ? " · no drift" : " · DRIFT";
       }
       meta.textContent = line;
+
+      // Also mirror summary into the fixed Status rail if present (UI-only).
+      try{
+        const stress = document.getElementById("stressSummaryBody");
+        if (stress){
+          const headline = `Self-Test: ${status} — ${r.passed}/${r.total} passed${r.durationMs != null ? ` (${r.durationMs}ms)` : ""}`;
+          stress.innerHTML = `<div style="font-weight:700; margin-bottom:6px;">${headline}</div><div style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size:12px; opacity:0.9;">${line}</div>`;
+        }
+      } catch {}
+
       panel.appendChild(meta);
 
       if (lastGood?.signature && hasSig && lastHash && currentHash && lastHash !== currentHash){

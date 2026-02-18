@@ -1320,6 +1320,42 @@ export function runSelfTests(engine){
   });
 
 
+
+  // UI smoke tests (bindings contract) — UI only, engine frozen.
+  test("UI Smoke: required element IDs exist and are unique", () => {
+    if (typeof document === "undefined") return true;
+    const required = [
+      "universeSize",
+      "persuasionPct",
+      "validationList",
+      "phase3Card",
+      "scenarioCompareCard",
+      "btnSaveScenario"
+    ];
+    for (const id of required){
+      const el = document.getElementById(id);
+      if (!el) throw new Error(`Missing element id: ${id}`);
+      const matches = document.querySelectorAll(`[id="${id}"]`);
+      if (matches.length !== 1) throw new Error(`Duplicate id detected: ${id}`);
+    }
+    return true;
+  });
+
+  test("UI Smoke: no duplicate IDs in DOM", () => {
+    if (typeof document === "undefined") return true;
+    const els = Array.from(document.querySelectorAll("[id]"));
+    const seen = new Set();
+    for (const el of els){
+      const id = el.getAttribute("id");
+      if (!id) continue;
+      if (seen.has(id)) throw new Error(`Duplicate id detected: ${id}`);
+      seen.add(id);
+    }
+    return true;
+  });
+
+
+
 results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
   results.passed = Math.max(0, results.total - results.failed);
