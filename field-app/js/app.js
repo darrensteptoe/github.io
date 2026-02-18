@@ -8,6 +8,7 @@ import { computeAvgLiftPP } from "./turnout.js";
 import { computeTimelineFeasibility } from "./timeline.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
+import { computeDecisionIntelligence } from "./decisionIntelligence.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
@@ -407,6 +408,18 @@ const els = {
   snapshotHash: document.getElementById("snapshotHash"),
   importHashBanner: document.getElementById("importHashBanner"),
   importWarnBanner: document.getElementById("importWarnBanner"),
+
+  // Phase 12 — Decision Intelligence
+  diWarn: document.getElementById("diWarn"),
+  diPrimary: document.getElementById("diPrimary"),
+  diSecondary: document.getElementById("diSecondary"),
+  diNotBinding: document.getElementById("diNotBinding"),
+  diRecVol: document.getElementById("diRecVol"),
+  diRecCost: document.getElementById("diRecCost"),
+  diRecProb: document.getElementById("diRecProb"),
+  diVolTbody: document.getElementById("diVolTbody"),
+  diCostTbody: document.getElementById("diCostTbody"),
+  diProbTbody: document.getElementById("diProbTbody"),
 };
 
 const DEFAULTS_BY_TEMPLATE = {
@@ -1335,6 +1348,7 @@ function render(){
   safeCall(() => renderRoi(res, weeks));
   safeCall(() => renderOptimization(res, weeks));
   safeCall(() => renderTimeline(res, weeks));
+  safeCall(() => renderDecisionIntelligencePanel({ res, weeks }));
 
   // Phase 9A — build immutable results snapshot for export.js (pure serialization layer)
   try {
@@ -1431,6 +1445,113 @@ function renderConversion(res, weeks){
   els.convFeasBanner.textContent = msg;
   renderPhase3(res, weeks);
 }
+
+
+function renderDecisionIntelligencePanel({ res, weeks }){
+  if (!els.diPrimary || !els.diVolTbody || !els.diCostTbody || !els.diProbTbody) return;
+
+  const clearTable = (tbody) => { if (tbody) tbody.innerHTML = ""; };
+  const stubRow = (tbody) => {
+    if (!tbody) return;
+    const tr = document.createElement("tr");
+    const td0 = document.createElement("td"); td0.className = "muted"; td0.textContent = "—";
+    const td1 = document.createElement("td"); td1.className = "num muted"; td1.textContent = "—";
+    tr.appendChild(td0); tr.appendChild(td1);
+    tbody.appendChild(tr);
+  };
+
+  const setWarn = (msg) => {
+    if (!els.diWarn) return;
+    if (!msg){
+      els.diWarn.hidden = true;
+      els.diWarn.textContent = "";
+      return;
+    }
+    els.diWarn.hidden = false;
+    els.diWarn.textContent = msg;
+  };
+
+  try{
+    // Build a stable snapshot for analysis (no mutation)
+    const snap = getStateSnapshot();
+
+    const engine = {
+      getStateSnapshot,
+      withPatchedState,
+      computeAll,
+      derivedWeeksRemaining,
+      deriveNeedVotes,
+      runMonteCarloSim,
+      computeRoiRows,
+      buildOptimizationTactics,
+      computeMaxAttemptsByTactic,
+    };
+
+    const di = computeDecisionIntelligence({ engine, snap, baseline: { res, weeks } });
+
+    setWarn(di?.warning || null);
+
+    if (els.diPrimary) els.diPrimary.textContent = di?.bottlenecks?.primary || "—";
+    if (els.diSecondary) els.diSecondary.textContent = di?.bottlenecks?.secondary || "—";
+    if (els.diNotBinding){
+      const nb = Array.isArray(di?.bottlenecks?.notBinding) ? di.bottlenecks.notBinding : [];
+      els.diNotBinding.textContent = nb.length ? nb.join(", ") : "—";
+    }
+
+    if (els.diRecVol) els.diRecVol.textContent = di?.recs?.volunteers || "—";
+    if (els.diRecCost) els.diRecCost.textContent = di?.recs?.cost || "—";
+    if (els.diRecProb) els.diRecProb.textContent = di?.recs?.probability || "—";
+
+    const fill = (tbody, rows, fmt) => {
+      clearTable(tbody);
+      const list = Array.isArray(rows) ? rows : [];
+      if (!list.length){ stubRow(tbody); return; }
+      for (const r of list){
+        const tr = document.createElement("tr");
+        const td0 = document.createElement("td");
+        td0.textContent = r?.lever || "—";
+        const td1 = document.createElement("td");
+        td1.className = "num";
+        td1.textContent = fmt(r?.value);
+        tr.appendChild(td0); tr.appendChild(td1);
+        tbody.appendChild(tr);
+      }
+    };
+
+    const fmtSigned = (v, kind) => {
+      if (v == null || !Number.isFinite(v)) return "—";
+      const sign = (v > 0) ? "+" : "";
+      if (kind === "vol"){
+        return sign + v.toFixed(2);
+      }
+      if (kind === "cost"){
+        return sign + "$" + fmtInt(Math.round(v));
+      }
+      if (kind === "prob"){
+        return sign + (v*100).toFixed(2) + " pp";
+      }
+      return sign + String(v);
+    };
+
+    fill(els.diVolTbody, di?.rankings?.volunteers, (v)=>fmtSigned(v, "vol"));
+    fill(els.diCostTbody, di?.rankings?.cost, (v)=>fmtSigned(v, "cost"));
+    fill(els.diProbTbody, di?.rankings?.probability, (v)=>fmtSigned(v, "prob"));
+
+  } catch (e){
+    setWarn("Decision Intelligence failed (panel render error).");
+    if (els.diPrimary) els.diPrimary.textContent = "—";
+    if (els.diSecondary) els.diSecondary.textContent = "—";
+    if (els.diNotBinding) els.diNotBinding.textContent = "—";
+    if (els.diRecVol) els.diRecVol.textContent = "—";
+    if (els.diRecCost) els.diRecCost.textContent = "—";
+    if (els.diRecProb) els.diRecProb.textContent = "—";
+    clearTable(els.diVolTbody); stubRow(els.diVolTbody);
+    clearTable(els.diCostTbody); stubRow(els.diCostTbody);
+    clearTable(els.diProbTbody); stubRow(els.diProbTbody);
+  }
+}
+
+
 
 function renderStress(res){
   if (!els.stressBox) return;

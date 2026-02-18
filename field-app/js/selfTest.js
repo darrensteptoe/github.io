@@ -9,6 +9,7 @@
 
 import { FIXTURES } from "./fixtures.js";
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
+import { computeDecisionIntelligence } from "./decisionIntelligence.js";
 import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 import { computeSnapshotHash } from "./hash.js";
@@ -1168,6 +1169,85 @@ export function runSelfTests(engine){
     assert(off.ok, "Should allow when strict mode OFF");
     return true;
   });
+
+
+
+  // --- D) Phase 12 — Decision Intelligence (sidecar) ---
+  test("Phase 12: analysis does not mutate snapshot", () => {
+    const snap = engine.getStateSnapshot();
+    const before = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: snap });
+
+    const engineDI = {
+      getStateSnapshot: engine.getStateSnapshot,
+      withPatchedState: engine.withPatchedState,
+      computeAll: engine.computeAll,
+      derivedWeeksRemaining: engine.derivedWeeksRemaining,
+      deriveNeedVotes: engine.deriveNeedVotes,
+      runMonteCarloSim: engine.runMonteCarloSim,
+      computeRoiRows: engine.computeRoiRows,
+      buildOptimizationTactics: engine.buildOptimizationTactics,
+      computeMaxAttemptsByTactic: engine.computeMaxAttemptsByTactic,
+    };
+
+    const di = computeDecisionIntelligence({ engine: engineDI, snap });
+    assert(di && typeof di === "object", "Decision Intelligence did not return an object");
+
+    const after = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: snap });
+    assert(before === after, "Snapshot mutated by Decision Intelligence");
+  });
+
+  test("Phase 12: rankings are deterministic (same inputs => same ordering)", () => {
+    const snap = engine.getStateSnapshot();
+    const engineDI = {
+      getStateSnapshot: engine.getStateSnapshot,
+      withPatchedState: engine.withPatchedState,
+      computeAll: engine.computeAll,
+      derivedWeeksRemaining: engine.derivedWeeksRemaining,
+      deriveNeedVotes: engine.deriveNeedVotes,
+      runMonteCarloSim: engine.runMonteCarloSim,
+      computeRoiRows: engine.computeRoiRows,
+      buildOptimizationTactics: engine.buildOptimizationTactics,
+      computeMaxAttemptsByTactic: engine.computeMaxAttemptsByTactic,
+    };
+
+    const a = computeDecisionIntelligence({ engine: engineDI, snap });
+    const b = computeDecisionIntelligence({ engine: engineDI, snap });
+
+    const aV = (a?.rankings?.volunteers || []).map(x => x.lever).join("|");
+    const bV = (b?.rankings?.volunteers || []).map(x => x.lever).join("|");
+    const aC = (a?.rankings?.cost || []).map(x => x.lever).join("|");
+    const bC = (b?.rankings?.cost || []).map(x => x.lever).join("|");
+    const aP = (a?.rankings?.probability || []).map(x => x.lever).join("|");
+    const bP = (b?.rankings?.probability || []).map(x => x.lever).join("|");
+
+    assert(aV === bV, "Volunteer ranking order drifted");
+    assert(aC === bC, "Cost ranking order drifted");
+    assert(aP === bP, "Probability ranking order drifted");
+  });
+
+  test("Phase 12: Monte Carlo probability deltas are stable under same seed", () => {
+    const snap = engine.getStateSnapshot();
+    const engineDI = {
+      getStateSnapshot: engine.getStateSnapshot,
+      withPatchedState: engine.withPatchedState,
+      computeAll: engine.computeAll,
+      derivedWeeksRemaining: engine.derivedWeeksRemaining,
+      deriveNeedVotes: engine.deriveNeedVotes,
+      runMonteCarloSim: engine.runMonteCarloSim,
+      computeRoiRows: engine.computeRoiRows,
+      buildOptimizationTactics: engine.buildOptimizationTactics,
+      computeMaxAttemptsByTactic: engine.computeMaxAttemptsByTactic,
+    };
+
+    const a = computeDecisionIntelligence({ engine: engineDI, snap });
+    const b = computeDecisionIntelligence({ engine: engineDI, snap });
+
+    const aVals = (a?.rankings?.probability || []).map(x => String(x.value)).join("|");
+    const bVals = (b?.rankings?.probability || []).map(x => String(x.value)).join("|");
+
+    assert(aVals === bVals, "Probability deltas changed across identical runs");
+  });
+
 
   results.durationMs = Math.round(nowMs() - started);
   // Ensure totals are consistent even if something weird happened.
