@@ -4,7 +4,11 @@ export function loadState(){
   try{
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.ui && Object.prototype.hasOwnProperty.call(parsed.ui, "dark")){
+      try{ delete parsed.ui.dark; } catch { /* ignore */ }
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -12,7 +16,7 @@ export function loadState(){
 
 export function saveState(state){
   try{
-    localStorage.setItem(KEY, JSON.stringify(state));
+    localStorage.setItem(KEY, JSON.stringify(state, (k, v) => (k === "dark" ? undefined : v)));
   } catch {
     // ignore
   }
