@@ -318,6 +318,14 @@ const els = {
   mcShiftP10: document.getElementById("mcShiftP10"),
   mcFragility: document.getElementById("mcFragility"),
   mcCliff: document.getElementById("mcCliff"),
+  // Phase 14.1 — advisor completion
+  mcRiskGrade: document.getElementById("mcRiskGrade"),
+  mcShift60: document.getElementById("mcShift60"),
+  mcShift70: document.getElementById("mcShift70"),
+  mcShift80: document.getElementById("mcShift80"),
+  mcShock10: document.getElementById("mcShock10"),
+  mcShock25: document.getElementById("mcShock25"),
+  mcShock50: document.getElementById("mcShock50"),
   mcRiskLabel: document.getElementById("mcRiskLabel"),
   mcSensitivity: document.getElementById("mcSensitivity"),
     // Phase 4 — budget + ROI
@@ -3287,6 +3295,14 @@ function renderMcResults(summary){
     if (els.mcShiftP10) els.mcShiftP10.textContent = fmtInt(Math.round(ce.risk?.breakEven?.requiredShiftP10 ?? 0));
     if (els.mcFragility) els.mcFragility.textContent = (ce.risk?.fragility?.fragilityIndex ?? 0).toFixed(3);
     if (els.mcCliff) els.mcCliff.textContent = `${((ce.risk?.fragility?.cliffRisk ?? 0) * 100).toFixed(1)}%`;
+    // Phase 14.1 extras
+    if (els.mcRiskGrade) els.mcRiskGrade.textContent = ce.risk?.advisor?.grade || "—";
+    if (els.mcShift60) els.mcShift60.textContent = fmtInt(Math.round(ce.risk?.targets?.shiftWin60 ?? 0));
+    if (els.mcShift70) els.mcShift70.textContent = fmtInt(Math.round(ce.risk?.targets?.shiftWin70 ?? 0));
+    if (els.mcShift80) els.mcShift80.textContent = fmtInt(Math.round(ce.risk?.targets?.shiftWin80 ?? 0));
+    if (els.mcShock10) els.mcShock10.textContent = `${((ce.risk?.shocks?.lossProb10 ?? 0) * 100).toFixed(1)}%`;
+    if (els.mcShock25) els.mcShock25.textContent = `${((ce.risk?.shocks?.lossProb25 ?? 0) * 100).toFixed(1)}%`;
+    if (els.mcShock50) els.mcShock50.textContent = `${((ce.risk?.shocks?.lossProb50 ?? 0) * 100).toFixed(1)}%`;
   }
 
 
@@ -3295,7 +3311,9 @@ function renderMcResults(summary){
     if (summary.turnoutAdjusted){
       extra = ` | TA votes (p50): ${fmtInt(Math.round(summary.turnoutAdjusted.p50))}`;
     }
-    els.mcRiskLabel.textContent = `${summary.riskLabel} — Need: ${fmtInt(Math.round(summary.needVotes))} net persuasion votes.${extra}`;
+        const ceNote = summary.confidenceEnvelope?.risk?.advisor?.narrative;
+    const label = ceNote ? ceNote : summary.riskLabel;
+    els.mcRiskLabel.textContent = `${label} — Need: ${fmtInt(Math.round(summary.needVotes))} net persuasion votes.${extra}`;
   }
 
   if (els.mcSensitivity){

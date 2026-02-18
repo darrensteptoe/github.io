@@ -1370,6 +1370,8 @@ export function runSelfTests(engine){
     assert(ce.percentiles.p10 <= ce.percentiles.p50 && ce.percentiles.p50 <= ce.percentiles.p90, "Non-monotonic percentiles");
     assert(ce.winProb >= 0 && ce.winProb <= 1, "winProb out of bounds");
     assert(ce.risk.downsideRiskMass >= 0 && ce.risk.downsideRiskMass <= 1, "downside mass out of bounds");
+    assert(ce.risk.targets.shiftWin80 >= ce.risk.targets.shiftWin70 && ce.risk.targets.shiftWin70 >= ce.risk.targets.shiftWin60, "target shifts not monotonic");
+    assert(ce.risk.shocks.lossProb50 >= ce.risk.shocks.lossProb25 && ce.risk.shocks.lossProb25 >= ce.risk.shocks.lossProb10, "shock losses not monotonic");
     return true;
   });
 
@@ -1379,6 +1381,8 @@ export function runSelfTests(engine){
     assert(ce.risk.breakEven.requiredShiftP50 === 0, "P50 shift should be 0");
     assert(ce.risk.breakEven.requiredShiftP10 === 0, "P10 shift should be 0");
     assert(ce.risk.fragility.cliffRisk === 0, "cliff risk should be 0 for constant far from 0");
+    assert(ce.risk.targets.shiftWin60 === 0 && ce.risk.targets.shiftWin70 === 0 && ce.risk.targets.shiftWin80 === 0, "target shifts should be 0 for sure-win");
+    assert(ce.risk.shocks.lossProb10 === 0 && ce.risk.shocks.lossProb25 === 0 && ce.risk.shocks.lossProb50 === 0, "shock losses should be 0 for sure-win");
     return true;
   });
 
