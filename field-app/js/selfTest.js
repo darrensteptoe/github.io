@@ -1151,7 +1151,7 @@ export function runSelfTests(engine){
     const hash0 = computeSnapshotHash(snap);
     const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
     const mig = migrateSnapshot(payload);
-    assert(mig.ok, "migrateSnapshot failed");
+    assert(mig && mig.snapshot && typeof mig.snapshot === "object", "migrateSnapshot failed");
     const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
     assert(v.ok, "validateScenarioExport failed after migration");
     const hash1 = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
