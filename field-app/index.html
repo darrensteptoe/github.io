@@ -58,7 +58,7 @@
 
   <main class="shell">
     <section class="left">
-      <div class="card">
+      <div class="card" data-accent="Scenario setup" style="--accent-bar: var(--phase-setup);">
         <div class="card-head">
           <h2>Scenario setup</h2>
         </div>
@@ -109,7 +109,8 @@
         </div>
       </div>
 
-      <div class="card">
+
+      <div class="card" data-accent="Universe" style="--accent-bar: var(--phase-universe);">
         <div class="card-head">
           <h2>Universe</h2>
         </div>
@@ -142,53 +143,8 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-head">
-          <h2>Turnout baseline (last two comparable cycles)</h2>
-        </div>
 
-        <div class="grid3">
-          <div class="field">
-            <label class="label" for="turnoutA">Cycle A turnout %</label>
-            <input id="turnoutA" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 39" />
-            <div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
-              <span class="help-title">If unsure</span>
-              <span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
-            </div>
-          </div>
-
-          <div class="field">
-            <label class="label" for="turnoutB">Cycle B turnout %</label>
-            <input id="turnoutB" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 43" />
-          </div>
-
-          <div class="field">
-            <label class="label" for="bandWidth">Band width (±)</label>
-            <input id="bandWidth" class="input" type="number" min="0" max="25" step="0.5" placeholder="e.g., 4" />
-            <div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
-              <span class="help-title">Typical</span>
-              <span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
-            </div>
-          </div>
-
-          <div class="field span3 inline-metrics">
-            <div class="metric">
-              <div class="metric-k">Expected turnout %</div>
-              <div id="turnoutExpected" class="metric-v">—</div>
-            </div>
-            <div class="metric">
-              <div class="metric-k">Best / Worst turnout %</div>
-              <div id="turnoutBand" class="metric-v">—</div>
-            </div>
-            <div class="metric">
-              <div class="metric-k">Votes per 1% turnout</div>
-              <div id="votesPer1pct" class="metric-v">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
+      <div class="card" data-accent="Candidates & vote landscape" style="--accent-bar: var(--phase-candidates);">
         <div class="card-head">
           <h2>Candidates & vote landscape</h2>
           <div class="card-actions">
@@ -251,38 +207,54 @@
         <div class="banner warn" id="candWarn" hidden></div>
       </div>
 
+
       <div class="card">
         <div class="card-head">
-          <h2>Persuasion universe</h2>
+          <h2>Turnout baseline (last two comparable cycles)</h2>
         </div>
-        <div class="grid2">
+
+        <div class="grid3">
           <div class="field">
-            <label class="label" for="persuasionPct">Persuasion % of universe</label>
-            <input id="persuasionPct" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 30" />
-            <div class="help" data-help="A modeling assumption: portion of registered voters who are not locked and could move.">
+            <label class="label" for="turnoutA">Cycle A turnout %</label>
+            <input id="turnoutA" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 39" />
+            <div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
               <span class="help-title">If unsure</span>
-              <span class="help-text">Use 30% for competitive/open; 25% for incumbent race; higher for chaotic municipal fields.</span>
+              <span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
             </div>
           </div>
 
           <div class="field">
-            <label class="label" for="earlyVoteExp">Early vote % of turnout (Expected)</label>
-            <input id="earlyVoteExp" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 38" />
-            <div class="help" data-help="Used as a risk lever; later phases will model chase and timeline compression more deeply.">
-              <span class="help-title">Risk lever</span>
-              <span class="help-text">Higher early vote compresses persuasion window and increases early workload.</span>
+            <label class="label" for="turnoutB">Cycle B turnout %</label>
+            <input id="turnoutB" class="input" type="number" min="0" max="100" step="0.1" placeholder="e.g., 43" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="bandWidth">Band width (±)</label>
+            <input id="bandWidth" class="input" type="number" min="0" max="25" step="0.5" placeholder="e.g., 4" />
+            <div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
+              <span class="help-title">Typical</span>
+              <span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
+            </div>
+          </div>
+
+          <div class="field span3 inline-metrics">
+            <div class="metric">
+              <div class="metric-k">Expected turnout %</div>
+              <div id="turnoutExpected" class="metric-v">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric-k">Best / Worst turnout %</div>
+              <div id="turnoutBand" class="metric-v">—</div>
+            </div>
+            <div class="metric">
+              <div class="metric-k">Votes per 1% turnout</div>
+              <div id="votesPer1pct" class="metric-v">—</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="card sticky-bottom">
-        <div class="card-head">
-          <h2>Validation</h2>
-        </div>
-        <ul id="validationList" class="validation"></ul>
-      </div>
-    </section>
+</section>
 
     <section class="right">
       <nav class="tabs" aria-label="Output tabs">
@@ -1439,7 +1411,24 @@
 
     </section>
   
-  <div class="card" id="scenarioCompareCard">
+  
+    <aside class="rail" aria-label="Status rail">
+
+      <div class="card" id="stressSummaryCard">
+        <div class="card-head">
+          <h2>Stress Test Summary</h2>
+        </div>
+        <div id="stressSummaryBody" class="stress-summary muted">Run Self-Test (dev mode) to see status.</div>
+      </div>
+
+      <div class="card sticky-bottom">
+        <div class="card-head">
+          <h2>Validation</h2>
+        </div>
+        <ul id="validationList" class="validation"></ul>
+      </div>
+
+      <div class="card" id="scenarioCompareCard">
     <div class="card-head">
       <h2>Scenario Compare (Phase 13)</h2>
     </div>
@@ -1472,6 +1461,7 @@
 
     <div id="scOverall" class="note" style="margin-top:10px;">Most efficient scenario overall: —</div>
   </div>
+    </aside>
 
 </main>
 

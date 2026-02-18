@@ -21,6 +21,34 @@
   --bad-fg:#8a1f1f;
 
   --grid:rgba(17,17,17,0.06);
+
+  --space-1:6px;
+  --space-2:10px;
+  --space-3:14px;
+  --space-4:18px;
+  --space-5:24px;
+  --space-6:32px;
+
+  --radius-1:12px;
+  --radius-2:14px;
+  --radius-3:18px;
+
+  --shadow-rail:0 6px 22px rgba(0,0,0,0.06);
+
+  --control-h:42px;
+  --card-pad:16px;
+
+  /* Soft phase accents */
+  --phase-setup: rgba(59,130,246,0.18);
+  --phase-universe: rgba(16,185,129,0.16);
+  --phase-persuasion: rgba(245,158,11,0.16);
+  --phase-candidates: rgba(168,85,247,0.16);
+  --phase-p3: rgba(236,72,153,0.14);
+  --phase-di: rgba(14,165,233,0.14);
+  --phase-scenarios: rgba(34,197,94,0.14);
+
+  --rail-bg:#f1f2f4;
+
 }
 
 html,body{
@@ -94,9 +122,10 @@ body.dark{
 
 .shell{
   display:grid;
-  grid-template-columns: 420px 1fr;
-  gap:16px;
-  padding:16px;
+  grid-template-columns: 380px 1fr 320px;
+  gap:var(--space-4);
+  padding:var(--space-4);
+  align-items:start;
 }
 
 @media (max-width: 980px){
@@ -770,4 +799,134 @@ body.training .help{ display:block; }
 .input-inline{
   width: 100%;
   min-width: 160px;
+}
+
+
+/* ===== UI-1A: Layout + readability (engine frozen) ===== */
+
+.card{
+  padding: var(--card-pad);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow2);
+}
+
+/* Subtle separation from background */
+.card{ background: var(--panel); }
+
+/* Phase accent bar (defaults off) */
+.card[data-accent],
+#phase3Card,
+#scenarioCompareCard{
+  position: relative;
+}
+.card[data-accent]::before,
+#phase3Card::before,
+#scenarioCompareCard::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:6px;
+  border-top-left-radius: var(--radius-2);
+  border-bottom-left-radius: var(--radius-2);
+  background: var(--accent-bar, transparent);
+}
+#scenarioCompareCard{ --accent-bar: var(--phase-scenarios); }
+#phase3Card{ --accent-bar: var(--phase-p3); }
+
+/* Card header row w/ chip */
+.card-head-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: var(--space-3);
+}
+.card-head-row .chip{ flex:0 0 auto; }
+
+/* Consistent spacing inside common blocks */
+.grid2, .grid3{ gap: var(--space-3); }
+.field{ margin:0; }
+.label{ margin-bottom:6px; }
+.help, .note{ margin-top:8px; }
+.note{ padding:10px 12px; border-radius:12px; }
+
+/* Form control normalization */
+.input, .select{
+  min-height: var(--control-h);
+  height: var(--control-h);
+  padding: 10px 12px;
+  background: #fff;
+}
+.select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--fg) 55%, transparent) 50%),
+    linear-gradient(135deg, color-mix(in srgb, var(--fg) 55%, transparent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size:6px 6px, 6px 6px;
+  background-repeat:no-repeat;
+  padding-right:34px;
+}
+
+/* Prevent mobile bleed/overflow */
+.grid2 > *, .grid3 > *{ min-width:0; }
+.field .input, .field .select{ width:100%; max-width:100%; box-sizing:border-box; }
+.rowline{ gap: var(--space-2) !important; }
+.table-wrap{ overflow-x:auto; }
+
+/* Right rail */
+.rail{
+  display:flex;
+  flex-direction:column;
+  gap: var(--space-4);
+  position: sticky;
+  top: var(--space-4);
+  align-self:start;
+  padding: 0;
+}
+.rail .card{
+  background: var(--panel);
+  box-shadow: var(--shadow-rail);
+}
+
+/* Make Validation + Stress feel “client-style” */
+#stressSummaryBody{
+  font-size:13px;
+  line-height:1.35;
+}
+#stressSummaryCard .muted{
+  color: var(--muted2);
+}
+
+/* Right content surface */
+.right{
+  background: var(--rail-bg);
+  border-radius: var(--radius-3);
+  padding: var(--space-4);
+}
+.tabs{
+  background: color-mix(in srgb, var(--rail-bg) 70%, #fff);
+  border-radius: var(--radius-2);
+  padding: var(--space-2);
+}
+
+/* Make panels breathe */
+.panel{ margin-top: var(--space-3); }
+
+/* Desktop-wide: keep 3-column internal grids where used */
+@media (max-width: 1200px){
+  .shell{ grid-template-columns: 360px 1fr 300px; }
+}
+@media (max-width: 980px){
+  .shell{ grid-template-columns: 1fr; }
+  .right{ padding: var(--space-3); }
+  .rail{ position: static; top:auto; }
+}
+@media (max-width: 520px){
+  .grid2{ grid-template-columns: 1fr; }
+  .grid3{ grid-template-columns: 1fr; }
+  .tabs{ overflow-x:auto; }
 }
