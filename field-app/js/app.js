@@ -1,7 +1,7 @@
 import { computeAll } from "./winMath.js";
 import { computeSnapshotHash } from "./hash.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
-import { loadState, saveState, clearState } from "./storage.js";
+import { loadState, saveState, clearState, readBackups, writeBackupEntry } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
@@ -10,6 +10,9 @@ import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timel
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
+import { APP_VERSION, BUILD_ID } from "./build.js";
+import { GATE_UNVERIFIED, gateFromSelfTestResult } from "./selfTestGate.js";
+import { shouldBlockImportStrict } from "./importPolicy.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -57,15 +60,6 @@ const els = {
 
   persuasionPct: document.getElementById("persuasionPct"),
   earlyVoteExp: document.getElementById("earlyVoteExp"),
-    // Phase 2 — conversion + capacity
-    goalSupportIds: "",
-    supportRatePct: 55,
-    contactRatePct: 22,
-    doorsPerHour: 30,
-    hoursPerShift: 3,
-    shiftsPerVolunteerPerWeek: 2,
-
-
   // Phase 2 — conversion + capacity
   goalSupportIds: document.getElementById("goalSupportIds"),
   supportRatePct: document.getElementById("supportRatePct"),
@@ -252,6 +246,23 @@ const els = {
   importWarnBanner: document.getElementById("importWarnBanner"),
 };
 
+// ================================
+// Phase 11 — Release Hardening
+// ================================
+
+// Diagnostics: capture last N errors in-memory only
+const RECENT_ERROR_MAX = 20;
+const recentErrors = [];
+
+function pushRecentError(entry){
+  try{
+    recentErrors.unshift(entry);
+    if (recentErrors.length > RECENT_ERROR_MAX) recentErrors.length = RECENT_ERROR_MAX;
+  } catch {
+    // ignore
+  }
+}
+
 const DEFAULTS_BY_TEMPLATE = {
   federal: { bandWidth: 4, persuasionPct: 28, earlyVoteExp: 45 },
   state_leg: { bandWidth: 4, persuasionPct: 30, earlyVoteExp: 38 },
@@ -394,6 +405,7 @@ function uid(){
 }
 
 function applyStateToUI(){
+  if (els.buildStamp) els.buildStamp.textContent = `v${APP_VERSION} · build ${BUILD_ID}`;
   els.scenarioName.value = state.scenarioName || "";
   els.raceType.value = state.raceType || "state_leg";
   els.electionDate.value = state.electionDate || "";
@@ -521,9 +533,219 @@ function applyStateToUI(){
   if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
   els.toggleTraining.checked = !!state.ui?.training;
   els.toggleDark.checked = !!state.ui?.dark;
+  if (els.toggleStrictImport) els.toggleStrictImport.checked = !!state.ui?.strictImport;
 
   document.body.classList.toggle("training", !!state.ui?.training);
   document.body.classList.toggle("dark", !!state.ui?.dark);
+}
+
+
+
+// Phase 11 — Self-test gate badge (session-only)
+let selfTestGate = GATE_UNVERIFIED;
+
+function setSelfTestBadge(stateStr){
+  selfTestGate = stateStr || GATE_UNVERIFIED;
+  if (!els.selfTestBadge) return;
+  els.selfTestBadge.textContent = selfTestGate;
+  els.selfTestBadge.classList.remove("verified","failed","unverified");
+  if (selfTestGate === "VERIFIED") els.selfTestBadge.classList.add("verified");
+  else if (selfTestGate === "FAILED") els.selfTestBadge.classList.add("failed");
+  else els.selfTestBadge.classList.add("unverified");
+}
+
+function installGlobalErrorCapture(){
+  // Capture script errors
+  window.addEventListener("error", (ev) => {
+    try{
+      pushRecentError({
+        t: new Date().toISOString(),
+        kind: "error",
+        message: ev?.message ? String(ev.message) : "(no message)",
+        source: ev?.filename ? String(ev.filename) : "",
+        line: ev?.lineno ?? null,
+        col: ev?.colno ?? null,
+        stack: ev?.error?.stack ? String(ev.error.stack) : "",
+      });
+      renderDiagnosticsErrors();
+    } catch {
+      // ignore
+    }
+  });
+
+  // Capture promise rejections
+  window.addEventListener("unhandledrejection", (ev) => {
+    try{
+      const reason = ev?.reason;
+      pushRecentError({
+        t: new Date().toISOString(),
+        kind: "unhandledrejection",
+        message: reason?.message ? String(reason.message) : String(reason ?? "(no reason)"),
+        source: "",
+        line: null,
+        col: null,
+        stack: reason?.stack ? String(reason.stack) : "",
+      });
+      renderDiagnosticsErrors();
+    } catch {
+      // ignore
+    }
+  });
+}
+
+// Phase 11 — Diagnostics modal rendering helpers
+function renderDiagnosticsMeta(){
+  if (!els.diagMeta) return;
+  const schema = CURRENT_SCHEMA_VERSION;
+  const scen = state?.scenarioName ? `Scenario: ${state.scenarioName}` : "Scenario: (none)";
+  const hash = lastResultsSnapshot?.snapshotHash ? `Last hash: ${lastResultsSnapshot.snapshotHash}` : "Last hash: —";
+  els.diagMeta.textContent = `v${APP_VERSION} · build ${BUILD_ID} · schema ${schema} · ${scen} · ${hash}`;
+}
+
+function renderDiagnosticsErrors(){
+  if (!els.diagErrors) return;
+  renderDiagnosticsMeta();
+  if (!recentErrors.length){
+    els.diagErrors.textContent = "No captured errors in this session.";
+    return;
+  }
+  els.diagErrors.innerHTML = "";
+  for (const e of recentErrors){
+    const div = document.createElement("div");
+    div.className = "diag-item";
+    const t = document.createElement("div");
+    t.className = "diag-time";
+    t.textContent = `${e.t} — ${e.kind}`;
+    const msg = document.createElement("div");
+    msg.textContent = `${e.message}${e.source ? `\n${e.source}:${e.line ?? "?"}:${e.col ?? "?"}` : ""}${e.stack ? `\n${e.stack}` : ""}`;
+    div.appendChild(t);
+    div.appendChild(msg);
+    els.diagErrors.appendChild(div);
+  }
+}
+
+function openDiagnostics(){
+  if (!els.diagModal) return;
+  renderDiagnosticsErrors();
+  els.diagModal.hidden = false;
+}
+
+function closeDiagnostics(){
+  if (!els.diagModal) return;
+  els.diagModal.hidden = true;
+}
+
+function copyDebugBundle(){
+  const bundle = {
+    appVersion: APP_VERSION,
+    buildId: BUILD_ID,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    timestamp: new Date().toISOString(),
+    scenarioName: state?.scenarioName || "",
+    lastExportHash: lastResultsSnapshot?.snapshotHash || null,
+    recentErrors: recentErrors.slice(0, 20),
+  };
+  const text = JSON.stringify(bundle, null, 2);
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  try{
+    // Fallback for iOS / older browsers.
+    window.prompt("Copy debug bundle JSON:", text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Phase 11 — Backups UI
+function refreshBackupDropdown(){
+  if (!els.restoreBackupSelect) return;
+  const backups = readBackups();
+  const prev = els.restoreBackupSelect.value;
+  els.restoreBackupSelect.innerHTML = '<option value="">Restore backup…</option>';
+  backups.forEach((b, i) => {
+    const opt = document.createElement("option");
+    const ts = b?.timestamp ? new Date(b.timestamp).toLocaleString() : "Unknown time";
+    const name = b?.scenarioName ? b.scenarioName : "(unnamed)";
+    opt.value = String(i);
+    opt.textContent = `${ts} — ${name}`;
+    els.restoreBackupSelect.appendChild(opt);
+  });
+  // keep prior selection if still valid
+  if (prev && Number(prev) < backups.length) els.restoreBackupSelect.value = prev;
+}
+
+function scheduleAutoBackup(){
+  // Debounced; never throw.
+  try{
+    if (backupTimer) clearTimeout(backupTimer);
+    backupTimer = setTimeout(() => {
+      try{
+        const sig = deterministicStringify(state);
+        if (sig && sig === lastBackupSig) return;
+        lastBackupSig = sig || "";
+        const entry = {
+          timestamp: new Date().toISOString(),
+          scenarioName: state?.scenarioName || "",
+          schemaVersion: CURRENT_SCHEMA_VERSION,
+          modelVersion: MODEL_VERSION,
+          appVersion: APP_VERSION,
+          buildId: BUILD_ID,
+          snapshot: structuredClone(state)
+        };
+        writeBackupEntry(entry);
+        refreshBackupDropdown();
+      } catch {
+        // ignore
+      }
+    }, 900);
+  } catch {
+    // ignore
+  }
+}
+
+function restoreBackupByIndex(idxStr){
+  const backups = readBackups();
+  const idx = Number(idxStr);
+  if (!Number.isFinite(idx) || idx < 0 || idx >= backups.length) return;
+  const entry = backups[idx];
+  if (!entry || !entry.snapshot) return;
+
+  const label = `${entry.timestamp ? new Date(entry.timestamp).toLocaleString() : "Unknown time"} — ${entry.scenarioName || "(unnamed)"}`;
+  const ok = window.confirm(`Restore backup?\n\n${label}\n\nThis will replace your current scenario state.`);
+  if (!ok) return;
+
+  // Reuse the same migration/validation path as file import
+  const loaded = {
+    schemaVersion: entry.schemaVersion || CURRENT_SCHEMA_VERSION,
+    appVersion: entry.appVersion || APP_VERSION,
+    buildId: entry.buildId || BUILD_ID,
+    modelVersion: entry.modelVersion || MODEL_VERSION,
+    snapshotHash: null,
+    scenario: entry.snapshot
+  };
+
+  const mig = migrateSnapshot(loaded);
+  const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
+  if (!v.ok){
+    alert(`Restore failed: ${v.reason}`);
+    return;
+  }
+
+  state = normalizeLoadedState(v.scenario);
+  applyStateToUI();
+  rebuildCandidateTable();
+  document.body.classList.toggle("training", !!state.ui.training);
+  document.body.classList.toggle("dark", !!state.ui.dark);
+  if (els.explainCard) els.explainCard.hidden = !state.ui.training;
+  render();
+  persist();
 }
 
 function rebuildCandidateTable(){
@@ -916,6 +1138,16 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     }
 
     const mig = migrateSnapshot(loaded);
+
+    const strict = !!state.ui?.strictImport;
+    // Phase 11 — Strict import mode: block newer schema immediately
+    const importedSv = (loaded && typeof loaded === "object") ? (loaded.schemaVersion || "") : "";
+    const schemaPolicy = shouldBlockImport({ strict, importedSchemaVersion: importedSv, currentSchemaVersion: CURRENT_SCHEMA_VERSION, exportedHash: null, recomputedHash: null });
+    if (schemaPolicy.block){
+      alert(schemaPolicy.reason);
+      els.loadJson.value = "";
+      return;
+    }
     if (els.importWarnBanner){
       if (mig.warnings && mig.warnings.length){
         els.importWarnBanner.hidden = false;
@@ -940,11 +1172,20 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       return;
     }
 
-    // Phase 9B — snapshot integrity verification (non-blocking)
+    // Phase 9B — snapshot integrity verification (Phase 11: strict-mode capable)
     try{
       const exportedHash = (loaded && typeof loaded === "object") ? (loaded.snapshotHash || null) : null;
       // Hash must be tied to the normalized snapshot used by the engine (after migration).
       const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+
+      const policy = shouldBlockImport({
+        strict,
+        importedSchemaVersion: importedSv,
+        currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+        exportedHash,
+        recomputedHash: recomputed
+      });
+
       if (exportedHash && exportedHash !== recomputed){
         if (els.importHashBanner){
           els.importHashBanner.hidden = false;
@@ -953,6 +1194,12 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
         console.warn("Snapshot hash mismatch", { exportedHash, recomputed });
       } else {
         if (els.importHashBanner) els.importHashBanner.hidden = true;
+      }
+
+      if (policy.block){
+        alert(policy.reason);
+        els.loadJson.value = "";
+        return;
       }
     } catch {
       // If hashing fails for any reason, do not block import.
@@ -983,6 +1230,33 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     state.ui.dark = els.toggleDark.checked;
     document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
+  });
+
+  if (els.toggleStrictImport) els.toggleStrictImport.addEventListener("change", () => {
+    state.ui.strictImport = !!els.toggleStrictImport.checked;
+    persist();
+  });
+
+  if (els.restoreBackupSelect) els.restoreBackupSelect.addEventListener("change", () => {
+    const v = els.restoreBackupSelect.value;
+    if (!v) return;
+    restoreBackupByIndex(v);
+    // reset dropdown to placeholder after restore attempt
+    els.restoreBackupSelect.value = "";
+  });
+
+  if (els.btnDiagnostics) els.btnDiagnostics.addEventListener("click", () => openDiagnostics());
+  if (els.btnDiagClose) els.btnDiagClose.addEventListener("click", () => closeDiagnostics());
+  if (els.diagModal){
+    els.diagModal.addEventListener("click", (ev) => {
+      const t = ev.target;
+      if (t && t.getAttribute && t.getAttribute("data-close") === "1") closeDiagnostics();
+    });
+  }
+  if (els.btnCopyDebugBundle) els.btnCopyDebugBundle.addEventListener("click", () => copyDebugBundle());
+  if (els.btnClearErrors) els.btnClearErrors.addEventListener("click", () => {
+    recentErrors.length = 0;
+    renderDiagnosticsErrors();
   });
 
   if (els.toggleAdvDiag) els.toggleAdvDiag.addEventListener("change", () => {
@@ -1046,6 +1320,7 @@ function safeCall(fn){
 
 function persist(){
   saveState(state);
+  scheduleAutoBackup();
 }
 
 function render(){
@@ -1107,7 +1382,8 @@ function render(){
   try {
     lastResultsSnapshot = {
       schemaVersion: CURRENT_SCHEMA_VERSION,
-      appVersion: MODEL_VERSION,
+      appVersion: APP_VERSION,
+      buildId: BUILD_ID,
       modelVersion: MODEL_VERSION,
       scenarioState: structuredClone(state),
       planRows: structuredClone(state.ui?.lastPlanRows || []),
@@ -1456,6 +1732,7 @@ function initDevTools(){
   const renderResult = (r) => {
     panel.hidden = false;
     panel.innerHTML = "";
+    setSelfTestBadge(gateFromSelfTestResult(r));
 
     const head = document.createElement("div");
     head.className = "devtools-head";
@@ -1561,6 +1838,9 @@ function initDevTools(){
 }
 
 function init(){
+  installGlobalErrorCapture();
+  setSelfTestBadge(GATE_UNVERIFIED);
+  refreshBackupDropdown();
   applyStateToUI();
   rebuildCandidateTable();
   initTabs();

@@ -7,6 +7,7 @@
 
 import { computeSnapshotHash } from "./hash.js";
 import { CURRENT_SCHEMA_VERSION } from "./migrate.js";
+import { APP_VERSION, BUILD_ID } from "./build.js";
 
 export const MODEL_VERSION = "1.0.0";
 
@@ -73,8 +74,9 @@ export function makeScenarioExport(snapshot){
   const sv = snapshot?.schemaVersion || CURRENT_SCHEMA_VERSION;
   const scen = snapshot?.scenarioState ?? null;
 
-  // Display-only (does not control migration)
-  const appVersion = snapshot?.appVersion || mv;
+  // Display-only metadata (does not control migration)
+  const appVersion = snapshot?.appVersion || APP_VERSION;
+  const buildId = snapshot?.buildId || BUILD_ID;
 
   // Deterministic integrity hash (Phase 9B)
   const snapshotHash = snapshot?.snapshotHash || computeSnapshotHash({ modelVersion: mv, scenarioState: scen });
@@ -82,6 +84,7 @@ export function makeScenarioExport(snapshot){
   return {
     schemaVersion: sv,
     appVersion,
+    buildId,
     modelVersion: mv,
     snapshotHash,
     exportedAt: new Date().toISOString(),
