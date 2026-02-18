@@ -1065,53 +1065,50 @@ body.training .help{ display:block; }
 }
 
 
-/* ===== HEADER OVERRIDE (single-row, no spill, no weird wrapping) =====
-   Goal: keep ALL header controls on one line by letting Restore dropdown shrink.
-*/
-.topbar .toolbar,
-.topbar-actions{
+/* ===== Scenario Compare cleanup ===== */
+
+.phase-scenarios .sc-controls{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.phase-scenarios .sc-actions{
+  display:flex;
+  gap:12px;
+}
+
+.phase-scenarios .sc-divider{
+  height:1px;
+  background:var(--border);
+  margin:14px 0;
+}
+
+.phase-scenarios .sc-meta{
   display:flex;
   align-items:center;
-  gap:10px;
-  flex-wrap:nowrap !important;      /* keep one row */
-  white-space:nowrap;
-  max-width:100%;
-  min-width:0;                      /* allow children to shrink */
+  justify-content:space-between;
+  gap:12px;
+  margin-top:6px;
 }
 
-.topbar .toolbar{
-  overflow:hidden;                  /* prevent spill */
+/* ===== Align Run 10,000 sims button cleanly ===== */
+
+.mc-actions{
+  display:flex;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
 }
 
-.topbar .toolbar > *,
-.topbar-actions > *{
-  flex:0 0 auto;
-  min-width:0;
+.mc-actions .field{
+  margin-bottom:0;
 }
 
-/* Restore dropdown is the elastic item; it shrinks first */
-.topbar #restoreBackup,
-.topbar select#restoreBackup{
-  flex:1 1 260px !important;
-  min-width:160px !important;
-  max-width:520px !important;
-  width:auto;
+#mcRun{
+  align-self:flex-end;
+  height:38px;
 }
-
-/* Keep header buttons compact so everything fits */
-.topbar .btn.btn-sm,
-.topbar button.btn.btn-sm{
-  padding:6px 10px;
-  font-size:12px;
-  border-radius:12px;
-}
-
-/* Divider stays tight */
-.topbar .divider{
-  margin:0 2px !important;
-  opacity:0.4;
-  font-weight:600;
-}
-
-/* Safety: prevent any horizontal scrollbars from the header itself */
-header.topbar{ overflow-x:hidden; }
