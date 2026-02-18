@@ -1,7 +1,7 @@
 import { computeAll } from "./winMath.js";
 import { computeSnapshotHash } from "./hash.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
-import { loadState, saveState, clearState } from "./storage.js";
+import { loadState, saveState, clearState, readBackups, writeBackupEntry } from "./storage.js";
 import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 import { computeAvgLiftPP } from "./turnout.js";
@@ -10,6 +10,9 @@ import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timel
 import { computeMarginalValueDiagnostics } from "./marginalValue.js";
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
+import { APP_VERSION, BUILD_ID } from "./build.js";
+import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
+import { checkStrictImportPolicy } from "./importPolicy.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -27,8 +30,162 @@ function downloadText(text, filename, mime){
   }
 }
 
+// Phase 11 — error capture (fail-soft)
+function recordError(kind, message, extra){
+  try{
+    const item = {
+      t: new Date().toISOString(),
+      kind: String(kind || "error"),
+      msg: String(message || ""),
+      extra: extra && typeof extra === "object" ? extra : undefined
+    };
+    recentErrors.unshift(item);
+    if (recentErrors.length > MAX_ERRORS) recentErrors.length = MAX_ERRORS;
+    updateDiagnosticsUI();
+  } catch { /* ignore */ }
+}
+
+function installGlobalErrorCapture(){
+  try{
+    window.addEventListener("error", (e) => {
+      recordError("error", e?.message || "Unhandled error", { filename: e?.filename, lineno: e?.lineno, colno: e?.colno });
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      const r = e?.reason;
+      recordError("unhandledrejection", r?.message || String(r || "Unhandled rejection"));
+    });
+  } catch { /* ignore */ }
+}
+
+function updateBuildStamp(){
+  try{
+    if (els.buildStamp) els.buildStamp.textContent = `build ${BUILD_ID}`;
+  } catch { /* ignore */ }
+}
+
+function updateSelfTestGateBadge(){
+  try{
+    if (!els.selfTestGate) return;
+    els.selfTestGate.textContent = selfTestGateStatus;
+    els.selfTestGate.classList.remove("badge-unverified","badge-verified","badge-failed");
+    if (selfTestGateStatus === SELFTEST_GATE.VERIFIED) els.selfTestGate.classList.add("badge-verified");
+    else if (selfTestGateStatus === SELFTEST_GATE.FAILED) els.selfTestGate.classList.add("badge-failed");
+    else els.selfTestGate.classList.add("badge-unverified");
+  } catch { /* ignore */ }
+}
+
+function openDiagnostics(){
+  try{
+    if (!els.diagModal) return;
+    els.diagModal.hidden = false;
+    updateDiagnosticsUI();
+  } catch { /* ignore */ }
+}
+function closeDiagnostics(){
+  try{ if (els.diagModal) els.diagModal.hidden = true; } catch { /* ignore */ }
+}
+
+function updateDiagnosticsUI(){
+  try{
+    if (!els.diagErrors) return;
+    if (!recentErrors.length){
+      els.diagErrors.textContent = "(none)";
+      return;
+    }
+    const lines = recentErrors.map((e) => {
+      const head = `[${e.t}] ${e.kind}: ${e.msg}`;
+      return head;
+    });
+    els.diagErrors.textContent = lines.join("\n");
+  } catch { /* ignore */ }
+}
+
+async function copyDebugBundle(){
+  const bundle = {
+    appVersion: APP_VERSION,
+    buildId: BUILD_ID,
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    timestamp: new Date().toISOString(),
+    scenarioName: state?.scenarioName || "",
+    lastExportHash: lastExportHash || null,
+    recentErrors: recentErrors.slice(0, MAX_ERRORS),
+  };
+  const text = JSON.stringify(bundle, null, 2);
+  try{
+    await copyTextToClipboard(text);
+    alert("Debug bundle copied.");
+  } catch {
+    // fallback
+    downloadText(text, "fpe-debug-bundle.json", "application/json");
+  }
+}
+
+// Phase 11 — auto-backups (rolling 5)
+function scheduleBackupWrite(){
+  try{
+    if (backupTimer) clearTimeout(backupTimer);
+    backupTimer = setTimeout(() => {
+      safeCall(() => {
+        const scenarioClone = structuredClone(state);
+        const snapshot = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
+        snapshot.snapshotHash = computeSnapshotHash(snapshot);
+    lastExportHash = snapshot.snapshotHash;
+        const payload = makeScenarioExport(snapshot);
+        writeBackupEntry({ ts: new Date().toISOString(), scenarioName: scenarioClone?.scenarioName || "", payload });
+        refreshBackupDropdown();
+      });
+    }, 800);
+  } catch { /* ignore */ }
+}
+
+function refreshBackupDropdown(){
+  try{
+    if (!els.restoreBackup) return;
+    const backups = readBackups();
+    const cur = els.restoreBackup.value;
+    els.restoreBackup.innerHTML = '<option value="">Restore backup…</option>';
+    backups.forEach((b, i) => {
+      const opt = document.createElement("option");
+      const name = (b?.scenarioName || "").trim();
+      const when = b?.ts ? String(b.ts).replace("T"," ").replace("Z","") : "";
+      opt.value = String(i);
+      opt.textContent = `${when}${name ? " — " + name : ""}`;
+      els.restoreBackup.appendChild(opt);
+    });
+    els.restoreBackup.value = cur && cur !== "" ? cur : "";
+  } catch { /* ignore */ }
+}
+
+function restoreBackupByIndex(idx){
+  const backups = readBackups();
+  const entry = backups[Number(idx)];
+  if (!entry || !entry.payload) return;
+  const ok = confirm("Restore this backup? This will overwrite current scenario inputs.");
+  if (!ok) return;
+
+  const migrated = migrateSnapshot(entry.payload);
+  if (!migrated || !migrated.ok){
+    alert("Backup restore failed: could not migrate snapshot.");
+    return;
+  }
+  state = migrated.scenario;
+  persist();
+  render();
+}
+
+
+
 const els = {
   scenarioName: document.getElementById("scenarioName"),
+  buildStamp: document.getElementById("buildStamp"),
+  selfTestGate: document.getElementById("selfTestGate"),
+  restoreBackup: document.getElementById("restoreBackup"),
+  toggleStrictImport: document.getElementById("toggleStrictImport"),
+  btnDiagnostics: document.getElementById("btnDiagnostics"),
+  diagModal: document.getElementById("diagModal"),
+  diagErrors: document.getElementById("diagErrors"),
+  btnDiagClose: document.getElementById("btnDiagClose"),
+  btnCopyDebug: document.getElementById("btnCopyDebug"),
   raceType: document.getElementById("raceType"),
   electionDate: document.getElementById("electionDate"),
   weeksRemaining: document.getElementById("weeksRemaining"),
@@ -263,6 +420,14 @@ let state = loadState() || makeDefaultState();
 
 // Phase 9A — export snapshot cache (pure read by export.js)
 let lastResultsSnapshot = null;
+
+// Phase 11 — session-only safety rails
+let selfTestGateStatus = SELFTEST_GATE.UNVERIFIED;
+let lastExportHash = null;
+const recentErrors = [];
+const MAX_ERRORS = 20;
+let backupTimer = null;
+
 
 function makeDefaultState(){
   return {
@@ -645,6 +810,36 @@ function rebuildUserSplitInputs(){
 }
 
 function wireEvents(){
+  // Phase 11 — safety rails controls (fail-soft)
+  safeCall(() => {
+    if (els.toggleStrictImport){
+      els.toggleStrictImport.checked = !!state?.ui?.strictImport;
+      els.toggleStrictImport.addEventListener("change", () => {
+        state.ui.strictImport = !!els.toggleStrictImport.checked;
+        persist();
+      });
+    }
+    if (els.restoreBackup){
+      refreshBackupDropdown();
+      els.restoreBackup.addEventListener("change", () => {
+        const v = els.restoreBackup.value;
+        if (!v) return;
+        restoreBackupByIndex(v);
+        els.restoreBackup.value = "";
+      });
+    }
+    if (els.btnDiagnostics) els.btnDiagnostics.addEventListener("click", openDiagnostics);
+    if (els.btnDiagClose) els.btnDiagClose.addEventListener("click", closeDiagnostics);
+    if (els.diagModal){
+      els.diagModal.addEventListener("click", (e) => {
+        const t = e?.target;
+        if (t && t.getAttribute && t.getAttribute("data-close") === "1") closeDiagnostics();
+      });
+    }
+    if (els.btnCopyDebug) els.btnCopyDebug.addEventListener("click", () => { safeCall(() => { copyDebugBundle(); }); });
+  });
+
+
   els.scenarioName.addEventListener("input", () => { state.scenarioName = els.scenarioName.value; persist(); });
 
   els.raceType.addEventListener("change", () => {
@@ -854,8 +1049,9 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
 
   if (els.btnSaveJson) els.btnSaveJson.addEventListener("click", () => {
     const scenarioClone = structuredClone(state);
-    const snapshot = { modelVersion: MODEL_VERSION, scenarioState: scenarioClone };
+    const snapshot = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
     snapshot.snapshotHash = computeSnapshotHash(snapshot);
+    lastExportHash = snapshot.snapshotHash;
     const payload = makeScenarioExport(snapshot);
     if (hasNonFiniteNumbers(payload)){
       alert("Export blocked: scenario contains NaN/Infinity.");
@@ -913,6 +1109,20 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       alert("Import failed: invalid JSON.");
       els.loadJson.value = "";
       return;
+
+    // Phase 11 — strict import: block newer schema before migration (optional)
+    const prePolicy = checkStrictImportPolicy({
+      strictMode: !!state?.ui?.strictImport,
+      importedSchemaVersion: loaded.schemaVersion || null,
+      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+      hashMismatch: false
+    });
+    if (!prePolicy.ok){
+      alert(prePolicy.issues.join(" "));
+      els.loadJson.value = "";
+      return;
+    }
+
     }
 
     const mig = migrateSnapshot(loaded);
@@ -940,12 +1150,15 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       return;
     }
 
-    // Phase 9B — snapshot integrity verification (non-blocking)
+    // Phase 9B — snapshot integrity verification (+ Phase 11 strict option)
+    let hashMismatch = false;
     try{
       const exportedHash = (loaded && typeof loaded === "object") ? (loaded.snapshotHash || null) : null;
       // Hash must be tied to the normalized snapshot used by the engine (after migration).
       const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
-      if (exportedHash && exportedHash !== recomputed){
+      hashMismatch = !!(exportedHash && exportedHash !== recomputed);
+
+      if (hashMismatch){
         if (els.importHashBanner){
           els.importHashBanner.hidden = false;
           els.importHashBanner.textContent = "Snapshot hash differs from exported hash.";
@@ -954,9 +1167,27 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       } else {
         if (els.importHashBanner) els.importHashBanner.hidden = true;
       }
+
+      const policy = checkStrictImportPolicy({
+        strictMode: !!state?.ui?.strictImport,
+        importedSchemaVersion: (mig?.snapshot?.schemaVersion || loaded.schemaVersion || null),
+        currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+        hashMismatch
+      });
+      if (!policy.ok){
+        alert(policy.issues.join(" "));
+        els.loadJson.value = "";
+        return;
+      }
     } catch {
-      // If hashing fails for any reason, do not block import.
+      // If hashing fails for any reason, do not block import unless strict explicitly requires it.
+      if (state?.ui?.strictImport){
+        alert("Import blocked: could not verify integrity hash in strict mode.");
+        els.loadJson.value = "";
+        return;
+      }
     }
+
 
     // Replace entire state safely (no partial merge with current state)
     state = normalizeLoadedState(v.scenario);
@@ -1046,6 +1277,8 @@ function safeCall(fn){
 
 function persist(){
   saveState(state);
+  // Phase 11 — auto-backup (fail-soft)
+  scheduleBackupWrite();
 }
 
 function render(){
@@ -1460,6 +1693,10 @@ function initDevTools(){
     const head = document.createElement("div");
     head.className = "devtools-head";
     const status = (r.failed && r.failed > 0) ? "FAIL" : "PASS";
+
+    // Phase 11 — self-test gate badge (session-only)
+    selfTestGateStatus = gateFromSelfTestResult(r);
+    updateSelfTestGateBadge();
     head.textContent = `Self-Test: ${status} — ${r.passed}/${r.total} passed${r.durationMs != null ? ` (${r.durationMs}ms)` : ""}`;
     panel.appendChild(head);
 
@@ -1561,6 +1798,11 @@ function initDevTools(){
 }
 
 function init(){
+  installGlobalErrorCapture();
+  updateBuildStamp();
+  updateSelfTestGateBadge();
+  refreshBackupDropdown();
+
   applyStateToUI();
   rebuildCandidateTable();
   initTabs();
@@ -1570,6 +1812,7 @@ function init(){
   render();
   persist();
 }
+
 
 init();
 

@@ -25,3 +25,39 @@ export function clearState(){
     // ignore
   }
 }
+
+
+// Phase 11 — auto-backup snapshots (rolling 5, fail-soft)
+const BACKUP_KEY = "fpe_backups_v1";
+const MAX_BACKUPS = 5;
+
+function safeGet(storage, key){
+  try{ return storage.getItem(key); } catch { return null; }
+}
+function safeSet(storage, key, value){
+  try{ storage.setItem(key, value); return true; } catch { return false; }
+}
+
+export function readBackups(storageOverride){
+  const store = storageOverride || localStorage;
+  try{
+    const raw = safeGet(store, BACKUP_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.slice(0, MAX_BACKUPS) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeBackupEntry(entry, storageOverride){
+  const store = storageOverride || localStorage;
+  try{
+    const prev = readBackups(store);
+    const next = [entry, ...prev].slice(0, MAX_BACKUPS);
+    safeSet(store, BACKUP_KEY, JSON.stringify(next));
+    return next;
+  } catch {
+    return [];
+  }
+}

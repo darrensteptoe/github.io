@@ -1,15 +1,18 @@
 // js/selfTestGate.js
-// Phase 11 — Self-Test Gate Badge state helper (pure)
+// Phase 11 — Self-test gate badge state (session-only, pure helper)
+export const SELFTEST_GATE = Object.freeze({
+  UNVERIFIED: "UNVERIFIED",
+  VERIFIED: "VERIFIED",
+  FAILED: "FAILED",
+});
 
-export const GATE_UNVERIFIED = "UNVERIFIED";
-export const GATE_VERIFIED = "VERIFIED";
-export const GATE_FAILED = "FAILED";
-
-export function gateStatusFromResult(result){
-  // result shape: { total, passed, failed, failures? }
-  const failed = Number(result?.failed || 0);
-  const passed = Number(result?.passed || 0);
-  if (failed > 0) return GATE_FAILED;
-  if (passed > 0) return GATE_VERIFIED;
-  return GATE_UNVERIFIED;
+export function gateFromSelfTestResult(result){
+  if (!result || typeof result !== "object") return SELFTEST_GATE.UNVERIFIED;
+  const failed = Number(result.failed || 0);
+  const passed = Number(result.passed || 0);
+  const total = Number(result.total || (passed + failed) || 0);
+  if (total <= 0) return SELFTEST_GATE.UNVERIFIED;
+  if (failed === 0 && passed === total) return SELFTEST_GATE.VERIFIED;
+  if (failed > 0) return SELFTEST_GATE.FAILED;
+  return SELFTEST_GATE.UNVERIFIED;
 }

@@ -13,6 +13,11 @@ import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timel
 import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, PLAN_CSV_HEADERS, planRowsToCsv, hasNonFiniteNumbers } from "./export.js";
 import { computeSnapshotHash } from "./hash.js";
 import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
+import { APP_VERSION, BUILD_ID } from "./build.js";
+import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
+import { readBackups, writeBackupEntry } from "./storage.js";
+import { checkStrictImportPolicy } from "./importPolicy.js";
+
 
 function deepFreeze(obj){
   if (obj == null || typeof obj !== "object") return obj;
@@ -1102,6 +1107,65 @@ export function runSelfTests(engine){
     assert(v.ok, "validateScenarioExport failed");
     const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
     assert(recomputed === payload.snapshotHash, "Recomputed hash differs after export/import roundtrip");
+    return true;
+  });
+
+
+  // =========================
+  // Phase 11 — Release hardening tests
+  // =========================
+
+  test("Phase 11: Export metadata includes appVersion + buildId", () => {
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: { a: 1 } });
+    assert(payload.appVersion === APP_VERSION, "appVersion missing or wrong");
+    assert(payload.buildId === BUILD_ID, "buildId missing or wrong");
+    return true;
+  });
+
+  test("Phase 11: Self-test gate state transitions (pure)", () => {
+    assert(gateFromSelfTestResult(null) === SELFTEST_GATE.UNVERIFIED, "null should be UNVERIFIED");
+    assert(gateFromSelfTestResult({ total: 10, passed: 10, failed: 0 }) === SELFTEST_GATE.VERIFIED, "pass should be VERIFIED");
+    assert(gateFromSelfTestResult({ total: 10, passed: 9, failed: 1 }) === SELFTEST_GATE.FAILED, "fail should be FAILED");
+    return true;
+  });
+
+  test("Phase 11: Backups roll to max 5 (mocked storage)", () => {
+    const mem = (() => {
+      const m = new Map();
+      return { getItem: (k)=> m.has(k)? m.get(k): null, setItem:(k,v)=>{ m.set(k,String(v)); } };
+    })();
+
+    for (let i=0;i<7;i++){
+      writeBackupEntry({ ts: String(i), scenarioName: "S"+i, payload: { schemaVersion: CURRENT_SCHEMA_VERSION, modelVersion: MODEL_VERSION, scenario: { n:i } } }, mem);
+    }
+    const arr = readBackups(mem);
+    assert(arr.length === 5, "Expected 5 backups max");
+    assert(arr[0].ts === "6", "Newest backup should be first");
+    assert(arr[4].ts === "2", "Oldest retained should be #2");
+    return true;
+  });
+
+  test("Phase 11: Restore backup payload preserves deterministic hash", () => {
+    const scenario = { scenarioName:"RestoreTest", universeSize: 1000, ui:{ training:false, dark:false } };
+    const snap = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenario };
+    const hash0 = computeSnapshotHash(snap);
+    const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
+    const mig = migrateSnapshot(payload);
+    assert(mig.ok, "migrateSnapshot failed");
+    const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
+    assert(v.ok, "validateScenarioExport failed after migration");
+    const hash1 = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+    assert(hash1 === hash0, "Hash changed after restore path");
+    return true;
+  });
+
+  test("Phase 11: Strict import blocks newer schema + hash mismatch, allows when OFF", () => {
+    const newer = checkStrictImportPolicy({ strictMode:true, importedSchemaVersion:"9.9.9", currentSchemaVersion:CURRENT_SCHEMA_VERSION, hashMismatch:false });
+    assert(!newer.ok && newer.issues.length, "Should block newer schema");
+    const hm = checkStrictImportPolicy({ strictMode:true, importedSchemaVersion:CURRENT_SCHEMA_VERSION, currentSchemaVersion:CURRENT_SCHEMA_VERSION, hashMismatch:true });
+    assert(!hm.ok && hm.issues.length, "Should block hash mismatch");
+    const off = checkStrictImportPolicy({ strictMode:false, importedSchemaVersion:"9.9.9", currentSchemaVersion:CURRENT_SCHEMA_VERSION, hashMismatch:true });
+    assert(off.ok, "Should allow when strict mode OFF");
     return true;
   });
 
