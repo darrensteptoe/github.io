@@ -323,9 +323,6 @@
               <div class="mini-s" id="miniPersCheck">—</div>
             </div>
           </div>
-        </div>
-
-        
 
           <div class="subgrid">
             <div class="mini">
@@ -1115,7 +1112,7 @@
   </div>
 
 
-  <div class="table-wrap" style="margin-top:10px;">
+  <div class="table-wrap sc-table">
     <table class="table" aria-label="Optimization allocation table">
       <thead>
         <tr>
@@ -1455,8 +1452,10 @@
               <input id="loadJson" type="file" accept="application/json" hidden />
             </div>
           </div>
-      
-          <div class="rowline" style="gap:10px; align-items:center; margin-top:8px; flex-wrap:wrap;">
+
+          <div class="sc-divider" role="separator" aria-hidden="true"></div>
+
+          <div class="rowline sc-meta">
             <button id="btnSaveScenario" class="btn btn-sm" type="button">Save Current Scenario</button>
             <div class="muted" style="font-size:12px;">Saved scenarios are session-only (memory). Max 5.</div>
           </div>
@@ -1480,7 +1479,7 @@
             </table>
           </div>
       
-          <div id="scOverall" class="note" style="margin-top:10px;">Most efficient scenario overall: —</div>
+          <div id="scOverall" class="note sc-overall">Most efficient scenario overall: —</div>
         </div>
     </aside>
 

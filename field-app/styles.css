@@ -1139,3 +1139,42 @@ body.training .help{ display:block; }
 
 /* --- FORCE VALIDATION VISIBILITY (safety) --- */
 .validation, #validationList { display:block !important; visibility:visible !important; opacity:1 !important; }
+
+
+/* =========================
+   Scenario Compare cleanup
+========================= */
+#scenarioCompareCard .sc-controls{
+  display:flex;
+  gap: var(--space-3);
+  align-items:flex-end;
+  flex-wrap:wrap;
+}
+#scenarioCompareCard .sc-controls .scenario{
+  flex: 1 1 260px;
+  min-width: 240px;
+}
+#scenarioCompareCard .sc-actions{
+  display:flex;
+  gap: var(--space-2);
+  align-items:flex-end;
+  flex-wrap:wrap;
+}
+#scenarioCompareCard .sc-divider{
+  height:1px;
+  background: var(--rule);
+  margin: 12px 0;
+  border-radius: 1px;
+}
+#scenarioCompareCard .sc-meta{
+  display:flex;
+  gap: var(--space-2);
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+#scenarioCompareCard .sc-table{ margin-top: 10px; }
+#scenarioCompareCard .sc-overall{ margin-top: 10px; }
+
+/* Keep toggle labels from compressing */
+.topbar .switch{ min-width: 140px; }
