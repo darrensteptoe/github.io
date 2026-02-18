@@ -16,34 +16,43 @@
       <div class="brand-sub">Darren Steptoe Consulting — Internal Use Only</div>
     </div>
 
-    <div class="topbar-actions">
-      <input id="toggleDark" type="checkbox" hidden />
-      <div class="toolbar">
-        <label class="switch">
-          <input id="toggleTraining" type="checkbox" />
-          <span class="slider"></span>
-          <span class="switch-label">Training</span>
-        </label>
+<div class="topbar-actions">
 
-        <select id="restoreBackup" class="input input-sm" title="Restore one of the last 5 auto-backups">
-          <option value="">Restore backup…</option>
-        </select>
+  <label class="switch switch-compact">
+    <input id="toggleTraining" type="checkbox">
+    <span class="slider"></span>
+    <span class="switch-label">Training</span>
+  </label>
 
-        <label class="switch switch-compact">
-          <input id="toggleStrictImport" type="checkbox" />
-          <span class="slider"></span>
-          <span class="switch-label">Strict import</span>
-        </label>
+  <span class="divider">|</span>
 
-        <span class="divider"></span>
+  <select id="restoreBackup">
+    <option value="">Restore backup...</option>
+  </select>
 
-        <button id="btnCopySummary" class="btn btn-sm btn-ghost" type="button">Copy Summary</button>
-        <button id="btnExportCsv" class="btn btn-sm btn-ghost" type="button">Export Plan CSV</button>
-        <button id="btnDiagnostics" class="btn btn-sm btn-ghost" type="button">Diagnostics</button>
-        <button id="btnResetAll" class="btn btn-sm btn-ghost" type="button" title="Reset all fields">Reset</button>
-      </div>
-    </div>
-  </header>
+  <label class="switch switch-compact">
+    <input id="toggleStrictImport" type="checkbox">
+    <span class="slider"></span>
+    <span class="switch-label">Strict import</span>
+  </label>
+
+  <span class="divider">|</span>
+
+  <button id="copySummary">Copy Summary</button>
+
+  <span class="divider">|</span>
+
+  <button id="exportPlanCsv">Export Plan CSV</button>
+
+  <span class="divider">|</span>
+
+  <button id="diagnosticsBtn">Diagnostics</button>
+
+  <span class="divider">|</span>
+
+  <button id="resetBtn">Reset</button>
+
+</div>
 
   <div id="importHashBanner" class="banner warn" hidden>Snapshot hash differs from exported hash.</div>
   <div id="importWarnBanner" class="banner warn" hidden></div>
