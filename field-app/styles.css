@@ -1178,3 +1178,25 @@ body.training .help{ display:block; }
 
 /* Keep toggle labels from compressing */
 .topbar .switch{ min-width: 140px; }
+
+/* ---------- Topbar separators ---------- */
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.divider {
+  opacity: 0.35;
+  font-weight: 500;
+}
+
+/* Make restore dropdown blend better */
+.topbar-actions select {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
