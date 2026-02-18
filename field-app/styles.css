@@ -1178,21 +1178,16 @@ body.training .help{ display:block; }
 
 /* Keep toggle labels from compressing */
 .topbar .switch{ min-width: 140px; }
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-}
 
-.divider {
-  opacity: 0.35;
-  font-weight: 500;
-}
 
-.topbar-actions select {
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: 6px 10px;
-  border-radius: 8px;
+/* ===== Header separators: use literal '|' characters ===== */
+.topbar .divider{
+  display:inline-block;
+  width:auto;
+  height:auto;
+  background:transparent !important;
+  margin:0 4px;
+  opacity:0.4;
+  font-weight:600;
+  color:var(--muted2);
 }
