@@ -559,6 +559,28 @@
                 </div>
               </div>
 
+
+              <div class="card" style="padding:12px; margin-top:12px;">
+                <div class="card-head" style="margin-bottom:8px;">
+                  <h2>Confidence envelope (Phase 14)</h2>
+                </div>
+                <div class="table-wrap">
+                  <table class="table" aria-label="Confidence envelope">
+                    <tbody>
+                      <tr><td>P10 / P50 / P90 margin</td><td class="num"><span id="mcP10">—</span> / <span id="mcP50">—</span> / <span id="mcP90">—</span></td></tr>
+                      <tr><td>Margin of safety (P10)</td><td class="num" id="mcMoS">—</td></tr>
+                      <tr><td>Downside loss probability</td><td class="num" id="mcDownside">—</td></tr>
+                      <tr><td>Expected shortfall (worst 10%)</td><td class="num" id="mcES10">—</td></tr>
+                      <tr><td>Shift needed (make P50 ≥ 0)</td><td class="num" id="mcShiftP50">—</td></tr>
+                      <tr><td>Shift needed (make P10 ≥ 0)</td><td class="num" id="mcShiftP10">—</td></tr>
+                      <tr><td>Fragility index</td><td class="num" id="mcFragility">—</td></tr>
+                      <tr><td>Cliff risk (near break-even)</td><td class="num" id="mcCliff">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="note">Margin is net persuasion votes delivered minus net persuasion votes needed. Fragility rises when small negative shocks materially reduce win probability.</div>
+              </div>
+
               <div class="card" style="padding:12px;">
                 <div class="card-head" style="margin-bottom:8px;">
                   <h2>Sensitivity (what moves the outcome)</h2>
