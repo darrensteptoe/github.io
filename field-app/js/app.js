@@ -2550,7 +2550,7 @@ export function getSelfTestAccessors(){
     // ROI + optimization
     computeRoiRows,
     buildOptimizationTactics,
-    engine.optimize,
+    compute: engine.compute,
     engine.optimize,
 
     // Phase 7
