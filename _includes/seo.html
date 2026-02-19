@@ -1,0 +1,22 @@
+{% assign _title = page.title | default: site.title %}
+{% assign _site_title = site.title | default: "" %}
+{% assign _full_title = _title %}
+{% if page.title and _site_title and page.title != _site_title %}
+  {% assign _full_title = page.title | append: " · " | append: _site_title %}
+{% endif %}
+{% assign _desc = page.description | default: site.description | default: "" %}
+{% assign _img = page.image | default: site.image %}
+{% assign _img_url = nil %}
+{% if _img %}
+  {% assign _img_url = _img | absolute_url %}
+{% endif %}
+<meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}" />
+<meta property="og:site_name" content="{{ _site_title | escape }}" />
+<meta property="og:title" content="{{ _full_title | escape }}" />
+{% if _desc != "" %}<meta property="og:description" content="{{ _desc | escape }}" />{% endif %}
+<meta property="og:url" content="{{ page.url | absolute_url }}" />
+{% if _img_url %}<meta property="og:image" content="{{ _img_url }}" />{% endif %}
+<meta name="twitter:card" content="{% if _img_url %}summary_large_image{% else %}summary{% endif %}" />
+<meta name="twitter:title" content="{{ _full_title | escape }}" />
+{% if _desc != "" %}<meta name="twitter:description" content="{{ _desc | escape }}" />{% endif %}
+{% if _img_url %}<meta name="twitter:image" content="{{ _img_url }}" />{% endif %}

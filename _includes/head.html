@@ -1,0 +1,13 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{% if page.title %}{{ page.title }}{% if site.title and page.title != site.title %} · {{ site.title }}{% endif %}{% else %}{{ site.title }}{% endif %}</title>
+{% if page.description %}<meta name="description" content="{{ page.description | escape }}" />{% endif %}
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta name="color-scheme" content="light dark" />
+<link rel="canonical" href="{{ page.url | absolute_url }}" />
+{% include seo.html %}
+{% include jsonld.html %}
+
+<link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}" />
+{% include csp.html %}
+{% include ga.html %}

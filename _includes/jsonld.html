@@ -1,0 +1,21 @@
+{% assign _title = page.title | default: site.title %}
+{% assign _desc = page.description | default: site.description | default: "" %}
+{% assign _author = page.author | default: site.author | default: "" %}
+{% assign _img = page.image | default: site.image %}
+{% assign _img_url = nil %}
+{% if _img %}
+  {% assign _img_url = _img | absolute_url %}
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "{% if page.layout == 'post' %}BlogPosting{% elsif page.layout == 'paper' %}ScholarlyArticle{% else %}WebPage{% endif %}",
+  "headline": {{ _title | jsonify }},
+  "url": {{ page.url | absolute_url | jsonify }}{% if _desc != "" %},
+  "description": {{ _desc | jsonify }}{% endif %}{% if _img_url %},
+  "image": {{ _img_url | jsonify }}{% endif %}{% if page.date %},
+  "datePublished": {{ page.date | date_to_xmlschema | jsonify }}{% endif %}{% if page.modified_date %},
+  "dateModified": {{ page.modified_date | date_to_xmlschema | jsonify }}{% endif %}{% if _author != "" %},
+  "author": { "@type": "Person", "name": {{ _author | jsonify }} }{% endif %}
+}
+</script>

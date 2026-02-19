@@ -1,0 +1,17 @@
+<section class="panel" aria-label="Navigation">
+  <h2 class="h2">Pages</h2>
+  <div class="tileGrid tileGridNav" role="list" aria-label="Site pages">
+    {% assign nav_pages = site.pages | where_exp: "p", "p.nav_exclude != true" | where_exp: "p", "p.nav_order != nil" | sort: "nav_order" %}
+    {% for p in nav_pages %}
+      {% assign label = p.nav_label | default: p.title %}
+      {% if p.url == '/' %}{% assign label = 'Home' %}{% endif %}
+      <a class="tile tileNav" role="listitem" href="{{ p.url | relative_url }}"{% if page.url == p.url %} aria-current="page"{% endif %}>
+        <div class="tileHead">
+          <div class="tileTitle">{{ label }}</div>
+          <div class="tileAfford" aria-hidden="true">›</div>
+        </div>
+        {% if p.description %}<div class="tileSub">{{ p.description }}</div>{% endif %}
+      </a>
+    {% endfor %}
+  </div>
+</section>
