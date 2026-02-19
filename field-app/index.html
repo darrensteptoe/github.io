@@ -586,20 +586,28 @@
 </table>
 </div>
 </div>
-<div class="kpis">
-<div class="kpi">
+<div class="mc-grid" aria-label="Monte Carlo summary">
+<div class="kpi mc-card">
 <div class="kpi-k">Win probability</div>
 <div class="kpi-v" id="mcWinProb">—</div>
 <div class="kpi-s" id="mcRiskLabel">Run sims to estimate risk band.</div>
 </div>
-<div class="kpi">
+<div class="kpi mc-card">
 <div class="kpi-k">Median net votes vs need</div>
 <div class="kpi-v" id="mcMedian">—</div>
 <div class="kpi-s">Net persuasion votes delivered − persuasion votes needed</div>
 </div>
-
-<div class="viz-row" aria-label="Monte Carlo visuals">
-  <div class="viz" id="vizWinProb" aria-label="Win probability bar">
+<div class="kpi mc-card">
+<div class="kpi-k">95th percentile (upside)</div>
+<div class="kpi-v" id="mcP95">—</div>
+<div class="kpi-s">Good-but-plausible environment</div>
+</div>
+<div class="kpi mc-card">
+<div class="kpi-k">5th percentile (downside)</div>
+<div class="kpi-v" id="mcP5">—</div>
+<div class="kpi-s">Bad-but-plausible environment</div>
+</div>
+<div class="viz mc-card" id="vizWinProb" aria-label="Win probability bar">
     <div class="viz-title">Win probability</div>
     <svg class="viz-svg" id="svgWinProb" viewBox="0 0 300 32" preserveAspectRatio="none" role="img" aria-label="Win probability bar">
       <rect x="0" y="14" width="300" height="6" rx="3" ry="3" class="viz-track" />
@@ -611,8 +619,7 @@
     </svg>
     <div class="viz-note" id="vizWinProbNote">—</div>
   </div>
-
-  <div class="viz" id="vizMargin" aria-label="Net margin distribution">
+<div class="viz mc-card" id="vizMargin" aria-label="Net margin distribution">
     <div class="viz-title">Net margin distribution</div>
     <svg class="viz-svg" id="svgMargin" viewBox="0 0 300 92" preserveAspectRatio="none" role="img" aria-label="Distribution of net votes vs need">
       <rect x="0" y="0" width="300" height="92" class="viz-bg" />
@@ -626,17 +633,6 @@
     </svg>
     <div class="viz-note" id="vizMarginNote">Median/P10/P90 are shown above; distribution shows how often you clear the win line.</div>
   </div>
-</div>
-<div class="kpi">
-<div class="kpi-k">5th percentile (downside)</div>
-<div class="kpi-v" id="mcP5">—</div>
-<div class="kpi-s">Bad-but-plausible environment</div>
-</div>
-<div class="kpi">
-<div class="kpi-k">95th percentile (upside)</div>
-<div class="kpi-v" id="mcP95">—</div>
-<div class="kpi-s">Good-but-plausible environment</div>
-</div>
 </div>
 <div class="card" style="padding:12px; margin-top:12px;">
 <div class="card-head" style="margin-bottom:8px;">
