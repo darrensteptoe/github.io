@@ -240,7 +240,7 @@ function getUniverseLayerConfig(sc){
   };
 }
 
-export function runMonteCarloSim({ scenario, scenarioState, res, weeks, needVotes, runs, seed }){
+export function runMonteCarloSim({ scenario, scenarioState, res, weeks, needVotes, runs, seed, includeMargins }){
   const sc = scenario || scenarioState || {}; 
   const mode = sc.mcMode || "basic";
 
@@ -441,6 +441,13 @@ export function runMonteCarloSim({ scenario, scenarioState, res, weeks, needVote
     needVotes,
     turnoutAdjusted: turnoutAdjustedSummary,
   };
+
+  // Phase R2 — Optional raw margins exposure for risk framing / robust selection.
+  // OFF by default. No impact unless explicitly requested by caller.
+  if (includeMargins){
+    summary.margins = margins.slice();
+    summary.sortedMargins = sorted;
+  }
 
   return summary;
 }
