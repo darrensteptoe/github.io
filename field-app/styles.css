@@ -908,6 +908,12 @@ body.training .help{ display:block; }
 .card.phase-p5{ border-left-color: var(--phase-p5); }
 .card.phase-p6{ border-left-color: var(--phase-p6); }
 .card.phase-p7{ border-left-color: var(--phase-p7); }
+
+/* Phase 16 Accent Stripe */
+.card.phase16{
+  position: relative;
+  border-left: 6px solid #c9e7ff;
+}
 /* Phase accent bars removed (uniform cards) */
 .card[data-accent]::before,
 #phase3Card::before,
