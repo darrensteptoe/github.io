@@ -253,6 +253,14 @@ body.dark{
   outline:none;
 }
 
+/* iOS/Android: date inputs can keep an intrinsic width unless forced to behave like a block */
+input[type="date"].input{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
 /* Tablet (iPad) safety: let grid children shrink instead of forcing overflow */
 .grid2 > *, .grid3 > *{ min-width:0; }
 
@@ -1094,6 +1102,8 @@ body.training .help{ display:block; }
   .shell{ grid-template-columns: 1fr; }
   .right{ padding: var(--space-3); }
   .rail{ position: static; top:auto; }
+  /* Mobile/tablet: prevent intrinsic-width controls (notably iOS date inputs) from forcing overflow */
+  .grid2{ grid-template-columns: 1fr; }
 }
 @media (max-width: 520px){
   .grid2{ grid-template-columns: 1fr; }
@@ -1230,32 +1240,3 @@ header.topbar{ overflow-x:hidden; }
 .section-header{margin:8px 0 10px 0; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,0.6); box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .section-header-title{font-weight:800; font-size:14px; letter-spacing:0.2px;}
 .section-header-sub{font-size:12px; opacity:0.75; margin-top:2px;}
-/* Prevent input overflow inside grid/flex containers */
-input,
-select {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Ensure grid children can shrink properly */
-.scenario-card,
-.setup-card,
-.universe-card {
-  min-width: 0;
-}
-
-/* Fix mobile stacking */
-@media (max-width: 900px) {
-
-  .scenario-grid,
-  .setup-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .scenario-grid > div,
-  .setup-grid > div {
-    width: 100%;
-  }
-
-}
