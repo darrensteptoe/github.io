@@ -2,6 +2,45 @@
 // Monte Carlo engine (pure). Extracted from app.js so UI contains no simulation loops.
 // Must not touch DOM/window/document.
 
+
+// Seeded RNG helpers (copied verbatim from app.js to keep behavior identical)
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function(){
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+
+function mulberry32(a){
+  return function(){
+    a |= 0;
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function normalizeTri({ min, mode, max }){
+  let a = min, b = mode, c = max;
+  if (!isFinite(a)) a = 0;
+  if (!isFinite(b)) b = 0;
+  if (!isFinite(c)) c = 0;
+
+  // Enforce ordering
+  const lo = Math.min(a, b, c);
+  const hi = Math.max(a, b, c);
+  // keep mode inside
+  b = clamp(b, lo, hi);
+  return { min: lo, mode: b, max: hi };
+}
+
 import { safeNum, clamp } from "./utils.js";
 import { computeAvgLiftPP } from "./turnout.js";
 import { computeUniverseAdjustedRates, normalizeUniversePercents } from "./universeLayer.js";
