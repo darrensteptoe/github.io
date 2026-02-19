@@ -201,6 +201,28 @@ function computeSensitivity(samples, margins){
   return out;
 }
 
+function pearson(xs, ys){
+  const n = xs.length;
+  if (!n || ys.length !== n) return null;
+
+  let sumX=0, sumY=0;
+  for (let i=0;i<n;i++){ sumX += xs[i]; sumY += ys[i]; }
+  const meanX = sumX / n;
+  const meanY = sumY / n;
+
+  let num=0, denX=0, denY=0;
+  for (let i=0;i<n;i++){
+    const dx = xs[i] - meanX;
+    const dy = ys[i] - meanY;
+    num += dx * dy;
+    denX += dx * dx;
+    denY += dy * dy;
+  }
+  const den = Math.sqrt(denX * denY);
+  if (!isFinite(den) || den === 0) return null;
+  return num / den;
+}
+
 function getUniverseLayerConfig(sc){
   const enabled = !!sc.universeLayerEnabled;
   const demPct = safeNum(sc.universeDemPct);
