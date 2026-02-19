@@ -31,6 +31,10 @@ import {
 import { runSelfTests as _runSelfTests } from "./core/selfTest.js";
 import { gateFromSelfTestResult, SELFTEST_GATE } from "./core/selfTestGate.js";
 
+// Phase R2 — Risk framing + robust selection (pure, additive)
+import * as risk from "./core/risk.js";
+import * as robust from "./core/robust.js";
+
 // Internal: build the engine accessor bundle expected by selfTest + sensitivitySurface.
 function buildAccessors(){
   return {
@@ -90,4 +94,8 @@ export const engine = {
     gateFromSelfTestResult,
     SELFTEST_GATE,
   },
+
+  // Phase R2 — OFF by default (no UI surface unless dev tools enable)
+  risk,
+  robust,
 };

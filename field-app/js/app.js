@@ -2335,6 +2335,16 @@ function initDevTools(){
   btn.className = "devtools-btn";
   btn.textContent = "Run Self-Test";
 
+  const btnRisk = document.createElement("button");
+  btnRisk.type = "button";
+  btnRisk.className = "devtools-btn";
+  btnRisk.textContent = "Risk Summary";
+
+  const btnRobust = document.createElement("button");
+  btnRobust.type = "button";
+  btnRobust.className = "devtools-btn";
+  btnRobust.textContent = "Robust (Smoke)";
+
   const panel = document.createElement("div");
   panel.className = "devtools-panel";
   panel.hidden = true;
@@ -2481,6 +2491,42 @@ function initDevTools(){
     }
   };
 
+  const renderRisk = (title, lines) => {
+    panel.hidden = false;
+    panel.innerHTML = "";
+
+    const head = document.createElement("div");
+    head.className = "devtools-head";
+    head.textContent = title || "Risk";
+    panel.appendChild(head);
+
+    const pre = document.createElement("div");
+    pre.className = "mono";
+    pre.textContent = Array.isArray(lines) ? lines.join("\n") : String(lines || "");
+    panel.appendChild(pre);
+  };
+
+  const buildCurrentMcContext = () => {
+    const weeks = derivedWeeksRemaining();
+    const modelInput = {
+      universeSize: safeNum(state.universeSize),
+      turnoutA: safeNum(state.turnoutA),
+      turnoutB: safeNum(state.turnoutB),
+      bandWidth: safeNum(state.bandWidth),
+      candidates: state.candidates.map(c => ({ id: c.id, name: c.name, supportPct: safeNum(c.supportPct) })),
+      undecidedPct: safeNum(state.undecidedPct),
+      yourCandidateId: state.yourCandidateId,
+      undecidedMode: state.undecidedMode,
+      userSplit: state.userSplit,
+      persuasionPct: safeNum(state.persuasionPct),
+      earlyVoteExp: safeNum(state.earlyVoteExp),
+    };
+    const res = engine.computeAll(modelInput);
+    const w = (weeks != null && weeks >= 0) ? weeks : null;
+    const needVotes = deriveNeedVotes(res);
+    return { res, weeks: w, needVotes };
+  };
+
   btn.addEventListener("click", async () => {
     btn.disabled = true;
     btn.textContent = "Running…";
@@ -2501,7 +2547,77 @@ function initDevTools(){
     }
   });
 
+  btnRisk.addEventListener("click", async () => {
+    btnRisk.disabled = true;
+    btnRisk.textContent = "Computing…";
+    try{
+      const { res, weeks, needVotes } = buildCurrentMcContext();
+      const seed = state.mcSeed || "";
+      const sim = engine.runMonteCarlo({ scenario: state, res, weeks, needVotes, runs: 10000, seed, includeMargins: true });
+      const margins = sim?.margins || [];
+      const s = engine.risk.summaryFromMargins(margins);
+      const cvar10 = engine.risk.conditionalValueAtRisk(margins, 0.10);
+      const var10 = engine.risk.valueAtRisk(margins, 0.10);
+
+      const fmt = (x) => (typeof x === "number" && Number.isFinite(x)) ? x.toFixed(2) : "—";
+      const pct = (x) => (typeof x === "number" && Number.isFinite(x)) ? (100*x).toFixed(1) + "%" : "—";
+
+      renderRisk("Risk: margins (MC)", [
+        `runs: ${s.runs}`,
+        `probWin (margin>=0): ${pct(s.probWin)}`,
+        `mean: ${fmt(s.mean)} · median: ${fmt(s.median)}`,
+        `p10: ${fmt(s.p10)} · p25: ${fmt(s.p25)} · p75: ${fmt(s.p75)} · p90: ${fmt(s.p90)}`,
+        `min: ${fmt(s.min)} · max: ${fmt(s.max)} · stdev: ${fmt(s.stdev)}`,
+        `VaR10: ${fmt(var10)} · CVaR10: ${fmt(cvar10)}`,
+      ]);
+    } catch (err){
+      renderRisk("Risk: error", err?.message ? err.message : String(err || "Error"));
+    } finally {
+      btnRisk.disabled = false;
+      btnRisk.textContent = "Risk Summary";
+    }
+  });
+
+  btnRobust.addEventListener("click", async () => {
+    btnRobust.disabled = true;
+    btnRobust.textContent = "Running…";
+    try{
+      // Smoke test: deterministic selector behavior on synthetic margins arrays.
+      const seed = state.mcSeed || "";
+      const candidates = [
+        { id: "A", label: "Plan A" },
+        { id: "B", label: "Plan B" },
+        { id: "C", label: "Plan C" },
+      ];
+      const mkMargins = (bias) => {
+        // Deterministic small synthetic distribution.
+        const out = [];
+        for (let i=0;i<200;i++) out.push((i - 100) * 0.1 + bias);
+        return out;
+      };
+      const evaluateFn = (plan) => {
+        const bias = (plan.id === "A") ? -2 : (plan.id === "B") ? 0 : 1;
+        const margins = mkMargins(bias);
+        return { margins, riskSummary: engine.risk.summaryFromMargins(margins) };
+      };
+      const picked = engine.robust.selectPlan({ candidates, evaluateFn, objective: "max_p25_margin", seed });
+      const best = picked?.best;
+      renderRisk("Robust: smoke", [
+        `objective: max_p25_margin`,
+        `best: ${best?.plan?.label || "(none)"}`,
+        `score: ${best?.score != null ? String(best.score) : "—"}`,
+      ]);
+    } catch (err){
+      renderRisk("Robust: error", err?.message ? err.message : String(err || "Error"));
+    } finally {
+      btnRobust.disabled = false;
+      btnRobust.textContent = "Robust (Smoke)";
+    }
+  });
+
   host.appendChild(btn);
+  host.appendChild(btnRisk);
+  host.appendChild(btnRobust);
   host.appendChild(panel);
   document.body.appendChild(host);
 }
