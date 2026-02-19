@@ -1,23 +1,8 @@
-import { computeAll } from "./winMath.js";
-import { computeSnapshotHash } from "./hash.js";
+import { engine } from "./engine.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
 import { loadState, saveState, clearState, readBackups, writeBackupEntry } from "./storage.js";
-import { computeRoiRows, buildOptimizationTactics } from "./budget.js";
-import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
-import { computeAvgLiftPP } from "./turnout.js";
-import { computeTimelineFeasibility } from "./timeline.js";
-import { computeMaxAttemptsByTactic, optimizeTimelineConstrained } from "./timelineOptimizer.js";
-import { computeMarginalValueDiagnostics } from "./marginalValue.js";
-import { computeDecisionIntelligence } from "./decisionIntelligence.js";
 import { createScenarioManager } from "./scenarioManager.js";
-import { MODEL_VERSION, makeScenarioExport, deterministicStringify, validateScenarioExport, makeTimestampedFilename, planRowsToCsv, formatSummaryText, copyTextToClipboard, hasNonFiniteNumbers } from "./export.js";
-import { migrateSnapshot, CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
-import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
-import { checkStrictImportPolicy } from "./importPolicy.js";
-import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
-import { computeSensitivitySurface } from "./sensitivitySurface.js";
-import { UNIVERSE_DEFAULTS, computeUniverseAdjustedRates, normalizeUniversePercents } from "./universeLayer.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -73,8 +58,8 @@ function updateSelfTestGateBadge(){
     if (!els.selfTestGate) return;
     els.selfTestGate.textContent = selfTestGateStatus;
     els.selfTestGate.classList.remove("badge-unverified","badge-verified","badge-failed");
-    if (selfTestGateStatus === SELFTEST_GATE.VERIFIED) els.selfTestGate.classList.add("badge-verified");
-    else if (selfTestGateStatus === SELFTEST_GATE.FAILED) els.selfTestGate.classList.add("badge-failed");
+    if (selfTestGateStatus === engine.selfTest.SELFTEST_GATE.VERIFIED) els.selfTestGate.classList.add("badge-verified");
+    else if (selfTestGateStatus === engine.selfTest.SELFTEST_GATE.FAILED) els.selfTestGate.classList.add("badge-failed");
     else els.selfTestGate.classList.add("badge-unverified");
   } catch { /* ignore */ }
 }
@@ -109,7 +94,7 @@ async function copyDebugBundle(){
   const bundle = {
     appVersion: APP_VERSION,
     buildId: BUILD_ID,
-    schemaVersion: CURRENT_SCHEMA_VERSION,
+    schemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION,
     timestamp: new Date().toISOString(),
     scenarioName: state?.scenarioName || "",
     lastExportHash: lastExportHash || null,
@@ -117,7 +102,7 @@ async function copyDebugBundle(){
   };
   const text = JSON.stringify(bundle, null, 2);
   try{
-    await copyTextToClipboard(text);
+    await engine.snapshot.copyTextToClipboard(text);
     alert("Debug bundle copied.");
   } catch {
     // fallback
@@ -132,10 +117,10 @@ function scheduleBackupWrite(){
     backupTimer = setTimeout(() => {
       safeCall(() => {
         const scenarioClone = structuredClone(state);
-        const snapshot = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
-        snapshot.snapshotHash = computeSnapshotHash(snapshot);
+        const snapshot = { modelVersion: engine.snapshot.MODEL_VERSION, schemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
+        snapshot.snapshotHash = engine.snapshot.computeSnapshotHash(snapshot);
     lastExportHash = snapshot.snapshotHash;
-        const payload = makeScenarioExport(snapshot);
+        const payload = engine.snapshot.makeScenarioExport(snapshot);
         writeBackupEntry({ ts: new Date().toISOString(), scenarioName: scenarioClone?.scenarioName || "", payload });
         refreshBackupDropdown();
       });
@@ -168,7 +153,7 @@ function restoreBackupByIndex(idx){
   const ok = confirm("Restore this backup? This will overwrite current scenario inputs.");
   if (!ok) return;
 
-  const migrated = migrateSnapshot(entry.payload);
+  const migrated = engine.snapshot.migrateSnapshot(entry.payload);
   if (!migrated || !migrated.ok){
     alert("Backup restore failed: could not migrate snapshot.");
     return;
@@ -232,12 +217,12 @@ const els = {
     shiftsPerVolunteerPerWeek: 2,
 
     // Phase 16 — universe composition + retention (OFF by default)
-    universeLayerEnabled: UNIVERSE_DEFAULTS.enabled,
-    universeDemPct: UNIVERSE_DEFAULTS.demPct,
-    universeRepPct: UNIVERSE_DEFAULTS.repPct,
-    universeNpaPct: UNIVERSE_DEFAULTS.npaPct,
-    universeOtherPct: UNIVERSE_DEFAULTS.otherPct,
-    retentionFactor: UNIVERSE_DEFAULTS.retentionFactor,
+    universeLayerEnabled: engine.universe.UNIVERSE_DEFAULTS.enabled,
+    universeDemPct: engine.universe.UNIVERSE_DEFAULTS.demPct,
+    universeRepPct: engine.universe.UNIVERSE_DEFAULTS.repPct,
+    universeNpaPct: engine.universe.UNIVERSE_DEFAULTS.npaPct,
+    universeOtherPct: engine.universe.UNIVERSE_DEFAULTS.otherPct,
+    retentionFactor: engine.universe.UNIVERSE_DEFAULTS.retentionFactor,
 
 
   // Phase 2 — conversion + capacity
@@ -578,7 +563,7 @@ function initThemeSystemListener(){
 let lastResultsSnapshot = null;
 
 // Phase 11 — session-only safety rails
-let selfTestGateStatus = SELFTEST_GATE.UNVERIFIED;
+let selfTestGateStatus = engine.selfTest.SELFTEST_GATE.UNVERIFIED;
 let lastExportHash = null;
 const scenarioMgr = createScenarioManager({ max: 5 });
 const recentErrors = [];
@@ -1223,16 +1208,16 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
 
   if (els.btnSaveJson) els.btnSaveJson.addEventListener("click", () => {
     const scenarioClone = structuredClone(state);
-    const snapshot = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
-    snapshot.snapshotHash = computeSnapshotHash(snapshot);
+    const snapshot = { modelVersion: engine.snapshot.MODEL_VERSION, schemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION, scenarioState: scenarioClone, appVersion: APP_VERSION, buildId: BUILD_ID };
+    snapshot.snapshotHash = engine.snapshot.computeSnapshotHash(snapshot);
     lastExportHash = snapshot.snapshotHash;
-    const payload = makeScenarioExport(snapshot);
-    if (hasNonFiniteNumbers(payload)){
+    const payload = engine.snapshot.makeScenarioExport(snapshot);
+    if (engine.snapshot.hasNonFiniteNumbers(payload)){
       alert("Export blocked: scenario contains NaN/Infinity.");
       return;
     }
-    const filename = makeTimestampedFilename("field-path-scenario", "json");
-    const text = deterministicStringify(payload, 2);
+    const filename = engine.snapshot.makeTimestampedFilename("field-path-scenario", "json");
+    const text = engine.snapshot.deterministicStringify(payload, 2);
     downloadText(text, filename, "application/json");
   });
 
@@ -1241,12 +1226,12 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       alert("Nothing to export yet. Run a scenario first.");
       return;
     }
-    const csv = planRowsToCsv(lastResultsSnapshot);
+    const csv = engine.snapshot.planRowsToCsv(lastResultsSnapshot);
     if (/NaN|Infinity/.test(csv)){
       alert("CSV export blocked: contains NaN/Infinity.");
       return;
     }
-    const filename = makeTimestampedFilename("field-path-plan", "csv");
+    const filename = engine.snapshot.makeTimestampedFilename("field-path-plan", "csv");
     downloadText(csv, filename, "text/csv");
   });
 
@@ -1255,8 +1240,8 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       alert("Nothing to copy yet. Run a scenario first.");
       return;
     }
-    const text = formatSummaryText(lastResultsSnapshot);
-    const r = await copyTextToClipboard(text);
+    const text = engine.snapshot.formatSummaryText(lastResultsSnapshot);
+    const r = await engine.snapshot.copyTextToClipboard(text);
     if (!r.ok) alert(r.reason || "Copy failed.");
   });
 
@@ -1285,10 +1270,10 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       return;
 
     // Phase 11 — strict import: block newer schema before migration (optional)
-    const prePolicy = checkStrictImportPolicy({
+    const prePolicy = engine.snapshot.checkStrictImportPolicy({
       strictMode: !!state?.ui?.strictImport,
       importedSchemaVersion: loaded.schemaVersion || null,
-      currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+      currentSchemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION,
       hashMismatch: false
     });
     if (!prePolicy.ok){
@@ -1299,7 +1284,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
 
     }
 
-    const mig = migrateSnapshot(loaded);
+    const mig = engine.snapshot.migrateSnapshot(loaded);
     if (els.importWarnBanner){
       if (mig.warnings && mig.warnings.length){
         els.importWarnBanner.hidden = false;
@@ -1310,7 +1295,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
       }
     }
 
-    const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
+    const v = engine.snapshot.validateScenarioExport(mig.snapshot, engine.snapshot.MODEL_VERSION);
     if (!v.ok){
       alert(`Import failed: ${v.reason}`);
       els.loadJson.value = "";
@@ -1329,7 +1314,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     try{
       const exportedHash = (loaded && typeof loaded === "object") ? (loaded.snapshotHash || null) : null;
       // Hash must be tied to the normalized snapshot used by the engine (after migration).
-      const recomputed = computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
+      const recomputed = engine.snapshot.computeSnapshotHash({ modelVersion: v.modelVersion, scenarioState: v.scenario });
       hashMismatch = !!(exportedHash && exportedHash !== recomputed);
 
       if (hashMismatch){
@@ -1342,10 +1327,10 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
         if (els.importHashBanner) els.importHashBanner.hidden = true;
       }
 
-      const policy = checkStrictImportPolicy({
+      const policy = engine.snapshot.checkStrictImportPolicy({
         strictMode: !!state?.ui?.strictImport,
         importedSchemaVersion: (mig?.snapshot?.schemaVersion || loaded.schemaVersion || null),
-        currentSchemaVersion: CURRENT_SCHEMA_VERSION,
+        currentSchemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION,
         hashMismatch
       });
       if (!policy.ok){
@@ -1456,12 +1441,12 @@ function getUniverseLayerConfig(){
   const otherPct = safeNum(state.universeOtherPct);
   const retentionFactor = safeNum(state.retentionFactor);
 
-  const norm = normalizeUniversePercents({ demPct, repPct, npaPct, otherPct });
+  const norm = engine.universe.normalizeUniversePercents({ demPct, repPct, npaPct, otherPct });
   return {
     enabled,
     percents: norm.percents,
     shares: norm.shares,
-    retentionFactor: (retentionFactor != null) ? clamp(retentionFactor, 0.60, 0.95) : UNIVERSE_DEFAULTS.retentionFactor,
+    retentionFactor: (retentionFactor != null) ? clamp(retentionFactor, 0.60, 0.95) : engine.universe.UNIVERSE_DEFAULTS.retentionFactor,
     warning: norm.warning || "",
     wasNormalized: !!norm.normalized,
   };
@@ -1473,7 +1458,7 @@ function getEffectiveBaseRates(){
   const tr = (safeNum(state.turnoutReliabilityPct) != null) ? clamp(safeNum(state.turnoutReliabilityPct), 0, 100) / 100 : null;
 
   const cfg = getUniverseLayerConfig();
-  const adj = computeUniverseAdjustedRates({
+  const adj = engine.universe.computeUniverseAdjustedRates({
     enabled: cfg.enabled,
     universePercents: cfg.percents,
     retentionFactor: cfg.retentionFactor,
@@ -1502,7 +1487,7 @@ function renderUniverse16Card(){
   setIf(els.universe16RepPct, cfg.percents.repPct);
   setIf(els.universe16NpaPct, cfg.percents.npaPct);
   setIf(els.universe16OtherPct, cfg.percents.otherPct);
-  if (els.retentionFactor) els.retentionFactor.value = String((cfg.retentionFactor ?? UNIVERSE_DEFAULTS.retentionFactor).toFixed(2));
+  if (els.retentionFactor) els.retentionFactor.value = String((cfg.retentionFactor ?? engine.universe.UNIVERSE_DEFAULTS.retentionFactor).toFixed(2));
 
   // Disable inputs when OFF
   const disabled = !cfg.enabled;
@@ -1568,7 +1553,7 @@ function render(){
     earlyVoteExp: safeNum(state.earlyVoteExp),
   };
 
-  const res = computeAll(modelInput);
+  const res = engine.compute(modelInput);
 
   els.turnoutExpected.textContent = res.turnout.expectedPct == null ? "—" : `${res.turnout.expectedPct.toFixed(1)}%`;
   els.turnoutBand.textContent = res.turnout.bestPct == null ? "—" : `${res.turnout.bestPct.toFixed(1)}% / ${res.turnout.worstPct.toFixed(1)}%`;
@@ -1612,15 +1597,15 @@ function render(){
   // Phase 9A — build immutable results snapshot for export.js (pure serialization layer)
   try {
     lastResultsSnapshot = {
-      schemaVersion: CURRENT_SCHEMA_VERSION,
-      appVersion: MODEL_VERSION,
-      modelVersion: MODEL_VERSION,
+      schemaVersion: engine.snapshot.CURRENT_SCHEMA_VERSION,
+      appVersion: engine.snapshot.MODEL_VERSION,
+      modelVersion: engine.snapshot.MODEL_VERSION,
       scenarioState: structuredClone(state),
       planRows: structuredClone(state.ui?.lastPlanRows || []),
       planMeta: structuredClone(state.ui?.lastPlanMeta || {}),
       summary: structuredClone(state.ui?.lastSummary || {})
     };
-    lastResultsSnapshot.snapshotHash = computeSnapshotHash({ modelVersion: MODEL_VERSION, scenarioState: lastResultsSnapshot.scenarioState });
+    lastResultsSnapshot.snapshotHash = engine.snapshot.computeSnapshotHash({ modelVersion: engine.snapshot.MODEL_VERSION, scenarioState: lastResultsSnapshot.scenarioState });
   } catch {
     lastResultsSnapshot = null;
   }
@@ -1736,7 +1721,7 @@ function renderDecisionIntelligencePanel({ res, weeks }){
     const engine = {
       getStateSnapshot,
       withPatchedState,
-      computeAll,
+      engine.compute,
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
@@ -1745,7 +1730,7 @@ function renderDecisionIntelligencePanel({ res, weeks }){
       computeMaxAttemptsByTactic,
     };
 
-    const di = computeDecisionIntelligence({ engine, snap, baseline: { res, weeks } });
+    const di = engine.diagnostics.computeDecisionIntelligence({ engine, snap, baseline: { res, weeks } });
 
     setWarn(di?.warning || null);
 
@@ -2053,7 +2038,7 @@ function onSaveScenarioClick(){
     const engine = {
       getStateSnapshot,
       withPatchedState,
-      computeAll,
+      engine.compute,
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
@@ -2064,11 +2049,11 @@ function onSaveScenarioClick(){
       label: (snap.scenarioName || "").trim() || `Scenario ${scenarioMgr.list().length + 1}`,
       snapshot: snap,
       engine,
-      modelVersion: MODEL_VERSION,
+      modelVersion: engine.snapshot.MODEL_VERSION,
     });
     // Re-render using current res/weeks if available
     try{
-      const res = computeAll(snap);
+      const res = engine.compute(snap);
       const weeks = derivedWeeksRemaining();
       renderScenarioComparePanel({ res, weeks });
     } catch { /* ignore */ }
@@ -2103,7 +2088,7 @@ function wireScenarioComparePanel(){
     scenarioMgr.remove(id);
     try{
       const snap = getStateSnapshot();
-      const res = computeAll(snap);
+      const res = engine.compute(snap);
       const weeks = derivedWeeksRemaining();
       renderScenarioComparePanel({ res, weeks });
     } catch { /* ignore */ }
@@ -2278,7 +2263,7 @@ function wireSensitivitySurface(){
       const targetWinProb = Number.isFinite(tPct) ? surfaceClamp(tPct, 50, 99) / 100 : 0.70;
 
       const snap = getStateSnapshot();
-      const res = computeAll(snap);
+      const res = engine.compute(snap);
       const weeks = derivedWeeksRemaining();
       const needVotes = deriveNeedVotes(res);
 
@@ -2287,7 +2272,7 @@ function wireSensitivitySurface(){
 
       const engine = { withPatchedState, runMonteCarloSim };
 
-      const result = computeSensitivitySurface({
+      const result = engine.diagnostics.computeSensitivitySurface({
         engine,
         baseline: { res, weeks, needVotes },
         sweep: { leverKey, minValue: minV, maxValue: maxV, steps },
@@ -2404,7 +2389,7 @@ function initDevTools(){
     const status = (r.failed && r.failed > 0) ? "FAIL" : "PASS";
 
     // Phase 11 — self-test gate badge (session-only)
-    selfTestGateStatus = gateFromSelfTestResult(r);
+    selfTestGateStatus = engine.selfTest.gateFromSelfTestResult(r);
     updateSelfTestGateBadge();
     head.textContent = `Self-Test: ${status} — ${r.passed}/${r.total} passed${r.durationMs != null ? ` (${r.durationMs}ms)` : ""}`;
     panel.appendChild(head);
@@ -2558,22 +2543,22 @@ export function getSelfTestAccessors(){
     withPatchedState,
 
     // deterministic
-    computeAll,
+    engine.compute,
     deriveNeedVotes,
     derivedWeeksRemaining,
 
     // ROI + optimization
     computeRoiRows,
     buildOptimizationTactics,
-    optimizeMixBudget,
-    optimizeMixCapacity,
+    engine.optimize,
+    engine.optimize,
 
     // Phase 7
     computeTimelineFeasibility,
 
     // Phase 8A
     computeMaxAttemptsByTactic,
-    optimizeTimelineConstrained,
+    engine.optimize,
 
     // capacity helpers
     computeCapacityBreakdown,
@@ -2759,7 +2744,7 @@ function renderRoi(res, weeks){
     useDiminishing: (state.gotvMode === "advanced") ? !!state.gotvDiminishing2 : !!state.gotvDiminishing,
   };
 
-  const { rows, banner } = computeRoiRows({
+  const { rows, banner } = engine.tactics.computeRoiRows({
     goalNetVotes: needVotes,
     baseRates: { cr, sr, tr },
     tactics,
@@ -2792,7 +2777,7 @@ function renderRoi(res, weeks){
       // Use capacity ceiling as a conservative "plan" for total attempted contacts, and base CR to convert to successful contacts.
       const contacts = (capAttempts != null && cr != null) ? Math.max(0, capAttempts * cr) : 0;
 
-      const avgLiftPP = computeAvgLiftPP({
+      const avgLiftPP = engine.turnout.computeAvgLiftPP({
         baselineTurnoutPct: turnoutModel.baselineTurnoutPct,
         liftPerContactPP: turnoutModel.liftPerContactPP,
         maxLiftPP: turnoutModel.maxLiftPP,
@@ -2894,7 +2879,7 @@ function renderOptimization(res, weeks){
   const overheadAmount = safeNum(budget.overheadAmount) ?? 0;
   const includeOverhead = !!budget.includeOverhead;
 
-  const tactics = buildOptimizationTactics({
+  const tactics = engine.tactics.buildOptimizationTactics({
     baseRates: { cr, sr, tr },
     tactics: tacticsRaw
   });
@@ -2949,7 +2934,7 @@ function renderOptimization(res, weeks){
     const capUser = safeNum(opt.capacityAttempts);
     const cap = (capUser != null && capUser >= 0) ? capUser : (capAttempts != null ? capAttempts : 0);
 
-    result = optimizeMixCapacity({
+    result = engine.optimize({
       capacity: cap,
       tactics,
       step,
@@ -2965,7 +2950,7 @@ function renderOptimization(res, weeks){
     const budgetIn = safeNum(opt.budgetAmount) ?? 0;
     const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
 
-    result = optimizeMixBudget({
+    result = engine.optimize({
       budget: budgetAvail,
       tactics,
       step,
@@ -3019,7 +3004,7 @@ function renderOptimization(res, weeks){
       tacticKinds
     };
 
-    const caps = computeMaxAttemptsByTactic(capsInput);
+    const caps = engine.timeline.computeMaxAttemptsByTactic(capsInput);
 
     const budgetIn = safeNum(opt.budgetAmount) ?? 0;
     const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
@@ -3042,7 +3027,7 @@ function renderOptimization(res, weeks){
       goalNetVotes: needVotes
     };
 
-    const tlOut = optimizeTimelineConstrained(tlInputs);
+    const tlOut = engine.optimize(tlInputs);
 
     if (tlOut && tlOut.plan){
       result = tlOut.plan;
@@ -3058,7 +3043,7 @@ function renderOptimization(res, weeks){
     state.ui.lastTlMeta = structuredClone(meta);
 
     // Phase 8B — Bottlenecks & Marginal Value (diagnostic)
-    const mv = computeMarginalValueDiagnostics({
+    const mv = engine.diagnostics.computeMarginalValueDiagnostics({
       baselineInputs: tlInputs,
       baselineResult: tlOut,
       timelineInputs: capsInput
@@ -3290,7 +3275,7 @@ function renderTimeline(res, weeks){
     texts: state.budget?.tactics?.texts?.kind || "persuasion",
   };
 
-  const tl = computeTimelineFeasibility({
+  const tl = engine.timeline.computeTimelineFeasibility({
     enabled: true,
     weeksRemaining: weeks ?? 0,
     activeWeeksOverride: (activeOverride == null ? null : activeOverride),
@@ -3469,7 +3454,7 @@ function runMonteCarloNow(){
     persuasionPct: safeNum(state.persuasionPct),
     earlyVoteExp: safeNum(state.earlyVoteExp),
   };
-  const res = computeAll(modelInput);
+  const res = engine.compute(modelInput);
 
   const w = (weeks != null && weeks >= 0) ? weeks : null;
   const needVotes = deriveNeedVotes(res);
@@ -3496,7 +3481,7 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
 
   // Phase 16 — optional universe weighting + retention (no drift when disabled)
   const cfg = getUniverseLayerConfig();
-  const adj = computeUniverseAdjustedRates({
+  const adj = engine.universe.computeUniverseAdjustedRates({
     enabled: cfg.enabled,
     universePercents: cfg.percents,
     retentionFactor: cfg.retentionFactor,
@@ -3596,7 +3581,7 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     turnoutAdjustedVotes = votes;
 
     if (turnoutEnabled && targetUniverseSize != null && targetUniverseSize > 0 && gotvLiftPP > 0){
-      const avgLiftPP = computeAvgLiftPP({
+      const avgLiftPP = engine.turnout.computeAvgLiftPP({
         baselineTurnoutPct: baseTurnoutPct,
         liftPerContactPP: gotvLiftPP,
         maxLiftPP: gotvMaxLiftPP,
@@ -3679,7 +3664,7 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     median,
     p5,
     p95,
-    confidenceEnvelope: computeConfidenceEnvelope({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
+    confidenceEnvelope: engine.runMonteCarlo({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
     histogram,
     sensitivity: sens,
     riskLabel: riskLabelFromWinProb(winProb),
