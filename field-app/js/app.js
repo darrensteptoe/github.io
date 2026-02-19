@@ -490,6 +490,28 @@ const els = {
   surfaceSummary: document.getElementById("surfaceSummary"),
 };
 
+// Theme — always follow system preference (no light/dark override stored)
+const _themeMql = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+
+function applySystemTheme(){
+  try{
+    const isDark = !!(_themeMql && _themeMql.matches);
+    document.body.classList.toggle("dark", isDark);
+    // keep hidden checkbox in sync (some CSS targets it)
+    if (els.toggleDark) els.toggleDark.checked = isDark;
+  } catch { /* ignore */ }
+}
+
+function installSystemThemeListener(){
+  try{
+    if (!_themeMql) return;
+    const handler = () => applySystemTheme();
+    if (typeof _themeMql.addEventListener === "function") _themeMql.addEventListener("change", handler);
+    else if (typeof _themeMql.addListener === "function") _themeMql.addListener(handler); // Safari fallback
+  } catch { /* ignore */ }
+}
+
+
 // Phase 13 — DOM preflight (prevents silent boot failures)
 function preflightEls(){
   try{
@@ -515,66 +537,6 @@ let state = loadState() || makeDefaultState();
 
 // Phase 9A — export snapshot cache (pure read by export.js)
 let lastResultsSnapshot = null;
-
-// =========================
-// Theme (prefer system settings)
-// =========================
-const THEME_PREF_KEY = "fpeThemePref"; // "system" | "dark" | "light"
-
-function systemPrefersDark(){
-  try{
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-  } catch {
-    return false;
-  }
-}
-
-function getThemePref(){
-  try{
-    const v = localStorage.getItem(THEME_PREF_KEY);
-    if (v === "dark" || v === "light" || v === "system") return v;
-  } catch {}
-  return null;
-}
-
-function setThemePref(v){
-  try{
-    localStorage.setItem(THEME_PREF_KEY, v);
-  } catch {}
-}
-
-function applyThemePref(pref){
-  const p = pref || "system";
-  const useDark = (p === "dark") ? true : (p === "light") ? false : systemPrefersDark();
-  document.body.classList.toggle("dark", !!useDark);
-  document.body.classList.toggle("force-light", p === "light");
-  if (els.toggleDark){
-    els.toggleDark.checked = !!useDark;
-  }
-}
-
-function initTheme(){
-  // If no explicit preference stored yet:
-  // - honor legacy saved ui.dark=true as an explicit dark override
-  // - otherwise default to system
-  let pref = getThemePref();
-  if (!pref){
-    pref = (state?.ui?.dark === true) ? "dark" : "system";
-    setThemePref(pref);
-  }
-  applyThemePref(pref);
-
-  // If following system, update live on system changes.
-  try{
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const p = getThemePref() || "system";
-      if (p === "system") applyThemePref("system");
-    };
-    if (mq && mq.addEventListener) mq.addEventListener("change", handler);
-    else if (mq && mq.addListener) mq.addListener(handler);
-  } catch {}
-}
 
 // Phase 11 — session-only safety rails
 let selfTestGateStatus = SELFTEST_GATE.UNVERIFIED;
@@ -703,7 +665,7 @@ function makeDefaultState(){
     mcLastHash: "",
     ui: {
       training: false,
-      dark: false,
+      dark: null,
       advDiag: false,
       activeTab: "win",
     }
@@ -851,7 +813,6 @@ function applyStateToUI(){
   if (els.toggleTraining) els.toggleTraining.checked = !!state.ui?.training;
 
   document.body.classList.toggle("training", !!state.ui?.training);
-  // Theme is applied via system preference (and optional local override), not via scenario state.
 }
 
 function rebuildCandidateTable(){
@@ -1265,7 +1226,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    applyThemePref(getThemePref() || "system");
+    applySystemTheme();
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1365,7 +1326,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    applyThemePref(getThemePref() || "system");
+    applySystemTheme();
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1378,15 +1339,6 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     if (els.snapshotHash) els.snapshotHash.textContent = lastResultsSnapshot?.snapshotHash || "—";
   if (els.importHashBanner && els.importHashBanner.hidden === false){ /* keep until next import clears */ }
     els.explainCard.hidden = !state.ui.training;
-    persist();
-  });
-
-  if (els.toggleDark) els.toggleDark.addEventListener("change", () => {
-    const pref = els.toggleDark.checked ? "dark" : "light";
-    setThemePref(pref);
-    applyThemePref(pref);
-    // Keep legacy state flag for compatibility, but theme is controlled by preference.
-    state.ui.dark = els.toggleDark.checked;
     persist();
   });
 
@@ -1404,6 +1356,8 @@ function normalizeLoadedState(s){
   out.candidates = Array.isArray(s.candidates) ? s.candidates : base.candidates;
   out.userSplit = (s.userSplit && typeof s.userSplit === "object") ? s.userSplit : {};
   out.ui = { ...base.ui, ...(s.ui || {}) };
+  try{ delete out.ui.dark; } catch { /* ignore */ }
+
 
   out.budget = (s.budget && typeof s.budget === "object")
     ? { ...base.budget, ...s.budget,
@@ -2516,8 +2470,9 @@ function initDevTools(){
 
 function init(){
   installGlobalErrorCapture();
+  installSystemThemeListener();
+  applySystemTheme();
   preflightEls();
-  initTheme();
   wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
