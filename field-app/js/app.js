@@ -516,6 +516,66 @@ let state = loadState() || makeDefaultState();
 // Phase 9A — export snapshot cache (pure read by export.js)
 let lastResultsSnapshot = null;
 
+// =========================
+// Theme (prefer system settings)
+// =========================
+const THEME_PREF_KEY = "fpeThemePref"; // "system" | "dark" | "light"
+
+function systemPrefersDark(){
+  try{
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  } catch {
+    return false;
+  }
+}
+
+function getThemePref(){
+  try{
+    const v = localStorage.getItem(THEME_PREF_KEY);
+    if (v === "dark" || v === "light" || v === "system") return v;
+  } catch {}
+  return null;
+}
+
+function setThemePref(v){
+  try{
+    localStorage.setItem(THEME_PREF_KEY, v);
+  } catch {}
+}
+
+function applyThemePref(pref){
+  const p = pref || "system";
+  const useDark = (p === "dark") ? true : (p === "light") ? false : systemPrefersDark();
+  document.body.classList.toggle("dark", !!useDark);
+  document.body.classList.toggle("force-light", p === "light");
+  if (els.toggleDark){
+    els.toggleDark.checked = !!useDark;
+  }
+}
+
+function initTheme(){
+  // If no explicit preference stored yet:
+  // - honor legacy saved ui.dark=true as an explicit dark override
+  // - otherwise default to system
+  let pref = getThemePref();
+  if (!pref){
+    pref = (state?.ui?.dark === true) ? "dark" : "system";
+    setThemePref(pref);
+  }
+  applyThemePref(pref);
+
+  // If following system, update live on system changes.
+  try{
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      const p = getThemePref() || "system";
+      if (p === "system") applyThemePref("system");
+    };
+    if (mq && mq.addEventListener) mq.addEventListener("change", handler);
+    else if (mq && mq.addListener) mq.addListener(handler);
+  } catch {}
+}
+
 // Phase 11 — session-only safety rails
 let selfTestGateStatus = SELFTEST_GATE.UNVERIFIED;
 let lastExportHash = null;
@@ -789,10 +849,9 @@ function applyStateToUI(){
   if (els.toggleAdvDiag) els.toggleAdvDiag.checked = !!state.ui?.advDiag;
   if (els.advDiagBox) els.advDiagBox.hidden = !state.ui?.advDiag;
   if (els.toggleTraining) els.toggleTraining.checked = !!state.ui?.training;
-  if (els.toggleDark) els.toggleDark.checked = !!state.ui?.dark;
 
   document.body.classList.toggle("training", !!state.ui?.training);
-  document.body.classList.toggle("dark", !!state.ui?.dark);
+  // Theme is applied via system preference (and optional local override), not via scenario state.
 }
 
 function rebuildCandidateTable(){
@@ -1206,7 +1265,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    document.body.classList.toggle("dark", !!state.ui.dark);
+    applyThemePref(getThemePref() || "system");
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1306,7 +1365,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    document.body.classList.toggle("dark", !!state.ui.dark);
+    applyThemePref(getThemePref() || "system");
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1323,8 +1382,11 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
   });
 
   if (els.toggleDark) els.toggleDark.addEventListener("change", () => {
+    const pref = els.toggleDark.checked ? "dark" : "light";
+    setThemePref(pref);
+    applyThemePref(pref);
+    // Keep legacy state flag for compatibility, but theme is controlled by preference.
     state.ui.dark = els.toggleDark.checked;
-    document.body.classList.toggle("dark", !!state.ui.dark);
     persist();
   });
 
@@ -2455,6 +2517,7 @@ function initDevTools(){
 function init(){
   installGlobalErrorCapture();
   preflightEls();
+  initTheme();
   wireScenarioComparePanel();
   updateBuildStamp();
   updateSelfTestGateBadge();
