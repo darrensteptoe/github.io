@@ -1183,3 +1183,9 @@ body.training .help{ display:block; }
 
 /* Safety: prevent any horizontal scrollbars from the header itself */
 header.topbar{ overflow-x:hidden; }
+
+
+/* Section headers (workflow) */
+.section-header{margin:8px 0 10px 0; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,0.6); box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.section-header-title{font-weight:800; font-size:14px; letter-spacing:0.2px;}
+.section-header-sub{font-size:12px; opacity:0.75; margin-top:2px;}
