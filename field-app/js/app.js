@@ -2557,6 +2557,11 @@ export function getSelfTestAccessors(){
     optimizeMixBudget: (args) => engine.optimize(args, { mode: "budget" }),
     optimizeMixCapacity: (args) => engine.optimize(args, { mode: "capacity" }),
 
+    // timeline helpers (self-test expects these names)
+    computeTimelineFeasibility: (args) => engine.timeline.computeTimelineFeasibility(args),
+    computeMaxAttemptsByTactic: (args) => engine.timeline.computeMaxAttemptsByTactic(args),
+
+
     // capacity helpers
     computeCapacityBreakdown,
     computeCapacityContacts,
