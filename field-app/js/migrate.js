@@ -4,6 +4,24 @@
 
 export const CURRENT_SCHEMA_VERSION = "1.1.0";
 
+const SCENARIO_DEFAULTS = {
+  // Phase 16 — Universe composition + retention (aggregate)
+  universeLayerEnabled: false,
+  universeDemPct: 100,
+  universeRepPct: 0,
+  universeNpaPct: 0,
+  universeOtherPct: 0,
+  retentionFactor: 0.80,
+};
+
+function applyScenarioDefaults(scen){
+  if (!isPlainObject(scen)) return scen;
+  for (const k of Object.keys(SCENARIO_DEFAULTS)){
+    if (scen[k] == null) scen[k] = SCENARIO_DEFAULTS[k];
+  }
+  return scen;
+}
+
 function isPlainObject(v){
   return v != null && typeof v === "object" && !Array.isArray(v);
 }
@@ -75,6 +93,10 @@ export function migrateSnapshot(rawExportObject){
   } else {
     out.scenario = raw.scenario;
   }
+
+  // Ensure newly introduced scenario fields exist so imports from older snapshots
+  // are reproducible and won't silently change behavior.
+  out.scenario = applyScenarioDefaults(out.scenario);
 
   out.modelVersion = raw.modelVersion;
   out.snapshotHash = raw.snapshotHash;

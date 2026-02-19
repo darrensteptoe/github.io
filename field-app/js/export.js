@@ -8,6 +8,7 @@
 import { computeSnapshotHash } from "./hash.js";
 import { CURRENT_SCHEMA_VERSION } from "./migrate.js";
 import { APP_VERSION, BUILD_ID } from "./build.js";
+import { UNIVERSE_DEFAULTS } from "./universeLayer.js";
 
 export const MODEL_VERSION = "1.0.0";
 
@@ -68,11 +69,25 @@ function parseMajor(ver){
   return Number.isFinite(n) ? n : null;
 }
 
+function ensureUniverseDefaults(scen){
+  // Export must be reproducible across versions.
+  // Ensure Phase 16 fields are always present (even if imported from older schema).
+  const s = scen && typeof scen === "object" ? scen : {};
+  if (s.universeLayerEnabled == null) s.universeLayerEnabled = !!UNIVERSE_DEFAULTS.enabled;
+  if (s.universeDemPct == null) s.universeDemPct = UNIVERSE_DEFAULTS.demPct;
+  if (s.universeRepPct == null) s.universeRepPct = UNIVERSE_DEFAULTS.repPct;
+  if (s.universeNpaPct == null) s.universeNpaPct = UNIVERSE_DEFAULTS.npaPct;
+  if (s.universeOtherPct == null) s.universeOtherPct = UNIVERSE_DEFAULTS.otherPct;
+  if (s.retentionFactor == null) s.retentionFactor = UNIVERSE_DEFAULTS.retentionFactor;
+  return s;
+}
+
 export function makeScenarioExport(snapshot){
   // snapshot must include { scenarioState, modelVersion? }
   const mv = snapshot?.modelVersion || MODEL_VERSION;
   const sv = snapshot?.schemaVersion || CURRENT_SCHEMA_VERSION;
-  const scen = snapshot?.scenarioState ?? null;
+  const scenRaw = snapshot?.scenarioState ?? null;
+  const scen = scenRaw ? ensureUniverseDefaults(structuredClone(scenRaw)) : null;
 
   // Display-only (does not control migration)
   const appVersion = snapshot?.appVersion || APP_VERSION;
