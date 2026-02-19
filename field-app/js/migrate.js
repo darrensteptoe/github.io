@@ -2,7 +2,7 @@
 // Phase 10 — Schema Versioning + Migration Guard
 // Pure module: no DOM, no imports from app/optimizer, no state mutation.
 
-export const CURRENT_SCHEMA_VERSION = "1.0.0";
+export const CURRENT_SCHEMA_VERSION = "1.1.0";
 
 function isPlainObject(v){
   return v != null && typeof v === "object" && !Array.isArray(v);

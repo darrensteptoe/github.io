@@ -21,6 +21,7 @@ import { readBackups, writeBackupEntry } from "./storage.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
 import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 import { computeSensitivitySurface } from "./sensitivitySurface.js";
+import { computeUniverseAdjustedRates } from "./universeLayer.js";
 
 
 function deepFreeze(obj){
@@ -1499,6 +1500,45 @@ export function runSelfTests(engine){
       assert(isFiniteNum(z.min) && isFiniteNum(z.max), "safeZone not numeric");
       assert(z.max >= z.min, "safeZone inverted");
     }
+    return true;
+  });
+
+
+  // --- Phase 16) Universe composition + retention (aggregate layer) ---
+  test("Phase16 layer: disabled is identity", () => {
+    const out = computeUniverseAdjustedRates({
+      enabled: false,
+      universePercents: { demPct: 25, repPct: 25, npaPct: 25, otherPct: 25 },
+      retentionFactor: 0.75,
+      supportRate: 0.55,
+      turnoutReliability: 0.80,
+    });
+
+    assert(out && out.srAdj === 0.55, "sr should be unchanged when disabled");
+    assert(out && out.trAdj === 0.80, "tr should be unchanged when disabled");
+    assert(out && out.meta && out.meta.enabled === false, "meta enabled should be false");
+    return true;
+  });
+
+  test("Phase16 layer: higher retention increases effective rates", () => {
+    const a = computeUniverseAdjustedRates({
+      enabled: true,
+      universePercents: { demPct: 100, repPct: 0, npaPct: 0, otherPct: 0 },
+      retentionFactor: 0.60,
+      supportRate: 0.50,
+      turnoutReliability: 0.80,
+    });
+    const b = computeUniverseAdjustedRates({
+      enabled: true,
+      universePercents: { demPct: 100, repPct: 0, npaPct: 0, otherPct: 0 },
+      retentionFactor: 0.90,
+      supportRate: 0.50,
+      turnoutReliability: 0.80,
+    });
+
+    assert(a && b, "missing outputs");
+    assert(b.srAdj >= a.srAdj - 1e-12, "srAdj should not decrease with higher retention");
+    assert(b.trAdj >= a.trAdj - 1e-12, "trAdj should not decrease with higher retention");
     return true;
   });
 

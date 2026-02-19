@@ -17,6 +17,7 @@ import { SELFTEST_GATE, gateFromSelfTestResult } from "./selfTestGate.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
 import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 import { computeSensitivitySurface } from "./sensitivitySurface.js";
+import { UNIVERSE_DEFAULTS, computeUniverseAdjustedRates, normalizeUniversePercents } from "./universeLayer.js";
 
 function downloadText(text, filename, mime){
   try{
@@ -230,6 +231,14 @@ const els = {
     hoursPerShift: 3,
     shiftsPerVolunteerPerWeek: 2,
 
+    // Phase 16 — universe composition + retention (OFF by default)
+    universeLayerEnabled: UNIVERSE_DEFAULTS.enabled,
+    universeDemPct: UNIVERSE_DEFAULTS.demPct,
+    universeRepPct: UNIVERSE_DEFAULTS.repPct,
+    universeNpaPct: UNIVERSE_DEFAULTS.npaPct,
+    universeOtherPct: UNIVERSE_DEFAULTS.otherPct,
+    retentionFactor: UNIVERSE_DEFAULTS.retentionFactor,
+
 
   // Phase 2 — conversion + capacity
   goalSupportIds: document.getElementById("goalSupportIds"),
@@ -238,6 +247,16 @@ const els = {
   doorsPerHour: document.getElementById("doorsPerHour"),
   hoursPerShift: document.getElementById("hoursPerShift"),
   shiftsPerVolunteerPerWeek: document.getElementById("shiftsPerVolunteerPerWeek"),
+
+  // Phase 16 — universe composition + retention
+  universe16Enabled: document.getElementById("universe16Enabled"),
+  universe16DemPct: document.getElementById("universe16DemPct"),
+  universe16RepPct: document.getElementById("universe16RepPct"),
+  universe16NpaPct: document.getElementById("universe16NpaPct"),
+  universe16OtherPct: document.getElementById("universe16OtherPct"),
+  retentionFactor: document.getElementById("retentionFactor"),
+  universe16Derived: document.getElementById("universe16Derived"),
+  universe16Warn: document.getElementById("universe16Warn"),
 
   outConversationsNeeded: document.getElementById("outConversationsNeeded"),
   outDoorsNeeded: document.getElementById("outDoorsNeeded"),
@@ -653,6 +672,14 @@ function applyStateToUI(){
   if (els.hoursPerShift) els.hoursPerShift.value = state.hoursPerShift ?? "";
   if (els.shiftsPerVolunteerPerWeek) els.shiftsPerVolunteerPerWeek.value = state.shiftsPerVolunteerPerWeek ?? "";
 
+  // Phase 16 — universe composition + retention
+  if (els.universe16Enabled) els.universe16Enabled.checked = !!state.universeLayerEnabled;
+  if (els.universe16DemPct) els.universe16DemPct.value = state.universeDemPct ?? "";
+  if (els.universe16RepPct) els.universe16RepPct.value = state.universeRepPct ?? "";
+  if (els.universe16NpaPct) els.universe16NpaPct.value = state.universeNpaPct ?? "";
+  if (els.universe16OtherPct) els.universe16OtherPct.value = state.universeOtherPct ?? "";
+  if (els.retentionFactor) els.retentionFactor.value = state.retentionFactor ?? "";
+
   // Phase 3 — execution + risk
   if (els.orgCount) els.orgCount.value = state.orgCount ?? "";
   if (els.orgHoursPerWeek) els.orgHoursPerWeek.value = state.orgHoursPerWeek ?? "";
@@ -959,6 +986,14 @@ function wireEvents(){
   if (els.doorsPerHour) els.doorsPerHour.addEventListener("input", () => { state.doorsPerHour = safeNum(els.doorsPerHour.value); render(); persist(); });
   if (els.hoursPerShift) els.hoursPerShift.addEventListener("input", () => { state.hoursPerShift = safeNum(els.hoursPerShift.value); render(); persist(); });
   if (els.shiftsPerVolunteerPerWeek) els.shiftsPerVolunteerPerWeek.addEventListener("input", () => { state.shiftsPerVolunteerPerWeek = safeNum(els.shiftsPerVolunteerPerWeek.value); render(); persist(); });
+
+  // Phase 16 — universe composition + retention
+  if (els.universe16Enabled) els.universe16Enabled.addEventListener("change", () => { state.universeLayerEnabled = !!els.universe16Enabled.checked; markMcStale(); render(); persist(); });
+  if (els.universe16DemPct) els.universe16DemPct.addEventListener("input", () => { state.universeDemPct = safeNum(els.universe16DemPct.value); markMcStale(); render(); persist(); });
+  if (els.universe16RepPct) els.universe16RepPct.addEventListener("input", () => { state.universeRepPct = safeNum(els.universe16RepPct.value); markMcStale(); render(); persist(); });
+  if (els.universe16NpaPct) els.universe16NpaPct.addEventListener("input", () => { state.universeNpaPct = safeNum(els.universe16NpaPct.value); markMcStale(); render(); persist(); });
+  if (els.universe16OtherPct) els.universe16OtherPct.addEventListener("input", () => { state.universeOtherPct = safeNum(els.universe16OtherPct.value); markMcStale(); render(); persist(); });
+  if (els.retentionFactor) els.retentionFactor.addEventListener("input", () => { state.retentionFactor = safeNum(els.retentionFactor.value); markMcStale(); render(); persist(); });
 
   // Phase 3 — execution + risk
   if (els.orgCount) els.orgCount.addEventListener("input", () => { state.orgCount = safeNum(els.orgCount.value); markMcStale(); render(); persist(); });
@@ -1314,6 +1349,7 @@ function requiredScenarioKeysMissing(scen){
     "universeBasis","universeSize","turnoutA","turnoutB","bandWidth",
     "candidates","undecidedPct","yourCandidateId","undecidedMode","persuasionPct",
     "earlyVoteExp","supportRatePct","contactRatePct","turnoutReliabilityPct",
+    "universeLayerEnabled","universeDemPct","universeRepPct","universeNpaPct","universeOtherPct","retentionFactor",
     "mcMode","mcVolatility","mcSeed","budget","timelineEnabled","ui"
   ];
   const missing = [];
@@ -1335,6 +1371,99 @@ function derivedWeeksRemaining(){
   const days = daysBetween(now, election);
   if (days == null) return null;
   return Math.max(0, Math.ceil(days / 7));
+}
+
+function getUniverseLayerConfig(){
+  const enabled = !!state.universeLayerEnabled;
+  const demPct = safeNum(state.universeDemPct);
+  const repPct = safeNum(state.universeRepPct);
+  const npaPct = safeNum(state.universeNpaPct);
+  const otherPct = safeNum(state.universeOtherPct);
+  const retentionFactor = safeNum(state.retentionFactor);
+
+  const norm = normalizeUniversePercents({ demPct, repPct, npaPct, otherPct });
+  return {
+    enabled,
+    percents: norm.percents,
+    shares: norm.shares,
+    retentionFactor: (retentionFactor != null) ? clamp(retentionFactor, 0.60, 0.95) : UNIVERSE_DEFAULTS.retentionFactor,
+    warning: norm.warning || "",
+    wasNormalized: !!norm.normalized,
+  };
+}
+
+function getEffectiveBaseRates(){
+  const cr = (safeNum(state.contactRatePct) != null) ? clamp(safeNum(state.contactRatePct), 0, 100) / 100 : null;
+  const sr = (safeNum(state.supportRatePct) != null) ? clamp(safeNum(state.supportRatePct), 0, 100) / 100 : null;
+  const tr = (safeNum(state.turnoutReliabilityPct) != null) ? clamp(safeNum(state.turnoutReliabilityPct), 0, 100) / 100 : null;
+
+  const cfg = getUniverseLayerConfig();
+  const adj = computeUniverseAdjustedRates({
+    enabled: cfg.enabled,
+    universePercents: cfg.percents,
+    retentionFactor: cfg.retentionFactor,
+    supportRate: sr,
+    turnoutReliability: tr,
+  });
+
+  return {
+    cr,
+    sr: adj.srAdj,
+    tr: adj.trAdj,
+    cfg,
+    meta: adj.meta,
+    volatilityBoost: adj.volatilityBoost || 0,
+  };
+}
+
+function renderUniverse16Card(){
+  if (!els.retentionFactor && !els.universe16Enabled) return;
+  const cfg = getUniverseLayerConfig();
+
+  // UI fields
+  if (els.universe16Enabled) els.universe16Enabled.checked = !!state.universeLayerEnabled;
+  const setIf = (el, v) => { if (el) el.value = (v == null || !isFinite(v)) ? "" : String(Number(v).toFixed(1)); };
+  setIf(els.universe16DemPct, cfg.percents.demPct);
+  setIf(els.universe16RepPct, cfg.percents.repPct);
+  setIf(els.universe16NpaPct, cfg.percents.npaPct);
+  setIf(els.universe16OtherPct, cfg.percents.otherPct);
+  if (els.retentionFactor) els.retentionFactor.value = String((cfg.retentionFactor ?? UNIVERSE_DEFAULTS.retentionFactor).toFixed(2));
+
+  // Disable inputs when OFF
+  const disabled = !cfg.enabled;
+  for (const el of [els.universe16DemPct, els.universe16RepPct, els.universe16NpaPct, els.universe16OtherPct, els.retentionFactor]){
+    if (el) el.disabled = disabled;
+  }
+
+  // Derived display
+  const eff = getEffectiveBaseRates();
+  if (els.universe16Derived){
+    if (!cfg.enabled){
+      els.universe16Derived.textContent = "Disabled (baseline behavior).";
+    } else {
+      const pm = eff?.meta?.persuasionMultiplier;
+      const tm = eff?.meta?.turnoutMultiplier;
+      const tb = eff?.meta?.turnoutBoostApplied;
+      const parts = [];
+      parts.push(`Persuasion multiplier: ${(pm != null && isFinite(pm)) ? pm.toFixed(2) : "—"}`);
+      parts.push(`Turnout multiplier: ${(tm != null && isFinite(tm)) ? tm.toFixed(2) : "—"}`);
+      parts.push(`Turnout boost: ${(tb != null && isFinite(tb)) ? (100*tb).toFixed(1) + "%" : "—"}`);
+      parts.push(`Effective support rate: ${(eff.sr != null && isFinite(eff.sr)) ? (100*eff.sr).toFixed(1) + "%" : "—"}`);
+      parts.push(`Effective turnout reliability: ${(eff.tr != null && isFinite(eff.tr)) ? (100*eff.tr).toFixed(1) + "%" : "—"}`);
+      els.universe16Derived.textContent = parts.join(" · ");
+    }
+  }
+
+  // Warning banner
+  if (els.universe16Warn){
+    if (cfg.enabled && cfg.wasNormalized && cfg.warning){
+      els.universe16Warn.hidden = false;
+      els.universe16Warn.textContent = cfg.warning;
+    } else {
+      els.universe16Warn.hidden = true;
+      els.universe16Warn.textContent = "";
+    }
+  }
 }
 
 function safeCall(fn){
@@ -1398,6 +1527,8 @@ function render(){
   safeCall(() => renderGuardrails(res));
   safeCall(() => renderConversion(res, weeks));
 
+  safeCall(() => renderUniverse16Card());
+
   safeCall(() => renderRoi(res, weeks));
   safeCall(() => renderOptimization(res, weeks));
   safeCall(() => renderTimeline(res, weeks));
@@ -1433,10 +1564,9 @@ function renderConversion(res, weeks){
   const autoGoal = safeNum(res?.expected?.persuasionNeed);
   const goal = (rawGoal != null && rawGoal >= 0) ? rawGoal : (autoGoal != null && autoGoal > 0 ? autoGoal : 0);
 
-  const srPct = safeNum(state.supportRatePct);
-  const crPct = safeNum(state.contactRatePct);
-  const sr = (srPct != null) ? clamp(srPct, 0, 100) / 100 : null;
-  const cr = (crPct != null) ? clamp(crPct, 0, 100) / 100 : null;
+  const eff = getEffectiveBaseRates();
+  const sr = eff.sr;
+  const cr = eff.cr;
 
   const dph = safeNum(state.doorsPerHour);
   const hps = safeNum(state.hoursPerShift);
@@ -2458,6 +2588,14 @@ function hashMcInputs(res, weeks){
     supportRatePct: safeNum(state.supportRatePct),
     turnoutReliabilityPct: safeNum(state.turnoutReliabilityPct),
 
+    // Phase 16 — universe composition + retention
+    universeLayerEnabled: !!state.universeLayerEnabled,
+    universeDemPct: safeNum(state.universeDemPct),
+    universeRepPct: safeNum(state.universeRepPct),
+    universeNpaPct: safeNum(state.universeNpaPct),
+    universeOtherPct: safeNum(state.universeOtherPct),
+    retentionFactor: safeNum(state.retentionFactor),
+
     // Phase 6 — turnout / GOTV
     turnoutEnabled: !!state.turnoutEnabled,
     turnoutBaselinePct: safeNum(state.turnoutBaselinePct),
@@ -2510,13 +2648,10 @@ function renderRoi(res, weeks){
   if (!els.roiTbody) return;
 
   const needVotes = deriveNeedVotes(res);
-  const crPct = safeNum(state.contactRatePct);
-  const srPct = safeNum(state.supportRatePct);
-  const trPct = safeNum(state.turnoutReliabilityPct);
-
-  const cr = (crPct != null) ? clamp(crPct, 0, 100) / 100 : null;
-  const sr = (srPct != null) ? clamp(srPct, 0, 100) / 100 : null;
-  const tr = (trPct != null) ? clamp(trPct, 0, 100) / 100 : null;
+  const eff = getEffectiveBaseRates();
+  const cr = eff.cr;
+  const sr = eff.sr;
+  const tr = eff.tr;
 
   // Capacity ceiling (attempts) from Phase 3 inputs (blended)
   const w = (weeks != null && weeks >= 0) ? weeks : null;
@@ -2656,13 +2791,10 @@ function renderOptimization(res, weeks){
   const needVotes = deriveNeedVotes(res);
   if (els.optGapContext) els.optGapContext.textContent = (needVotes == null) ? "—" : fmtInt(Math.round(needVotes));
 
-  const crPct = safeNum(state.contactRatePct);
-  const srPct = safeNum(state.supportRatePct);
-  const trPct = safeNum(state.turnoutReliabilityPct);
-
-  const cr = (crPct != null) ? clamp(crPct, 0, 100) / 100 : null;
-  const sr = (srPct != null) ? clamp(srPct, 0, 100) / 100 : null;
-  const tr = (trPct != null) ? clamp(trPct, 0, 100) / 100 : null;
+  const eff = getEffectiveBaseRates();
+  const cr = eff.cr;
+  const sr = eff.sr;
+  const tr = eff.tr;
 
   // Phase 3 capacity ceiling (attempts)
   const w = (weeks != null && weeks >= 0) ? weeks : null;
@@ -3147,14 +3279,11 @@ function renderPhase3(res, weeks){
   const w = (weeks != null && weeks >= 0) ? weeks : null;
   els.p3Weeks.textContent = w == null ? "—" : fmtInt(w);
 
-  // Base rates (from Phase 2 + p3)
-  const crPct = safeNum(state.contactRatePct);
-  const prPct = safeNum(state.supportRatePct);
-  const rrPct = safeNum(state.turnoutReliabilityPct);
-
-  const cr = (crPct != null) ? clamp(crPct, 0, 100) / 100 : null;
-  const pr = (prPct != null) ? clamp(prPct, 0, 100) / 100 : null;
-  const rr = (rrPct != null) ? clamp(rrPct, 0, 100) / 100 : null;
+  // Base rates (Phase 2 + Phase 16 adjustments when enabled)
+  const eff = getEffectiveBaseRates();
+  const cr = eff.cr;
+  const pr = eff.sr;
+  const rr = eff.tr;
 
   // Capacity inputs
   const orgCount = safeNum(state.orgCount);
@@ -3287,8 +3416,22 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
 
   // Base rates
   const baseCr = pctToUnit(safeNum(state.contactRatePct), 0.22);
-  const basePr = pctToUnit(safeNum(state.supportRatePct), 0.55);
-  const baseRr = pctToUnit(safeNum(state.turnoutReliabilityPct), 0.80);
+  const rawPr = pctToUnit(safeNum(state.supportRatePct), 0.55);
+  const rawRr = pctToUnit(safeNum(state.turnoutReliabilityPct), 0.80);
+
+  // Phase 16 — optional universe weighting + retention (no drift when disabled)
+  const cfg = getUniverseLayerConfig();
+  const adj = computeUniverseAdjustedRates({
+    enabled: cfg.enabled,
+    universePercents: cfg.percents,
+    retentionFactor: cfg.retentionFactor,
+    supportRate: rawPr,
+    turnoutReliability: rawRr,
+  });
+
+  const basePr = (adj && adj.srAdj != null) ? adj.srAdj : rawPr;
+  const baseRr = (adj && adj.trAdj != null) ? adj.trAdj : rawRr;
+  const volBoost = (cfg.enabled && adj && adj.volatilityBoost != null) ? adj.volatilityBoost : 0;
 
   // Capacity bases
   const orgCount = safeNum(state.orgCount) ?? 2;
@@ -3301,8 +3444,8 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
   const rng = makeRng(seed);
 
   const specs = (mode === "advanced")
-    ? buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol })
-    : buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol });
+    ? buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost })
+    : buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost });
 
   const margins = new Array(runs);
   const wins = new Array(runs);
@@ -3446,25 +3589,43 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
   return summary;
 }
 
-function buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol }){
+function buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost = 0 }){
   const v = (state.mcVolatility || "med");
   const w = (v === "low") ? 0.10 : (v === "high") ? 0.30 : 0.20;
 
   return {
     contactRate: spread(baseCr, w, 0, 1),
-    persuasionRate: spread(basePr, w, 0, 1),
-    turnoutReliability: spread(baseRr, w, 0, 1),
+    persuasionRate: spread(basePr, w + (volBoost || 0), 0, 1),
+    turnoutReliability: spread(baseRr, w + (volBoost || 0), 0, 1),
     doorsPerHour: spread(baseDph, w, 0.01, Infinity),
     callsPerHour: spread(baseCph, w, 0.01, Infinity),
     volunteerMult: spread(baseVol, w, 0.01, Infinity),
   };
 }
 
-function buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol }){
+function buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost = 0 }){
   // Inputs are in % for rates and raw for productivity/multiplier.
   const cr = triFromPctInputs(state.mcContactMin, state.mcContactMode, state.mcContactMax, baseCr);
-  const pr = triFromPctInputs(state.mcPersMin, state.mcPersMode, state.mcPersMax, basePr);
-  const rr = triFromPctInputs(state.mcReliMin, state.mcReliMode, state.mcReliMax, baseRr);
+  const pr0 = triFromPctInputs(state.mcPersMin, state.mcPersMode, state.mcPersMax, basePr);
+  const rr0 = triFromPctInputs(state.mcReliMin, state.mcReliMode, state.mcReliMax, baseRr);
+
+  // Phase 16 — widen triangle slightly when retention is low (tiny, capped)
+  const widen = (tri, boost) => {
+    if (!tri || tri.min == null || tri.mode == null || tri.max == null) return tri;
+    const b = Math.max(0, Number(boost) || 0);
+    if (b <= 0) return tri;
+    const mid = tri.mode;
+    const span = (tri.max - tri.min);
+    const extra = span * b;
+    return {
+      min: Math.max(0, tri.min - extra),
+      mode: Math.min(1, Math.max(0, mid)),
+      max: Math.min(1, tri.max + extra)
+    };
+  };
+
+  const pr = widen(pr0, volBoost);
+  const rr = widen(rr0, volBoost);
 
   const dph = triFromNumInputs(state.mcDphMin, state.mcDphMode, state.mcDphMax, baseDph, 0.01);
   const cph = triFromNumInputs(state.mcCphMin, state.mcCphMode, state.mcCphMax, baseCph, 0.01);
