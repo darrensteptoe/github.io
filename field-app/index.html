@@ -1545,6 +1545,65 @@
                 </div>
 
               </div>
+
+              <div class="card" id="universe16Card" style="padding:12px;">
+                <div class="card-head" style="margin-bottom:8px;">
+                  <h2>Universe composition & retention (Phase 16)</h2>
+                </div>
+
+                <details>
+                  <summary class="muted" style="cursor:pointer;">Advanced (optional)</summary>
+                  <div style="margin-top:10px;">
+                    <div class="row" style="align-items:center; gap:10px; margin-bottom:10px;">
+                      <label class="switch">
+                        <input id="universe16Enabled" type="checkbox" />
+                        <span class="slider"></span>
+                        <span class="switch-label">Enable weighting</span>
+                      </label>
+                      <div class="muted">OFF by default (no drift).</div>
+                    </div>
+
+                    <div class="grid4">
+                      <div class="field">
+                        <label class="label" for="universe16DemPct">% Dem</label>
+                        <input id="universe16DemPct" class="input num" type="number" min="0" max="100" step="0.1" />
+                      </div>
+                      <div class="field">
+                        <label class="label" for="universe16RepPct">% Rep</label>
+                        <input id="universe16RepPct" class="input num" type="number" min="0" max="100" step="0.1" />
+                      </div>
+                      <div class="field">
+                        <label class="label" for="universe16NpaPct">% NPA</label>
+                        <input id="universe16NpaPct" class="input num" type="number" min="0" max="100" step="0.1" />
+                      </div>
+                      <div class="field">
+                        <label class="label" for="universe16OtherPct">% Other</label>
+                        <input id="universe16OtherPct" class="input num" type="number" min="0" max="100" step="0.1" />
+                      </div>
+                    </div>
+
+                    <div class="grid2" style="margin-top:10px;">
+                      <div class="field">
+                        <label class="label" for="retentionFactor">Support retention (0.60–0.95)</label>
+                        <input id="retentionFactor" class="input num" type="number" min="0.60" max="0.95" step="0.01" />
+                        <div class="help" data-help="Aggregate durability of support IDs through the rest of the race (voter-ID + reinforcement).">
+                          <span class="help-title">Meaning</span>
+                          <span class="help-text">Higher = support sticks + turns out more reliably. Lower = more soft decay + more fragility.</span>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label class="label">Derived (internal)</label>
+                        <div id="universe16Derived" class="muted" style="padding:10px; border:1px solid var(--line); border-radius:10px;">—</div>
+                      </div>
+                    </div>
+
+                    <div id="universe16Warn" class="banner warn" hidden style="margin-top:10px;"></div>
+                  </div>
+                </details>
+
+                <div class="note">This layer weights persuasion and turnout reliability by party composition and applies a single retention factor. It is aggregate-only (not a CRM).</div>
+              </div>
+
       <div class="card phase-scenarios" id="scenarioCompareCard">
           <div class="card-head">
             <h2>Scenario Compare (Phase 13)</h2>
