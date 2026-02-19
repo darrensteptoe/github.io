@@ -490,28 +490,6 @@ const els = {
   surfaceSummary: document.getElementById("surfaceSummary"),
 };
 
-// Theme — always follow system preference (no light/dark override stored)
-const _themeMql = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
-
-function applySystemTheme(){
-  try{
-    const isDark = !!(_themeMql && _themeMql.matches);
-    document.body.classList.toggle("dark", isDark);
-    // keep hidden checkbox in sync (some CSS targets it)
-    if (els.toggleDark) els.toggleDark.checked = isDark;
-  } catch { /* ignore */ }
-}
-
-function installSystemThemeListener(){
-  try{
-    if (!_themeMql) return;
-    const handler = () => applySystemTheme();
-    if (typeof _themeMql.addEventListener === "function") _themeMql.addEventListener("change", handler);
-    else if (typeof _themeMql.addListener === "function") _themeMql.addListener(handler); // Safari fallback
-  } catch { /* ignore */ }
-}
-
-
 // Phase 13 — DOM preflight (prevents silent boot failures)
 function preflightEls(){
   try{
@@ -534,6 +512,67 @@ const DEFAULTS_BY_TEMPLATE = {
 };
 
 let state = loadState() || makeDefaultState();
+
+
+// =========================
+// Theme (System-first, with optional "force dark" override via hidden toggleDark)
+// - Default: follow OS (prefers-color-scheme)
+// - If user/other UI triggers #toggleDark, checked => force dark, unchecked => follow system
+// - Keeps legacy state.ui.dark for backward compatibility but does NOT treat it as the source of truth
+// =========================
+function systemPrefersDark(){
+  try{
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  } catch {
+    return false;
+  }
+}
+
+function normalizeThemeMode(){
+  if (!state.ui) state.ui = {};
+  if (state.ui.themeMode !== "system" && state.ui.themeMode !== "dark" && state.ui.themeMode !== "light"){
+    // migrate legacy boolean to new mode
+    state.ui.themeMode = (state.ui.dark === true) ? "dark" : "system";
+  }
+}
+
+function computeThemeIsDark(){
+  const mode = state.ui?.themeMode || "system";
+  if (mode === "dark") return true;
+  if (mode === "light") return false; // legacy/compat if ever present
+  return systemPrefersDark();
+}
+
+function applyThemeFromState(){
+  normalizeThemeMode();
+  const isDark = computeThemeIsDark();
+
+  document.body.classList.toggle("dark", !!isDark);
+
+  // The hidden checkbox is treated as an override control (checked => force dark).
+  // We keep it in sync so code that expects it doesn't break.
+  if (els.toggleDark){
+    els.toggleDark.checked = (state.ui.themeMode === "dark");
+  }
+
+  // Legacy flag remains updated for older code paths (represents the *effective* theme).
+  state.ui.dark = !!isDark;
+}
+
+function initThemeSystemListener(){
+  try{
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => {
+      if ((state.ui?.themeMode || "system") === "system"){
+        applyThemeFromState();
+        // do NOT persist on OS changes; keeps exports/diffs stable
+      }
+    };
+    if (mq && mq.addEventListener) mq.addEventListener("change", handler);
+    else if (mq && mq.addListener) mq.addListener(handler);
+  } catch {}
+}
+
 
 // Phase 9A — export snapshot cache (pure read by export.js)
 let lastResultsSnapshot = null;
@@ -665,7 +704,7 @@ function makeDefaultState(){
     mcLastHash: "",
     ui: {
       training: false,
-      dark: null,
+      dark: false,
       advDiag: false,
       activeTab: "win",
     }
@@ -813,6 +852,7 @@ function applyStateToUI(){
   if (els.toggleTraining) els.toggleTraining.checked = !!state.ui?.training;
 
   document.body.classList.toggle("training", !!state.ui?.training);
+  applyThemeFromState();
 }
 
 function rebuildCandidateTable(){
@@ -974,6 +1014,8 @@ function wireEvents(){
     state.persuasionPct = state.persuasionPct || defs.persuasionPct;
     state.earlyVoteExp = state.earlyVoteExp || defs.earlyVoteExp;
     applyStateToUI();
+  applyThemeFromState();
+  initThemeSystemListener();
     render();
     persist();
   });
@@ -1226,7 +1268,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    applySystemTheme();
+    document.body.classList.toggle("dark", !!state.ui.dark);
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1326,7 +1368,7 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     applyStateToUI();
     rebuildCandidateTable();
     document.body.classList.toggle("training", !!state.ui.training);
-    applySystemTheme();
+    document.body.classList.toggle("dark", !!state.ui.dark);
     if (els.explainCard) els.explainCard.hidden = !state.ui.training;
     render();
     persist();
@@ -1342,6 +1384,14 @@ if (els.roiRefresh) els.roiRefresh.addEventListener("click", () => { render(); }
     persist();
   });
 
+  if (els.toggleDark) els.toggleDark.addEventListener("change", () => {
+  // checked => force dark, unchecked => follow system
+  if (!state.ui) state.ui = {};
+  state.ui.themeMode = els.toggleDark.checked ? "dark" : "system";
+  applyThemeFromState();
+  persist();
+});
+
   if (els.toggleAdvDiag) els.toggleAdvDiag.addEventListener("change", () => {
     state.ui.advDiag = els.toggleAdvDiag.checked;
     if (els.advDiagBox) els.advDiagBox.hidden = !state.ui.advDiag;
@@ -1356,8 +1406,6 @@ function normalizeLoadedState(s){
   out.candidates = Array.isArray(s.candidates) ? s.candidates : base.candidates;
   out.userSplit = (s.userSplit && typeof s.userSplit === "object") ? s.userSplit : {};
   out.ui = { ...base.ui, ...(s.ui || {}) };
-  try{ delete out.ui.dark; } catch { /* ignore */ }
-
 
   out.budget = (s.budget && typeof s.budget === "object")
     ? { ...base.budget, ...s.budget,
@@ -2470,8 +2518,6 @@ function initDevTools(){
 
 function init(){
   installGlobalErrorCapture();
-  installSystemThemeListener();
-  applySystemTheme();
   preflightEls();
   wireScenarioComparePanel();
   updateBuildStamp();
