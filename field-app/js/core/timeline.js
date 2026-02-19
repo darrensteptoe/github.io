@@ -34,7 +34,8 @@ export function computeTimelineFeasibility(args){
     requiredTotal += clamp0(required[k]);
   }
 
-  const caps = computeMaxAttemptsByTactic(args) || {};
+  const capsWrap = computeMaxAttemptsByTactic(args) || { maxAttemptsByTactic: {} };
+  const caps = capsWrap.maxAttemptsByTactic || {};
   let executableTotal = 0;
   for (const k of Object.keys(required)){
     const need = clamp0(required[k]);

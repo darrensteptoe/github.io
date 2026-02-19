@@ -22,15 +22,15 @@ function min2(a, b){
 }
 
 export function computeMaxAttemptsByTactic(args){
-  // Expected shape (from UI/self-test patterns):
+  // Returns a stable wrapper:
   // {
-  //   enabled, weeksRemaining, activeWeeksOverride,
-  //   staffing:{staff,volunteers,staffHours,volunteerHours},
-  //   throughput:{doors,phones,texts},
-  //   ramp:{enabled, mode}
+  //   maxAttemptsByTactic: { [tacticId]: number },
+  //   meta: { enabled, weeksRemaining, activeWeeks, totalHours, rampFactor }
   // }
   const enabled = !!args?.enabled;
-  if (!enabled) return {};
+  if (!enabled){
+    return { maxAttemptsByTactic: {}, meta: { enabled:false, weeksRemaining: 0, activeWeeks: 0, totalHours: 0, rampFactor: 1 } };
+  }
 
   const weeksRemaining = clamp0(args?.weeksRemaining);
   const activeWeeksOverride = num(args?.activeWeeksOverride, null);
@@ -54,12 +54,17 @@ export function computeMaxAttemptsByTactic(args){
   }
 
   const tp = args?.throughput || {};
-  const out = {};
+  const maxAttemptsByTactic = {};
   for (const k of Object.keys(tp)){
     const perHour = clamp0(tp[k]);
-    out[k] = totalHours * perHour * rampFactor;
+    maxAttemptsByTactic[k] = totalHours * perHour * rampFactor;
   }
-  return out;
+
+  return {
+    maxAttemptsByTactic,
+    meta: { enabled:true, weeksRemaining, activeWeeks, totalHours, rampFactor }
+  };
+}
 }
 
 function applyCapsToTactics(tactics, maxAttemptsByTactic){
@@ -111,6 +116,28 @@ export function optimizeTimelineConstrained(opts){
   };
 
   let plan = runMaxNet();
+  // Build binding object expected by Phase 8B diagnostics.
+  const bindingObj = { budget: false, capacity: false, timeline: [] };
+
+  // budget/capacity binding inferred from underlying optimizer
+  if (plan && plan.binding === "budget") bindingObj.budget = true;
+  if (plan && plan.binding === "capacity") bindingObj.capacity = true;
+
+  // timeline binding inferred when caps are present and the allocator is cap-limited
+  const capsMap = opts?.maxAttemptsByTactic || {};
+  if (plan && plan.allocation && Object.keys(capsMap).length){
+    const tl = [];
+    for (const [tid, capRaw] of Object.entries(capsMap)){
+      const cap = num(capRaw, null);
+      if (cap == null) continue;
+      const a = num(plan.allocation?.[tid], 0);
+      // Binding if allocation reaches cap within tolerance.
+      if (cap > 0 && Math.abs(a - cap) <= Math.max(1e-9, cap * 1e-9)){
+        tl.push(tid);
+      }
+    }
+    if (tl.length) bindingObj.timeline = tl;
+  }
 
   // If requested: approximate “min cost to reach goal” by checking feasibility only.
   // (We keep this deterministic and fail-soft; if goal is impossible, meta will show it.)
@@ -129,6 +156,7 @@ export function optimizeTimelineConstrained(opts){
     meta: {
       mode,
       tlObjectiveMode,
+      bindingObj,
       goalNetVotes: goal,
       goalFeasible,
       maxAchievableNetVotes: maxAchievable,
