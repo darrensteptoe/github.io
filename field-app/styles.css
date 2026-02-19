@@ -184,10 +184,11 @@ body.dark{
 .card{
   background:var(--panel);
   border:1px solid var(--rule);
-  border-left:6px solid transparent;
+  border-left:6px solid var(--stripe, transparent);
   border-radius:var(--radius);
   box-shadow:var(--shadow2);
-  padding:12px;
+  padding:var(--card-pad);
+  overflow:hidden;
 }
 
 /* Any card/boxed tile inside a card should read as computed (gray) */
@@ -951,31 +952,133 @@ body.training .help{ display:block; }
 .card{ background: var(--panel); }
 
 /* Relational phase coloring (uniform system) */
-.card.phase-setup{ border-left-color: var(--phase-setup); }
-.card.phase-universe{ border-left-color: var(--phase-universe); }
-.card.phase-persuasion{ border-left-color: var(--phase-persuasion); }
-.card.phase-candidates{ border-left-color: var(--phase-candidates); }
-.card.phase-phase2{ border-left-color: var(--phase-phase2); }
-.card.phase-p3{ border-left-color: var(--phase-p3); }
-.card.phase-roi{ border-left-color: var(--phase-roi); }
-.card.phase-di{ border-left-color: var(--phase-di); }
-.card.phase-scenarios{ border-left-color: var(--phase-scenarios); }
+.card.phase-setup{ --stripe: var(--phase-setup); }
+.card.phase-universe{ --stripe: var(--phase-universe); }
+.card.phase-persuasion{ --stripe: var(--phase-persuasion); }
+.card.phase-candidates{ --stripe: var(--phase-candidates); }
+.card.phase-phase2{ --stripe: var(--phase-phase2); }
+.card.phase-p3{ --stripe: var(--phase-p3); }
+.card.phase-roi{ --stripe: var(--phase-roi); }
+.card.phase-di{ --stripe: var(--phase-di); }
+.card.phase-scenarios{ --stripe: var(--phase-scenarios); }
 
 
-.card.phase-winpath{ border-left-color: var(--phase-winpath); }
-.card.phase-p5{ border-left-color: var(--phase-p5); }
-.card.phase-p6{ border-left-color: var(--phase-p6); }
-.card.phase-p7{ border-left-color: var(--phase-p7); }
+.card.phase-winpath{ --stripe: var(--phase-winpath); }
+.card.phase-p5{ --stripe: var(--phase-p5); }
+.card.phase-p6{ --stripe: var(--phase-p6); }
+.card.phase-p7{ --stripe: var(--phase-p7); }
 
 /* Phase 16 Accent Stripe */
 .card.phase16{
   position: relative;
-  border-left: 6px solid #c9e7ff;
+  --stripe:#c9e7ff;
 }
 /* Phase accent bars removed (uniform cards) */
 .card[data-accent]::before,
 #phase3Card::before,
 #scenarioCompareCard::before{ display:none !important; }
+
+
+/* === Phase R2.5: Card hierarchy + spacing system (UI only) === */
+:root{
+  /* 8px base spacing scale */
+  --sp-8:8px;
+  --sp-12:12px;
+  --sp-16:16px;
+  --sp-24:24px;
+  --sp-32:32px;
+
+  /* Hierarchy surfaces */
+  --section-bg: var(--panel);
+  --panel-bg: var(--panel2);
+  --readonly-bg: var(--computed-bg);
+  --readonly-border: var(--computed-border);
+
+  /* Stripe token (default) */
+  --stripe: transparent;
+
+  /* Dev tint */
+  --dev-tint: rgba(31,42,68,0.05);
+}
+
+/* Top-level modules */
+.card-section{
+  padding: var(--sp-16);
+  border-radius: var(--radius-3);
+}
+.card-section.card{
+  padding: var(--sp-16);
+}
+
+/* Inner interactive blocks */
+.card-panel{
+  background: var(--panel-bg);
+  border-color: color-mix(in srgb, var(--rule) 70%, transparent);
+  box-shadow: none;
+}
+
+/* Read-only inner blocks */
+.card-readonly{
+  background: var(--readonly-bg);
+  border-color: var(--readonly-border);
+  box-shadow: none;
+}
+.card-readonly .input,
+.card-readonly input,
+.card-readonly select,
+.card-readonly textarea{
+  background: color-mix(in srgb, var(--readonly-bg) 70%, white);
+}
+
+/* Any card nested inside a card gets distinct surface by default */
+.card .card{
+  background: var(--panel-bg);
+  box-shadow: none;
+  border-color: color-mix(in srgb, var(--rule) 70%, transparent);
+}
+
+/* Explicit section stripe tokens */
+.card-section--win{ --stripe: var(--phase-winpath); }
+.card-section--risk{ --stripe: var(--phase-di); }
+.card-section--timeline{ --stripe: var(--phase-p7); }
+
+/* Dev-only containment */
+.dev-panel{
+  background: color-mix(in srgb, var(--panel-bg) 80%, var(--dev-tint));
+  border-color: color-mix(in srgb, var(--rule) 60%, transparent);
+}
+.dev-panel .card-head h2{ letter-spacing:0.2px; }
+
+/* Spacing normalization inside cards */
+.card .grid2, .card .grid3{ gap: var(--sp-16); }
+.card .field + .field{ margin-top:0; }
+.card .note{ margin-top: var(--sp-12); }
+
+/* Button rows: wrap cleanly on small screens */
+.rowline, .btn-row, .toolbar, .topbar-actions{
+  gap: var(--sp-12);
+}
+.rowline{ flex-wrap:wrap; }
+.btn-row{ flex-wrap:wrap; align-items:center; }
+
+/* Tables and long mono text should not cause overflow */
+table{ width:100%; max-width:100%; }
+.mono{ max-width:100%; overflow:auto; }
+
+/* Mobile hardening */
+@media (max-width: 768px){
+  .card{ padding: var(--sp-16); }
+  .grid2{ grid-template-columns:1fr; }
+  .grid3{ grid-template-columns:1fr; }
+  .topbar .toolbar{ flex-wrap:wrap; }
+  .topbar #restoreBackup{ flex:1 1 220px !important; }
+}
+
+@media (max-width: 420px){
+  .topbar .toolbar{ gap: var(--sp-8); }
+  .topbar .btn.btn-sm{ padding:6px 10px; }
+  .switch-label{ white-space:normal; }
+}
 
 /* Card header row w/ chip */
 .card-head-row{
