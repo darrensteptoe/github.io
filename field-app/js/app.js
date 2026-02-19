@@ -2558,8 +2558,7 @@ export function getSelfTestAccessors(){
 
     // Phase 8A
     computeMaxAttemptsByTactic,
-    engine.optimize,
-
+    optimize: engine.optimize,
     // capacity helpers
     computeCapacityBreakdown,
     computeCapacityContacts,
