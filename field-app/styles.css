@@ -528,6 +528,7 @@ body.training .help{ display:block; }
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:10px;
+  align-items:stretch;
 }
 @media (max-width: 980px){
   .kpis{ grid-template-columns: 1fr; }
@@ -538,6 +539,12 @@ body.training .help{ display:block; }
   padding:12px;
   background:var(--computed-surface);
   border-color:var(--computed-border);
+}
+
+/* Keep KPI + Viz cards visually uniform inside KPI grids */
+.kpis > .kpi,
+.kpis > .viz{
+  min-height: 140px;
 }
 .kpi-k{ font-size:12px; color:var(--muted2); }
 .kpi-v{ font-size:18px; font-weight:800; margin-top:6px; }
@@ -573,24 +580,6 @@ body.training .help{ display:block; }
 .viz-bar{ fill: rgba(17,17,17,0.20); }
 .viz-winshade{ fill: rgba(34,197,94,0.10); }
 .viz-label{ font-size:10px; fill: rgba(17,17,17,0.65); }
-
-/* Monte Carlo summary grid (uniform cards) */
-.mc-grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:10px;
-  margin-top:10px;
-}
-@media (max-width: 980px){
-  .mc-grid{ grid-template-columns: 1fr; }
-}
-.mc-card{
-  min-height: 200px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-}
-
 
 .subgrid{
   display:grid;
@@ -1241,32 +1230,3 @@ header.topbar{ overflow-x:hidden; }
 .section-header{margin:8px 0 10px 0; padding:10px 12px; border-radius:14px; background:rgba(255,255,255,0.6); box-shadow:0 1px 4px rgba(0,0,0,0.06);}
 .section-header-title{font-weight:800; font-size:14px; letter-spacing:0.2px;}
 .section-header-sub{font-size:12px; opacity:0.75; margin-top:2px;}
-/* Prevent input overflow inside grid/flex containers */
-input,
-select {
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Ensure grid children can shrink properly */
-.scenario-card,
-.setup-card,
-.universe-card {
-  min-width: 0;
-}
-
-/* Fix mobile stacking */
-@media (max-width: 900px) {
-
-  .scenario-grid,
-  .setup-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .scenario-grid > div,
-  .setup-grid > div {
-    width: 100%;
-  }
-
-}

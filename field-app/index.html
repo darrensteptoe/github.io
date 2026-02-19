@@ -586,53 +586,58 @@
 </table>
 </div>
 </div>
-<div class="mc-grid" aria-label="Monte Carlo summary">
-<div class="kpi mc-card">
+<div class="kpis">
+<div class="kpi">
 <div class="kpi-k">Win probability</div>
 <div class="kpi-v" id="mcWinProb">—</div>
 <div class="kpi-s" id="mcRiskLabel">Run sims to estimate risk band.</div>
 </div>
-<div class="kpi mc-card">
+
+<div class="kpi">
 <div class="kpi-k">Median net votes vs need</div>
 <div class="kpi-v" id="mcMedian">—</div>
 <div class="kpi-s">Net persuasion votes delivered − persuasion votes needed</div>
 </div>
-<div class="kpi mc-card">
+
+<div class="kpi">
 <div class="kpi-k">95th percentile (upside)</div>
 <div class="kpi-v" id="mcP95">—</div>
 <div class="kpi-s">Good-but-plausible environment</div>
 </div>
-<div class="kpi mc-card">
+
+<div class="kpi">
 <div class="kpi-k">5th percentile (downside)</div>
 <div class="kpi-v" id="mcP5">—</div>
 <div class="kpi-s">Bad-but-plausible environment</div>
 </div>
-<div class="viz mc-card" id="vizWinProb" aria-label="Win probability bar">
-    <div class="viz-title">Win probability</div>
-    <svg class="viz-svg" id="svgWinProb" viewBox="0 0 300 32" preserveAspectRatio="none" role="img" aria-label="Win probability bar">
-      <rect x="0" y="14" width="300" height="6" rx="3" ry="3" class="viz-track" />
-      <rect x="0" y="14" width="180" height="6" rx="3" ry="3" class="viz-mid" />
-      <rect x="0" y="14" width="120" height="6" rx="3" ry="3" class="viz-low" />
-      <circle cx="0" cy="17" r="7" class="viz-marker" id="svgWinProbMarker" />
-      <text x="0" y="11" class="viz-label" text-anchor="start">0%</text>
-      <text x="300" y="11" class="viz-label" text-anchor="end">100%</text>
-    </svg>
-    <div class="viz-note" id="vizWinProbNote">—</div>
-  </div>
-<div class="viz mc-card" id="vizMargin" aria-label="Net margin distribution">
-    <div class="viz-title">Net margin distribution</div>
-    <svg class="viz-svg" id="svgMargin" viewBox="0 0 300 92" preserveAspectRatio="none" role="img" aria-label="Distribution of net votes vs need">
-      <rect x="0" y="0" width="300" height="92" class="viz-bg" />
-      <g id="svgMarginWinShade"></g>
-      <g id="svgMarginBars"></g>
-      <line x1="0" y1="76" x2="300" y2="76" class="viz-axis" />
-      <line x1="150" y1="10" x2="150" y2="76" class="viz-zero" id="svgMarginZero" />
-      <text x="0" y="88" class="viz-label" text-anchor="start" id="svgMarginMin">—</text>
-      <text x="300" y="88" class="viz-label" text-anchor="end" id="svgMarginMax">—</text>
-      <text x="150" y="9" class="viz-label" text-anchor="middle">Win line</text>
-    </svg>
-    <div class="viz-note" id="vizMarginNote">Median/P10/P90 are shown above; distribution shows how often you clear the win line.</div>
-  </div>
+
+<div class="viz" id="vizWinProb" aria-label="Win probability bar">
+  <div class="viz-title">Win probability</div>
+  <svg class="viz-svg" id="svgWinProb" viewBox="0 0 300 32" preserveAspectRatio="none" role="img" aria-label="Win probability bar">
+    <rect x="0" y="14" width="300" height="6" rx="3" ry="3" class="viz-track" />
+    <rect x="0" y="14" width="180" height="6" rx="3" ry="3" class="viz-mid" />
+    <rect x="0" y="14" width="120" height="6" rx="3" ry="3" class="viz-low" />
+    <circle cx="0" cy="17" r="7" class="viz-marker" id="svgWinProbMarker" />
+    <text x="0" y="11" class="viz-label" text-anchor="start">0%</text>
+    <text x="300" y="11" class="viz-label" text-anchor="end">100%</text>
+  </svg>
+  <div class="viz-note" id="vizWinProbNote">—</div>
+</div>
+
+<div class="viz" id="vizMargin" aria-label="Net margin distribution">
+  <div class="viz-title">Net margin distribution</div>
+  <svg class="viz-svg" id="svgMargin" viewBox="0 0 300 92" preserveAspectRatio="none" role="img" aria-label="Distribution of net votes vs need">
+    <rect x="0" y="0" width="300" height="92" class="viz-bg" />
+    <g id="svgMarginWinShade"></g>
+    <g id="svgMarginBars"></g>
+    <line x1="0" y1="76" x2="300" y2="76" class="viz-axis" />
+    <line x1="150" y1="10" x2="150" y2="76" class="viz-zero" id="svgMarginZero" />
+    <text x="0" y="88" class="viz-label" text-anchor="start" id="svgMarginMin">—</text>
+    <text x="300" y="88" class="viz-label" text-anchor="end" id="svgMarginMax">—</text>
+    <text x="150" y="9" class="viz-label" text-anchor="middle">Win line</text>
+  </svg>
+  <div class="viz-note" id="vizMarginNote">Median/P10/P90 are shown above; distribution shows how often you clear the win line.</div>
+</div>
 </div>
 <div class="card" style="padding:12px; margin-top:12px;">
 <div class="card-head" style="margin-bottom:8px;">
