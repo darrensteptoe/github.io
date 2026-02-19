@@ -184,7 +184,7 @@ body.dark{
   border-left:6px solid transparent;
   border-radius:var(--radius);
   box-shadow:var(--shadow2);
-  padding:14px;
+  padding:12px;
 }
 
 /* Any card/boxed tile inside a card should read as computed (gray) */
@@ -220,18 +220,19 @@ body.dark{
 
 .grid2{
   display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
+  /* Use minmax(0,1fr) to avoid intrinsic-width overflow on tablet (e.g., date inputs) */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap:8px;
 }
 .grid3{
   display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:10px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap:8px;
 }
 .span2{ grid-column: span 2; }
 .span3{ grid-column: span 3; }
 
-.field{ display:flex; flex-direction:column; gap:6px; }
+.field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
 .label{
   font-size:12px;
   color:var(--muted);
@@ -239,13 +240,21 @@ body.dark{
 .input, .select{
   width:100%;
   box-sizing:border-box;
-  padding:10px 10px;
+  max-width:100%;
+  min-width:0;
+  padding:9px 10px;
   border:1px solid var(--rule);
   border-radius:12px;
   background: color-mix(in srgb, var(--panel) 92%, transparent);
   color:var(--fg);
   outline:none;
 }
+
+/* Tablet (iPad) safety: let grid children shrink instead of forcing overflow */
+.grid2 > *, .grid3 > *{ min-width:0; }
+
+/* Hard guard against horizontal bleed */
+html, body{ overflow-x:hidden; }
 .input:focus, .select:focus{
   box-shadow:0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent);
   border-color: color-mix(in srgb, var(--focus) 35%, var(--rule));
@@ -1049,6 +1058,12 @@ body.training .help{ display:block; }
   .grid2{ grid-template-columns: 1fr; }
   .grid3{ grid-template-columns: 1fr; }
   .tabs{ overflow-x:auto; }
+}
+
+/* Tablet: keep rows from feeling cramped and avoid edge-case overflow */
+@media (max-width: 1024px){
+  .grid2{ gap:8px; }
+  .grid3{ gap:8px; }
 }
 
 
