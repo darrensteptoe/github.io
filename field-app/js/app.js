@@ -1721,7 +1721,7 @@ function renderDecisionIntelligencePanel({ res, weeks }){
     const engine = {
       getStateSnapshot,
       withPatchedState,
-      engine.compute,
+      compute: engine.compute,
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
