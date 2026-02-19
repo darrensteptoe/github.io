@@ -5,6 +5,7 @@
 import { optimizeMixBudget, optimizeMixCapacity } from "./optimize.js";
 
 function num(v, fb = null){
+  if (v === null || v === undefined || v === "") return fb;
   const n = Number(v);
   return Number.isFinite(n) ? n : fb;
 }
