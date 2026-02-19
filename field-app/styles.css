@@ -1275,6 +1275,90 @@ table{ width:100%; max-width:100%; }
   margin-bottom:14px;
 }
 
+
+/* =========================================================
+   Phase R2.7 — Baseline UI Reset + True Dark Mode (UI only)
+   ========================================================= */
+
+:root{
+  --text: var(--fg);
+  --border: var(--rule);
+  --surface: color-mix(in srgb, var(--bg) 70%, #ffffff);
+  --surface2: color-mix(in srgb, var(--bg) 84%, #ffffff);
+}
+
+body.dark{
+  --surface: color-mix(in srgb, var(--bg) 76%, #161b22);
+  --surface2: color-mix(in srgb, var(--bg) 86%, #161b22);
+}
+
+/* Background: keep it calm + flat (no colored wash overlays) */
+body{
+  background: var(--bg);
+  background-image: radial-gradient(circle at 30px 30px, var(--grid) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Remove ALL stripes and ALL raised / neumorphic edges */
+.card{
+  background: var(--surface);
+  border: 1px solid var(--border) !important;
+  border-left: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+/* Remove “readonly is gray” concept entirely */
+.card-readonly{
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+.card-readonly .input,
+.card-readonly input,
+.card-readonly select,
+.card-readonly textarea{
+  background: var(--control-bg) !important;
+}
+
+/* Nested hierarchy via spacing + borders only (optional subtle surface) */
+.card .card,
+.card .kpi,
+.card .mini,
+.card .metric,
+.card .tile,
+.card .pillbox,
+.card .table-wrap,
+.user-split,
+.week-list,
+.assump-block,
+.stress-item,
+.help,
+.validation li,
+.tabs,
+.banner,
+.mono,
+.diag-errors,
+.modal-card,
+.rail .card{
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+  box-shadow: none !important;
+}
+
+/* No shadows anywhere */
+.btn,
+.tab,
+.switch.switch-compact,
+.badge,
+.devtools-btn,
+.devtools-panel{
+  box-shadow: none !important;
+}
+
+/* Ensure stripe tokens never render */
+.card{ --stripe: transparent !important; }
+
+
 .phase-scenarios .sc-actions{
   display:flex;
   gap:12px;
