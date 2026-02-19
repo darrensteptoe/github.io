@@ -142,11 +142,27 @@ export const PLAN_CSV_HEADERS = [
   "Volunteers",
   "Objective",
   "Feasibility flag",
+  "Universe weighting enabled",
+  "Universe % Dem",
+  "Universe % Rep",
+  "Universe % NPA",
+  "Universe % Other",
+  "Retention factor",
 ];
 
 export function planRowsToCsv(snapshot){
   const rows = Array.isArray(snapshot?.planRows) ? snapshot.planRows : [];
   const meta = snapshot?.planMeta || {};
+
+  // Include key model assumptions so client-facing CSV is self-contained.
+  // Prefer scenarioState (internal snapshot), but also accept exported scenario.
+  const scen = snapshot?.scenarioState || snapshot?.scenario || {};
+  const enabled = (scen?.universeLayerEnabled != null) ? !!scen.universeLayerEnabled : !!UNIVERSE_DEFAULTS.enabled;
+  const demPct = (scen?.universeDemPct != null) ? scen.universeDemPct : UNIVERSE_DEFAULTS.demPct;
+  const repPct = (scen?.universeRepPct != null) ? scen.universeRepPct : UNIVERSE_DEFAULTS.repPct;
+  const npaPct = (scen?.universeNpaPct != null) ? scen.universeNpaPct : UNIVERSE_DEFAULTS.npaPct;
+  const otherPct = (scen?.universeOtherPct != null) ? scen.universeOtherPct : UNIVERSE_DEFAULTS.otherPct;
+  const retention = (scen?.retentionFactor != null) ? scen.retentionFactor : UNIVERSE_DEFAULTS.retentionFactor;
 
   const lines = [];
   lines.push(PLAN_CSV_HEADERS.map(csvEscape).join(","));
@@ -164,6 +180,12 @@ export function planRowsToCsv(snapshot){
       meta.volunteers,
       meta.objective,
       meta.feasible,
+      enabled,
+      demPct,
+      repPct,
+      npaPct,
+      otherPct,
+      retention,
     ].map(csvEscape).join(",");
     lines.push(line);
   }
