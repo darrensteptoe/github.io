@@ -2551,7 +2551,7 @@ export function getSelfTestAccessors(){
     computeRoiRows,
     buildOptimizationTactics,
     compute: engine.compute,
-    engine.optimize,
+    compute: engine.compute,
 
     // Phase 7
     computeTimelineFeasibility,
