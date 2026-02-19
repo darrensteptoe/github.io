@@ -2544,21 +2544,18 @@ export function getSelfTestAccessors(){
     getStateSnapshot,
     withPatchedState,
 
-    // deterministic
-    compute: engine.compute,
+    // deterministic (self-test expects computeAll accessor)
+    computeAll: (mi, options) => engine.compute(mi, options),
     deriveNeedVotes,
     derivedWeeksRemaining,
 
     // ROI + optimization (via facade)
-    computeRoiRows: engine.tactics.computeRoiRows,
-    buildOptimizationTactics: engine.tactics.buildOptimizationTactics,
+    computeRoiRows: (...args) => engine.tactics.computeRoiRows(...args),
+    buildOptimizationTactics: (...args) => engine.tactics.buildOptimizationTactics(...args),
 
-    // Phase 7
-    computeTimelineFeasibility: engine.timeline.computeTimelineFeasibility,
-
-    // Phase 8A
-    computeMaxAttemptsByTactic: engine.timeline.computeMaxAttemptsByTactic,
-    optimize: engine.optimize,
+    // optimization shims (self-test expects these exact names)
+    optimizeMixBudget: (args) => engine.optimize(args, { mode: "budget" }),
+    optimizeMixCapacity: (args) => engine.optimize(args, { mode: "capacity" }),
 
     // capacity helpers
     computeCapacityBreakdown,
@@ -2568,9 +2565,6 @@ export function getSelfTestAccessors(){
     runMonteCarloSim,
   };
 }
-
-
-
 /* =========================
    Phase 3 — Execution + Risk
    ========================= */
