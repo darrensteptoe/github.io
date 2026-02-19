@@ -1718,19 +1718,19 @@ function renderDecisionIntelligencePanel({ res, weeks }){
     // Build a stable snapshot for analysis (no mutation)
     const snap = getStateSnapshot();
 
-    const engine = {
+    const accessors = {
       getStateSnapshot,
       withPatchedState,
       compute: engine.compute,
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
-      computeRoiRows,
-      buildOptimizationTactics,
-      computeMaxAttemptsByTactic,
+      computeRoiRows: engine.tactics.computeRoiRows,
+      buildOptimizationTactics: engine.tactics.buildOptimizationTactics,
+      computeMaxAttemptsByTactic: engine.timeline.computeMaxAttemptsByTactic,
     };
 
-    const di = engine.diagnostics.computeDecisionIntelligence({ engine, snap, baseline: { res, weeks } });
+    const di = engine.diagnostics.computeDecisionIntelligence({ engine: accessors, snap, baseline: { res, weeks } });
 
     setWarn(di?.warning || null);
 
@@ -2035,21 +2035,23 @@ function getYourName(){
 function onSaveScenarioClick(){
   try{
     const snap = getStateSnapshot();
-    const engine = {
+    const engineFacade = engine;
+    const accessors = {
       getStateSnapshot,
       withPatchedState,
-      compute: engine.compute,
+      compute: engineFacade.compute,
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
-      computeMaxAttemptsByTactic,
-      computeTimelineFeasibility,
+      computeMaxAttemptsByTactic: engineFacade.timeline.computeMaxAttemptsByTactic,
+      computeTimelineFeasibility: engineFacade.timeline.computeTimelineFeasibility,
+      snapshot: engineFacade.snapshot,
     };
     scenarioMgr.add({
       label: (snap.scenarioName || "").trim() || `Scenario ${scenarioMgr.list().length + 1}`,
       snapshot: snap,
-      engine,
-      modelVersion: engine.snapshot.MODEL_VERSION,
+      engine: accessors,
+      modelVersion: engineFacade.snapshot.MODEL_VERSION,
     });
     // Re-render using current res/weeks if available
     try{
@@ -2547,18 +2549,17 @@ export function getSelfTestAccessors(){
     deriveNeedVotes,
     derivedWeeksRemaining,
 
-    // ROI + optimization
-    computeRoiRows,
-    buildOptimizationTactics,
-    compute: engine.compute,
-    compute: engine.compute,
+    // ROI + optimization (via facade)
+    computeRoiRows: engine.tactics.computeRoiRows,
+    buildOptimizationTactics: engine.tactics.buildOptimizationTactics,
 
     // Phase 7
-    computeTimelineFeasibility,
+    computeTimelineFeasibility: engine.timeline.computeTimelineFeasibility,
 
     // Phase 8A
-    computeMaxAttemptsByTactic,
+    computeMaxAttemptsByTactic: engine.timeline.computeMaxAttemptsByTactic,
     optimize: engine.optimize,
+
     // capacity helpers
     computeCapacityBreakdown,
     computeCapacityContacts,
@@ -2567,6 +2568,7 @@ export function getSelfTestAccessors(){
     runMonteCarloSim,
   };
 }
+
 
 
 /* =========================
