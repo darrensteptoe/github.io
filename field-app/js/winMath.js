@@ -303,32 +303,32 @@ function computeGuardrails(raw, turnout, expected, validation){
   const gs = [];
 
   const base = [];
-  base.push({ k: "Model type", v: "Requirements engine (not a forecast)" });
-  base.push({ k: "Totals enforcement", v: "Candidate + undecided must equal 100%" });
-  gs.push({ title: "Core guardrails", lines: base });
+  base.push({ k: "Model type", v: "Forecast worksheet (aggregate, not CRM)" });
+  base.push({ k: "Totals enforcement", v: "Ballot test + undecided must total 100%" });
+  gs.push({ title: "Quick checks", lines: base });
 
   if (!validation.universeOk){
-    gs.push({ title: "Universe", lines: [{ k: "Issue", v: "Universe missing/invalid" }, { k: "Fix", v: "Enter Universe size (U)" }] });
+    gs.push({ title: "Universe", lines: [{ k: "Issue", v: "Universe missing or invalid" }, { k: "Fix", v: "Enter universe size (registration or expected voters)" }] });
   }
 
   if (!validation.turnoutOk){
-    gs.push({ title: "Turnout", lines: [{ k: "Issue", v: "Turnout baseline incomplete" }, { k: "Fix", v: "Enter Cycle A + Cycle B turnout and band width" }] });
+    gs.push({ title: "Turnout", lines: [{ k: "Issue", v: "Turnout baseline incomplete" }, { k: "Fix", v: "Enter two comparable cycles plus an uncertainty band" }] });
   }
 
   if (!validation.candidateTableOk){
-    gs.push({ title: "Vote landscape", lines: [{ k: "Issue", v: "Totals not equal to 100%" }, { k: "Fix", v: "Adjust candidate supports and undecided to total 100%" }] });
+    gs.push({ title: "Ballot test", lines: [{ k: "Issue", v: "Numbers don’t total 100%" }, { k: "Fix", v: "Adjust candidate shares and undecided so they sum to 100%" }] });
   }
 
   if (raw.undecidedMode === "user_defined" && !validation.userSplitOk){
-    gs.push({ title: "Undecided split", lines: [{ k: "Issue", v: "User-defined split totals not 100%" }, { k: "Fix", v: "Make split sum to 100% across candidates" }] });
+    gs.push({ title: "Undecided allocation", lines: [{ k: "Issue", v: "Allocation doesn’t total 100%" }, { k: "Fix", v: "Make allocations sum to 100% across candidates" }] });
   }
 
   if (expected.persuasionUniverse != null && expected.persuasionNeed != null && expected.persuasionNeed > expected.persuasionUniverse){
     gs.push({
-      title: "Persuasion ceiling",
+      title: "Movable universe check",
       lines: [
-        { k: "Issue", v: "Required persuasion exceeds modeled movable universe" },
-        { k: "Fix", v: "Revisit turnout/support assumptions or raise persuasion % only if defensible" }
+        { k: "Issue", v: "Gap exceeds your modeled persuadable universe" },
+        { k: "Fix", v: "Revisit assumptions (turnout, ballot test, contact math) or only expand persuadables if defensible" }
       ]
     });
   }
