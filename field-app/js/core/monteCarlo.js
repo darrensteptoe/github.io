@@ -45,6 +45,7 @@ import { safeNum, clamp } from "./utils.js";
 import { computeAvgLiftPP } from "./turnout.js";
 import { computeUniverseAdjustedRates, normalizeUniversePercents } from "./universeLayer.js";
 import { computeCapacityContacts } from "./model.js";
+import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 
 // --- helpers (verbatim logic from prior app.js) ---
 function pctToUnit(v, fallback){
@@ -433,7 +434,7 @@ export function runMonteCarloSim({ scenario, scenarioState, res, weeks, needVote
     median,
     p5,
     p95,
-    confidenceEnvelope: engine.runMonteCarlo({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
+    confidenceEnvelope: computeConfidenceEnvelope({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
     histogram,
     sensitivity: sens,
     riskLabel: riskLabelFromWinProb(winProb),
