@@ -1,0 +1,402 @@
+---
+layout: site
+title: "Services"
+description: "Media production services and campaign consulting."
+permalink: /services/
+nav_order: 5
+
+---
+
+<header class="header">
+      <h1 class="title">Services</h1>
+      <p class="sub">Media production • Consulting</p>
+    </header>
+
+<section class="panel" aria-label="Media Production Services">
+      <h2 class="h2">Media Production Services</h2>
+
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
+        <span>Open to work</span>
+      </div>
+
+      <p>
+        I provide end-to-end media production services for individuals, organizations, campaigns, and institutions.
+      </p>
+
+      <ul class="links">
+        <li>Documentary filmmaking (development, production, post)</li>
+        <li>Video production and editing (short-form, long-form)</li>
+        <li>Event, interview, and field production</li>
+        <li>Script development and story consulting</li>
+        <li>Post-production workflows, color, and delivery</li>
+      </ul>
+    </section>
+
+    <section class="panel" aria-label="YouTube video">
+      <div class="videoWrap">
+        <iframe
+          src="https://www.youtube.com/embed/ycHys4e6s3Q"
+          title="YouTube video"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Political Consulting">
+      <h2 class="h2">Political Consulting</h2>
+
+      <div class="openRow" aria-label="Availability">
+        <span class="openDot" aria-hidden="true"></span>
+        <span>Open to work</span>
+      </div>
+
+      <p>
+        I support campaigns, committees, and independent candidates with practical, field-tested strategy. If you need a clean plan, strong execution, and someone who can build the infrastructure and train the team, I can help.
+      </p>
+
+      <ul class="links">
+        <li>Win number + targeting (what it takes to win, who to talk to, and how often)</li>
+        <li>Field plan (persuasion → GOTV), universes, turf cutting, and staging locations</li>
+        <li>Volunteer &amp; staff training (canvass, phones, data entry, packet build)</li>
+        <li>Scripts and message discipline (doors, phones, texts, digital)</li>
+        <li>GOTV operations (chase, visibility, poll coverage planning)</li>
+        <li>Basic comms support (social content guidance, rapid response structure)</li>
+        <li>Office systems (weekly goals, pipeline, reporting, and accountability)</li>
+      </ul>
+    </section>
+
+<!-- ONLY CHANGE: added pricingWrap to the class list -->
+    <section class="panel pricingWrap" aria-label="Pricing">
+      <h2 class="h2">Pricing</h2>
+
+      <h3>Wedding Films</h3>
+<div class="pricingGrid twoCol" aria-label="Wedding film pricing">
+
+  <div class="pricingCard">
+    <h4>Bronze — $2,400</h4>
+    <ul>
+      <li>Up to 6 hours</li>
+      <li>5–7 min highlight film</li>
+      <li>14-day turnaround</li>
+    </ul>
+  </div>
+
+  <div class="pricingCard">
+    <h4>Silver — $3,200</h4>
+    <ul>
+      <li>Up to 8 hours</li>
+      <li>Full speeches edit</li>
+      <li>6–8 min cinematic film</li>
+    </ul>
+  </div>
+
+  <div class="pricingCard">
+    <h4>Gold — $4,200</h4>
+    <ul>
+      <li>Up to 10 hours</li>
+      <li>Multi-cam ceremony</li>
+      <li>Drone + social teaser</li>
+    </ul>
+  </div>
+
+  <div class="pricingCard">
+    <h4>Platinum — $5,200</h4>
+    <ul>
+      <li>Up to 12 hours</li>
+      <li>Specialty cameras</li>
+      <li>Ceremony + speeches</li>
+      <li>48-hr teaser</li>
+      <li>7-day delivery</li>
+    </ul>
+  </div>
+
+  <div class="pricingCard">
+    <h4>Additional Hour — $125</h4>
+    <ul>
+      <li>Applies beyond the booked package</li>
+    </ul>
+  </div>
+
+</div>
+
+      <h3>Event &amp; Promotional</h3>
+      <div class="pricingGrid twoCol" aria-label="Event and promotional pricing">
+        <div class="pricingCard">
+          <h4>Half Day — $600</h4>
+          <ul>
+            <li>Up to 4 hours</li>
+            <li>60–90 sec highlight</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Full Day — $1,000</h4>
+          <ul>
+            <li>Up to 8 hours</li>
+            <li>2–3 min highlight</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Corporate &amp; Small Business</h3>
+      <div class="pricingGrid twoCol" aria-label="Corporate pricing">
+        <div class="pricingCard">
+          <h4>Brand Promo — $1,200</h4>
+          <ul>
+            <li>Interview + b-roll</li>
+            <li>2–3 min film</li>
+            <li>Social cut</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Executive Interview — $850</h4>
+          <ul>
+            <li>Up to 2 hours</li>
+            <li>1–2 min polished edit</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Monthly Content — from $2,500</h4>
+          <ul>
+            <li>1 filming day</li>
+            <li>3–5 edited videos</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Custom Package — quote</h4>
+          <ul>
+            <li>Multi-day / multi-location / recurring</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Documentary &amp; Editing</h3>
+      <div class="pricingGrid twoCol" aria-label="Documentary and editing">
+        <div class="pricingCard">
+          <h4>Editing — $85/hr</h4>
+          <ul>
+            <li>5-hour minimum per project phase</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Full Documentary Support — quote</h4>
+          <ul>
+            <li>Development → post support tailored to scope</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>Political Consulting</h3>
+      <div class="pricingGrid twoCol" aria-label="Political consulting pricing">
+        <div class="pricingCard">
+          <h4>Strategy Intensive (1 Hour) — $250</h4>
+          <ul>
+            <li>Win number, targeting, field plan, next steps</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Municipal Retainer — $3,000–6,000 / month</h4>
+          <ul>
+            <li>Plan + training + reporting cadence</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>State Legislative Retainer — $5,000–10,000 / month</h4>
+          <ul>
+            <li>Ops buildout + weekly goals + GOTV</li>
+          </ul>
+        </div>
+
+        <div class="pricingCard">
+          <h4>Congressional Retainer — $10,000–20,000+ / month</h4>
+          <ul>
+            <li>Full-scale field + ops systems</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+<section class="panel" aria-label="Intake Form">
+      <h2 class="h2" id="intake">Intake Form</h2>
+      <p class="muted small">
+        Pick a project type and you’ll see the right questions — plus a rough estimate / breakdown.
+      </p>
+
+      <form
+        id="contactForm"
+        action="https://formspree.io/f/xdalazpw"
+        method="POST"
+        class="contactForm"
+        novalidate
+        onsubmit="trackEvent('contact_submit');">
+
+        <label>
+          Project Type *
+          <select id="projectType" name="project_type" required>
+            <option value="" selected disabled>Select one…</option>
+            <option value="media">Media Production</option>
+            <option value="consulting">Campaign Consulting</option>
+          </select>
+        </label>
+
+        <div class="formGrid">
+          <label>
+            Name *
+            <input type="text" name="name" autocomplete="name" required>
+          </label>
+
+          <label>
+            Email *
+            <input type="email" name="email" autocomplete="email" required>
+          </label>
+
+          <label>
+            Phone *
+            <input type="tel" name="telephone" autocomplete="tel" inputmode="tel" required>
+          </label>
+
+          <label>
+            Location (City/State)
+            <input type="text" name="location" autocomplete="address-level2">
+          </label>
+        </div>
+
+        <div id="mediaFields" class="subPanel hidden" aria-hidden="true">
+          <h3 class="h3">Media Details</h3>
+
+          <label>
+            Media Type *
+            <select id="mediaType" name="media_type">
+              <option value="" selected disabled>Select one…</option>
+              <option value="wedding">Wedding &amp; Pre-Wedding</option>
+              <option value="event">Event Videography</option>
+              <option value="interview">Interview</option>
+              <option value="commercial">Product &amp; Commercial</option>
+              <option value="architecture">Architectural &amp; Interior</option>
+              <option value="editing">Editing / Post-production</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <div class="formGrid">
+            <label>
+              Date (or target date) *
+              <input id="mediaDate" type="date" name="media_date">
+            </label>
+
+            <label id="coverageHoursWrap" class="hidden">
+              Coverage Hours (estimate)
+              <input id="coverageHours" type="number" name="coverage_hours" inputmode="numeric" min="1" step="1" placeholder="e.g., 8">
+            </label>
+
+            <label id="weddingPackageWrap" class="hidden">
+              Wedding Package *
+              <select id="weddingPackage" name="wedding_package">
+                <option value="" selected disabled>Select one…</option>
+                <option value="bronze">Bronze</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+                <option value="platinum">Platinum</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            Details / Deliverables
+            <textarea id="deliverables" name="deliverables" rows="5" placeholder="Location, deliverables, vibe, audio needs, runtime, references, etc."></textarea>
+          </label>
+
+          <label id="otherDetailsWrap" class="hidden">
+            Describe what you’re looking for *
+            <textarea id="otherDetails" name="other_details" rows="4" placeholder="Type here…"></textarea>
+          </label>
+        </div>
+
+        <div id="consultingFields" class="subPanel hidden" aria-hidden="true">
+          <h3 class="h3">Consulting Details</h3>
+
+          <label>
+            Engagement Type *
+            <select id="consultingEngagement" name="consulting_engagement">
+              <option value="" selected disabled>Select one…</option>
+              <option value="one_hour">Strategy intensive (1 hour)</option>
+              <option value="project">Project support (scoped deliverables)</option>
+              <option value="retainer">Monthly support / retainer</option>
+              <option value="training">Training (staff/volunteers)</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <div class="formGrid">
+            <label id="monthsWrap" class="hidden">
+              How many months?
+              <input id="months" type="number" name="months" inputmode="numeric" min="1" step="1" placeholder="e.g., 3">
+            </label>
+          </div>
+
+          <label>
+            What do you need help with? *
+            <textarea name="consulting_needs" rows="5" placeholder="Win number, targeting, field plan, turf cutting, training, scripts, ops, timeline, etc."></textarea>
+          </label>
+        </div>
+
+        <div class="subPanel" aria-label="Rough estimate">
+          <h3 class="h3">Rough estimate / breakdown</h3>
+          <p id="quoteText" class="quoteText">Select a project type to see a rough estimate.</p>
+          <p class="muted small">
+            Directional estimate only. Final pricing depends on scope, travel, deliverables, and timeline.
+          </p>
+        </div>
+
+        <label>
+          Anything else to share?
+          <textarea name="notes" rows="4" placeholder="Timeline, constraints, links, references, preferred style, etc."></textarea>
+        </label>
+
+        <label>
+          Promo Code
+          <input type="text" name="promo_code" autocomplete="off">
+        </label>
+
+        <div class="hp" aria-hidden="true">
+          <label>
+            Leave this field empty
+            <input type="text" name="_gotcha" tabindex="-1" autocomplete="off">
+          </label>
+        </div>
+
+        <button id="submitBtn" type="submit">Send</button>
+        <p id="formStatus" class="formStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+<section class="panel" aria-label="Payment">
+      <div class="panelHeaderRow">
+        <h2 class="h2">Payment</h2>
+        <img src="./assets/Stripe_Logo,_revised_2016.svg.png" alt="Stripe" class="panelLogoHorizontal" />
+      </div>
+
+      <p>
+        For invoices, deposits, or project payments, you can securely pay online using card, Apple Pay, or Google Pay.
+      </p>
+      <p>
+        <a
+          href="https://pay.darrensteptoe.com/b/8x26oJ1DL6vHcraft02Fa00"
+          target="_blank"
+          rel="noopener"
+          onclick="trackEvent('payment_click');"
+        >
+          Pay Invoice ↗
+        </a>
+      </p>
+    </section>

@@ -1,0 +1,10 @@
+{
+  "name": "github-11-io-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "bundle exec jekyll build",
+    "test": "node tools/test.mjs"
+  }
+}

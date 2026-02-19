@@ -1,0 +1,33 @@
+title: Darren Steptoe
+description: ''
+theme: jekyll-theme-minimal
+collections:
+  papers:
+    output: true
+    permalink: /research/:name/
+defaults:
+- scope:
+    path: ''
+    type: papers
+  values:
+    layout: paper
+- scope:
+    path: ''
+    type: posts
+  values:
+    layout: post
+markdown: kramdown
+plugins:
+- jekyll-feed
+- jekyll-sitemap
+liquid:
+  error_mode: strict
+  strict_filters: true
+  strict_variables: true
+sass:
+  sass_dir: _sass
+  style: compressed
+author: Darren Steptoe
+url: https://darrensteptoe.com
+baseurl: ''
+image: /assets/img/scoreboard.jpeg
