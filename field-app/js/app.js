@@ -1,4 +1,7 @@
 import { engine } from "./engine.js";
+import { computeCapacityContacts as coreComputeCapacityContacts, computeCapacityBreakdown as coreComputeCapacityBreakdown } from "./core/model.js";
+import { normalizeUniversePercents, UNIVERSE_DEFAULTS } from "./core/universeLayer.js";
+import { computeAvgLiftPP } from "./core/turnout.js";
 import { fmtInt, clamp, safeNum, daysBetween, downloadJson, readJsonFile } from "./utils.js";
 import { loadState, saveState, clearState, readBackups, writeBackupEntry } from "./storage.js";
 import { createScenarioManager } from "./scenarioManager.js";
@@ -217,12 +220,12 @@ const els = {
     shiftsPerVolunteerPerWeek: 2,
 
     // Phase 16 — universe composition + retention (OFF by default)
-    universeLayerEnabled: engine.universe.UNIVERSE_DEFAULTS.enabled,
-    universeDemPct: engine.universe.UNIVERSE_DEFAULTS.demPct,
-    universeRepPct: engine.universe.UNIVERSE_DEFAULTS.repPct,
-    universeNpaPct: engine.universe.UNIVERSE_DEFAULTS.npaPct,
-    universeOtherPct: engine.universe.UNIVERSE_DEFAULTS.otherPct,
-    retentionFactor: engine.universe.UNIVERSE_DEFAULTS.retentionFactor,
+    universeLayerEnabled: UNIVERSE_DEFAULTS.enabled,
+    universeDemPct: UNIVERSE_DEFAULTS.demPct,
+    universeRepPct: UNIVERSE_DEFAULTS.repPct,
+    universeNpaPct: UNIVERSE_DEFAULTS.npaPct,
+    universeOtherPct: UNIVERSE_DEFAULTS.otherPct,
+    retentionFactor: UNIVERSE_DEFAULTS.retentionFactor,
 
 
   // Phase 2 — conversion + capacity
@@ -1441,12 +1444,12 @@ function getUniverseLayerConfig(){
   const otherPct = safeNum(state.universeOtherPct);
   const retentionFactor = safeNum(state.retentionFactor);
 
-  const norm = engine.universe.normalizeUniversePercents({ demPct, repPct, npaPct, otherPct });
+  const norm = normalizeUniversePercents({ demPct, repPct, npaPct, otherPct });
   return {
     enabled,
     percents: norm.percents,
     shares: norm.shares,
-    retentionFactor: (retentionFactor != null) ? clamp(retentionFactor, 0.60, 0.95) : engine.universe.UNIVERSE_DEFAULTS.retentionFactor,
+    retentionFactor: (retentionFactor != null) ? clamp(retentionFactor, 0.60, 0.95) : UNIVERSE_DEFAULTS.retentionFactor,
     warning: norm.warning || "",
     wasNormalized: !!norm.normalized,
   };
@@ -1458,7 +1461,7 @@ function getEffectiveBaseRates(){
   const tr = (safeNum(state.turnoutReliabilityPct) != null) ? clamp(safeNum(state.turnoutReliabilityPct), 0, 100) / 100 : null;
 
   const cfg = getUniverseLayerConfig();
-  const adj = engine.universe.computeUniverseAdjustedRates({
+  const adj = engine.computeUniverseAdjustedRates({
     enabled: cfg.enabled,
     universePercents: cfg.percents,
     retentionFactor: cfg.retentionFactor,
@@ -1487,7 +1490,7 @@ function renderUniverse16Card(){
   setIf(els.universe16RepPct, cfg.percents.repPct);
   setIf(els.universe16NpaPct, cfg.percents.npaPct);
   setIf(els.universe16OtherPct, cfg.percents.otherPct);
-  if (els.retentionFactor) els.retentionFactor.value = String((cfg.retentionFactor ?? engine.universe.UNIVERSE_DEFAULTS.retentionFactor).toFixed(2));
+  if (els.retentionFactor) els.retentionFactor.value = String((cfg.retentionFactor ?? UNIVERSE_DEFAULTS.retentionFactor).toFixed(2));
 
   // Disable inputs when OFF
   const disabled = !cfg.enabled;
@@ -1553,7 +1556,7 @@ function render(){
     earlyVoteExp: safeNum(state.earlyVoteExp),
   };
 
-  const res = engine.compute(modelInput);
+  const res = engine.computeAll(modelInput);
 
   els.turnoutExpected.textContent = res.turnout.expectedPct == null ? "—" : `${res.turnout.expectedPct.toFixed(1)}%`;
   els.turnoutBand.textContent = res.turnout.bestPct == null ? "—" : `${res.turnout.bestPct.toFixed(1)}% / ${res.turnout.worstPct.toFixed(1)}%`;
@@ -1725,12 +1728,12 @@ function renderDecisionIntelligencePanel({ res, weeks }){
       derivedWeeksRemaining,
       deriveNeedVotes,
       runMonteCarloSim,
-      computeRoiRows: engine.tactics.computeRoiRows,
-      buildOptimizationTactics: engine.tactics.buildOptimizationTactics,
-      computeMaxAttemptsByTactic: engine.timeline.computeMaxAttemptsByTactic,
+      computeRoiRows: engine.computeRoiRows,
+      buildOptimizationTactics: engine.buildOptimizationTactics,
+      computeMaxAttemptsByTactic: engine.computeMaxAttemptsByTactic,
     };
 
-    const di = engine.diagnostics.computeDecisionIntelligence({ engine: accessors, snap, baseline: { res, weeks } });
+    const di = engine.computeDecisionIntelligence({ engine: accessors, snap, baseline: { res, weeks } });
 
     setWarn(di?.warning || null);
 
@@ -2055,7 +2058,7 @@ function onSaveScenarioClick(){
     });
     // Re-render using current res/weeks if available
     try{
-      const res = engine.compute(snap);
+      const res = engine.computeAll(snap);
       const weeks = derivedWeeksRemaining();
       renderScenarioComparePanel({ res, weeks });
     } catch { /* ignore */ }
@@ -2090,7 +2093,7 @@ function wireScenarioComparePanel(){
     scenarioMgr.remove(id);
     try{
       const snap = getStateSnapshot();
-      const res = engine.compute(snap);
+      const res = engine.computeAll(snap);
       const weeks = derivedWeeksRemaining();
       renderScenarioComparePanel({ res, weeks });
     } catch { /* ignore */ }
@@ -2265,7 +2268,7 @@ function wireSensitivitySurface(){
       const targetWinProb = Number.isFinite(tPct) ? surfaceClamp(tPct, 50, 99) / 100 : 0.70;
 
       const snap = getStateSnapshot();
-      const res = engine.compute(snap);
+      const res = engine.computeAll(snap);
       const weeks = derivedWeeksRemaining();
       const needVotes = deriveNeedVotes(res);
 
@@ -2274,7 +2277,7 @@ function wireSensitivitySurface(){
 
       const engine = { withPatchedState, runMonteCarloSim };
 
-      const result = engine.diagnostics.computeSensitivitySurface({
+      const result = engine.computeSensitivitySurface({
         engine,
         baseline: { res, weeks, needVotes },
         sweep: { leverKey, minValue: minV, maxValue: maxV, steps },
@@ -2545,21 +2548,21 @@ export function getSelfTestAccessors(){
     withPatchedState,
 
     // deterministic (self-test expects computeAll accessor)
-    computeAll: (mi, options) => engine.compute(mi, options),
+    computeAll: (mi, options) => engine.computeAll(mi, options),
     deriveNeedVotes,
     derivedWeeksRemaining,
 
     // ROI + optimization (via facade)
-    computeRoiRows: (...args) => engine.tactics.computeRoiRows(...args),
-    buildOptimizationTactics: (...args) => engine.tactics.buildOptimizationTactics(...args),
+    computeRoiRows: (...args) => engine.computeRoiRows(...args),
+    buildOptimizationTactics: (...args) => engine.buildOptimizationTactics(...args),
 
     // optimization shims (self-test expects these exact names)
-    optimizeMixBudget: (args) => engine.optimize(args, { mode: "budget" }),
-    optimizeMixCapacity: (args) => engine.optimize(args, { mode: "capacity" }),
+    optimizeMixBudget: (args) => engine.optimizeMixBudget(args),
+    optimizeMixCapacity: (args) => engine.optimizeMixCapacity(args),
 
     // timeline helpers (self-test expects these names)
-    computeTimelineFeasibility: (args) => engine.timeline.computeTimelineFeasibility(args),
-    computeMaxAttemptsByTactic: (args) => engine.timeline.computeMaxAttemptsByTactic(args),
+    computeTimelineFeasibility: (args) => engine.computeTimelineFeasibility(args),
+    computeMaxAttemptsByTactic: (args) => engine.computeMaxAttemptsByTactic(args),
 
 
     // capacity helpers
@@ -2744,7 +2747,7 @@ function renderRoi(res, weeks){
     useDiminishing: (state.gotvMode === "advanced") ? !!state.gotvDiminishing2 : !!state.gotvDiminishing,
   };
 
-  const { rows, banner } = engine.tactics.computeRoiRows({
+  const { rows, banner } = engine.computeRoiRows({
     goalNetVotes: needVotes,
     baseRates: { cr, sr, tr },
     tactics,
@@ -2777,7 +2780,7 @@ function renderRoi(res, weeks){
       // Use capacity ceiling as a conservative "plan" for total attempted contacts, and base CR to convert to successful contacts.
       const contacts = (capAttempts != null && cr != null) ? Math.max(0, capAttempts * cr) : 0;
 
-      const avgLiftPP = engine.turnout.computeAvgLiftPP({
+      const avgLiftPP = computeAvgLiftPP({
         baselineTurnoutPct: turnoutModel.baselineTurnoutPct,
         liftPerContactPP: turnoutModel.liftPerContactPP,
         maxLiftPP: turnoutModel.maxLiftPP,
@@ -2879,7 +2882,7 @@ function renderOptimization(res, weeks){
   const overheadAmount = safeNum(budget.overheadAmount) ?? 0;
   const includeOverhead = !!budget.includeOverhead;
 
-  const tactics = engine.tactics.buildOptimizationTactics({
+  const tactics = engine.buildOptimizationTactics({
     baseRates: { cr, sr, tr },
     tactics: tacticsRaw
   });
@@ -2934,7 +2937,7 @@ function renderOptimization(res, weeks){
     const capUser = safeNum(opt.capacityAttempts);
     const cap = (capUser != null && capUser >= 0) ? capUser : (capAttempts != null ? capAttempts : 0);
 
-    result = engine.optimize({
+    result = engine.optimizeMixBudget({
       capacity: cap,
       tactics,
       step,
@@ -2950,7 +2953,7 @@ function renderOptimization(res, weeks){
     const budgetIn = safeNum(opt.budgetAmount) ?? 0;
     const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
 
-    result = engine.optimize({
+    result = engine.optimizeMixBudget({
       budget: budgetAvail,
       tactics,
       step,
@@ -3004,7 +3007,7 @@ function renderOptimization(res, weeks){
       tacticKinds
     };
 
-    const caps = engine.timeline.computeMaxAttemptsByTactic(capsInput);
+    const caps = engine.computeMaxAttemptsByTactic(capsInput);
 
     const budgetIn = safeNum(opt.budgetAmount) ?? 0;
     const budgetAvail = Math.max(0, budgetIn - (includeOverhead ? overheadAmount : 0));
@@ -3027,7 +3030,7 @@ function renderOptimization(res, weeks){
       goalNetVotes: needVotes
     };
 
-    const tlOut = engine.optimize(tlInputs);
+    const tlOut = engine.optimizeTimelineConstrained(tlInputs);
 
     if (tlOut && tlOut.plan){
       result = tlOut.plan;
@@ -3043,7 +3046,7 @@ function renderOptimization(res, weeks){
     state.ui.lastTlMeta = structuredClone(meta);
 
     // Phase 8B — Bottlenecks & Marginal Value (diagnostic)
-    const mv = engine.diagnostics.computeMarginalValueDiagnostics({
+    const mv = engine.computeMarginalValueDiagnostics({
       baselineInputs: tlInputs,
       baselineResult: tlOut,
       timelineInputs: capsInput
@@ -3275,7 +3278,7 @@ function renderTimeline(res, weeks){
     texts: state.budget?.tactics?.texts?.kind || "persuasion",
   };
 
-  const tl = engine.timeline.computeTimelineFeasibility({
+  const tl = engine.computeTimelineFeasibility({
     enabled: true,
     weeksRemaining: weeks ?? 0,
     activeWeeksOverride: (activeOverride == null ? null : activeOverride),
@@ -3406,34 +3409,12 @@ function renderPhase3(res, weeks){
 }
 
 
-function computeCapacityBreakdown({ weeks, orgCount, orgHoursPerWeek, volunteerMult, doorShare, doorsPerHour, callsPerHour }){
-  const total = computeCapacityContacts({ weeks, orgCount, orgHoursPerWeek, volunteerMult, doorShare, doorsPerHour, callsPerHour });
-  if (total == null) return null;
-
-  // Channel ceilings in attempt units (doors knocked vs calls dialed), derived from the same staff-hours budget.
-  const doorsCap = weeks * orgCount * orgHoursPerWeek * doorsPerHour * volunteerMult * doorShare;
-  const phonesCap = weeks * orgCount * orgHoursPerWeek * callsPerHour * volunteerMult * (1 - doorShare);
-
-  return {
-    total,
-    doors: (isFinite(doorsCap) && doorsCap >= 0) ? doorsCap : null,
-    phones: (isFinite(phonesCap) && phonesCap >= 0) ? phonesCap : null,
-  };
+function computeCapacityBreakdown(args){
+  return coreComputeCapacityBreakdown(args);
 }
 
-function computeCapacityContacts({ weeks, orgCount, orgHoursPerWeek, volunteerMult, doorShare, doorsPerHour, callsPerHour }){
-  if (weeks == null || weeks <= 0) return null;
-  if (orgCount == null || orgCount <= 0) return null;
-  if (orgHoursPerWeek == null || orgHoursPerWeek <= 0) return null;
-  if (volunteerMult == null || volunteerMult <= 0) return null;
-  if (doorShare == null) return null;
-  if (doorsPerHour == null || doorsPerHour < 0) return null;
-  if (callsPerHour == null || callsPerHour < 0) return null;
-
-  const blended = doorShare * doorsPerHour + (1 - doorShare) * callsPerHour;
-  if (!isFinite(blended) || blended <= 0) return null;
-
-  return weeks * orgCount * orgHoursPerWeek * blended * volunteerMult;
+function computeCapacityContacts(args){
+  return coreComputeCapacityContacts(args);
 }
 
 /* ---- Monte Carlo ---- */
@@ -3454,7 +3435,7 @@ function runMonteCarloNow(){
     persuasionPct: safeNum(state.persuasionPct),
     earlyVoteExp: safeNum(state.earlyVoteExp),
   };
-  const res = engine.compute(modelInput);
+  const res = engine.computeAll(modelInput);
 
   const w = (weeks != null && weeks >= 0) ? weeks : null;
   const needVotes = deriveNeedVotes(res);
@@ -3471,208 +3452,9 @@ function runMonteCarloNow(){
   renderMcResults(sim);
 }
 
-function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
-  const mode = state.mcMode || "basic";
-
-  // Base rates
-  const baseCr = pctToUnit(safeNum(state.contactRatePct), 0.22);
-  const rawPr = pctToUnit(safeNum(state.supportRatePct), 0.55);
-  const rawRr = pctToUnit(safeNum(state.turnoutReliabilityPct), 0.80);
-
-  // Phase 16 — optional universe weighting + retention (no drift when disabled)
-  const cfg = getUniverseLayerConfig();
-  const adj = engine.universe.computeUniverseAdjustedRates({
-    enabled: cfg.enabled,
-    universePercents: cfg.percents,
-    retentionFactor: cfg.retentionFactor,
-    supportRate: rawPr,
-    turnoutReliability: rawRr,
-  });
-
-  const basePr = (adj && adj.srAdj != null) ? adj.srAdj : rawPr;
-  const baseRr = (adj && adj.trAdj != null) ? adj.trAdj : rawRr;
-  const volBoost = (cfg.enabled && adj && adj.volatilityBoost != null) ? adj.volatilityBoost : 0;
-
-  // Capacity bases
-  const orgCount = safeNum(state.orgCount) ?? 2;
-  const orgHrs = safeNum(state.orgHoursPerWeek) ?? 40;
-  const doorShare = pctToUnit(safeNum(state.channelDoorPct), 0.70);
-  const baseDph = safeNum(state.doorsPerHour3) ?? safeNum(state.doorsPerHour) ?? 30;
-  const baseCph = safeNum(state.callsPerHour3) ?? 20;
-  const baseVol = safeNum(state.volunteerMultBase) ?? 1.0;
-
-  const rng = makeRng(seed);
-
-  const specs = (mode === "advanced")
-    ? buildAdvancedSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost })
-    : buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost });
-
-  const margins = new Array(runs);
-  const wins = new Array(runs);
-
-  // Track sampled variables for sensitivity.
-  const samples = {
-    contactRate: new Array(runs),
-    persuasionRate: new Array(runs),
-    turnoutReliability: new Array(runs),
-    doorsPerHour: new Array(runs),
-    callsPerHour: new Array(runs),
-    volunteerMult: new Array(runs),
-  };
-
-  const turnoutEnabled = !!state.turnoutEnabled;
-  const baseTurnoutPct = (safeNum(state.turnoutTargetOverridePct) != null) ? safeNum(state.turnoutTargetOverridePct) : safeNum(state.turnoutBaselinePct);
-  const gotvMaxLiftPP = (state.gotvMode === "advanced") ? safeNum(state.gotvMaxLiftPP2) : safeNum(state.gotvMaxLiftPP);
-  const useDim = (state.gotvMode === "advanced") ? !!state.gotvDiminishing2 : !!state.gotvDiminishing;
-
-  const U = safeNum(state.universeSize);
-  const tuPct = safeNum(state.persuasionPct);
-  const targetUniverseSize = (U != null && tuPct != null) ? Math.round(U * (clamp(tuPct, 0, 100) / 100)) : null;
-
-  const turnoutAdjustedVotesArr = new Array(runs);
-  const winsTA = new Array(runs);
-
-  // Add sampled GOTV lift to sensitivity when enabled + advanced
-  if (turnoutEnabled && mode === "advanced"){
-    samples.gotvLift = new Array(runs);
-  }
-
-
-  for (let i=0;i<runs;i++){
-    const cr = triSample(specs.contactRate.min, specs.contactRate.mode, specs.contactRate.max, rng);
-    const pr = triSample(specs.persuasionRate.min, specs.persuasionRate.mode, specs.persuasionRate.max, rng);
-    const rr = triSample(specs.turnoutReliability.min, specs.turnoutReliability.mode, specs.turnoutReliability.max, rng);
-    const dph = triSample(specs.doorsPerHour.min, specs.doorsPerHour.mode, specs.doorsPerHour.max, rng);
-    const cph = triSample(specs.callsPerHour.min, specs.callsPerHour.mode, specs.callsPerHour.max, rng);
-    const vm = triSample(specs.volunteerMult.min, specs.volunteerMult.mode, specs.volunteerMult.max, rng);
-
-    let gotvLiftPP = 0;
-    if (turnoutEnabled){
-      if (mode === "advanced" && state.gotvMode === "advanced"){
-        const mn = Math.max(0, safeNum(state.gotvLiftMin) ?? 0);
-        const md = Math.max(0, safeNum(state.gotvLiftMode) ?? 0);
-        const mx = Math.max(0, safeNum(state.gotvLiftMax) ?? 0);
-        gotvLiftPP = triSample(mn, md, mx, rng);
-      } else {
-        gotvLiftPP = Math.max(0, safeNum(state.gotvLiftPP) ?? 0);
-      }
-    }
-
-    const capContacts = computeCapacityContacts({
-      weeks,
-      orgCount,
-      orgHoursPerWeek: orgHrs,
-      volunteerMult: vm,
-      doorShare,
-      doorsPerHour: dph,
-      callsPerHour: cph,
-    });
-
-    let votes = 0;
-    let turnoutAdjustedVotes = 0;
-
-    let convos = 0;
-    if (capContacts != null && capContacts > 0){
-      convos = capContacts * cr;
-      const supports = convos * pr;
-      votes = supports * rr;
-    }
-
-    turnoutAdjustedVotes = votes;
-
-    if (turnoutEnabled && targetUniverseSize != null && targetUniverseSize > 0 && gotvLiftPP > 0){
-      const avgLiftPP = engine.turnout.computeAvgLiftPP({
-        baselineTurnoutPct: baseTurnoutPct,
-        liftPerContactPP: gotvLiftPP,
-        maxLiftPP: gotvMaxLiftPP,
-        contacts: convos,
-        universeSize: targetUniverseSize,
-        useDiminishing: useDim,
-      });
-      const gotvAddedVotes = targetUniverseSize * (avgLiftPP / 100);
-      turnoutAdjustedVotes = votes + gotvAddedVotes;
-    }
-
-    const margin = votes - needVotes;
-    const marginTA = turnoutAdjustedVotes - needVotes;
-
-    margins[i] = margin;
-    wins[i] = (margin >= 0) ? 1 : 0;
-
-    turnoutAdjustedVotesArr[i] = turnoutAdjustedVotes;
-    winsTA[i] = (marginTA >= 0) ? 1 : 0;
-
-    samples.contactRate[i] = cr;
-    samples.persuasionRate[i] = pr;
-    samples.turnoutReliability[i] = rr;
-    samples.doorsPerHour[i] = dph;
-    samples.callsPerHour[i] = cph;
-    samples.volunteerMult[i] = vm;
-    if (turnoutEnabled && mode === "advanced" && state.gotvMode === "advanced" && samples.gotvLift){ samples.gotvLift[i] = gotvLiftPP; }
-  }
-
-  const winProb = sum(wins) / runs;
-  const winProbTurnoutAdjusted = turnoutEnabled ? (sum(winsTA) / runs) : winProb;
-
-  const sorted = margins.slice().sort((a,b)=>a-b);
-  const median = quantileSorted(sorted, 0.50);
-  const p5 = quantileSorted(sorted, 0.05);
-  const p95 = quantileSorted(sorted, 0.95);
-
-  // Lightweight distribution for visualization (does not affect any calculations)
-  const buildHistogram = (sortedArr, bins = 44) => {
-    if (!sortedArr || !sortedArr.length) return null;
-    const lo = quantileSorted(sortedArr, 0.01);
-    const hi = quantileSorted(sortedArr, 0.99);
-    const min = isFinite(lo) ? lo : sortedArr[0];
-    const max = isFinite(hi) ? hi : sortedArr[sortedArr.length - 1];
-    const span = (max - min);
-    const safeSpan = (span === 0) ? 1 : span;
-    const b = Math.max(12, Math.min(80, Math.floor(bins)));
-    const counts = new Array(b).fill(0);
-    for (let i=0;i<sortedArr.length;i++){
-      const v = sortedArr[i];
-      if (!isFinite(v)) continue;
-      if (v < min || v > max) continue;
-      const t = (v - min) / safeSpan;
-      let idx = Math.floor(t * b);
-      if (idx < 0) idx = 0;
-      if (idx >= b) idx = b - 1;
-      counts[idx] += 1;
-    }
-    return { min, max, counts };
-  };
-  const histogram = buildHistogram(sorted, 44);
-
-  let turnoutAdjustedSummary = null;
-  if (turnoutEnabled){
-    const vSorted = turnoutAdjustedVotesArr.slice().sort((a,b)=>a-b);
-    turnoutAdjustedSummary = {
-      mean: mean(turnoutAdjustedVotesArr),
-      p10: quantileSorted(vSorted, 0.10),
-      p50: quantileSorted(vSorted, 0.50),
-      p90: quantileSorted(vSorted, 0.90),
-    };
-  }
-
-  const sens = computeSensitivity(samples, margins);
-
-  const summary = {
-    runs,
-    winProb,
-    winProbTurnoutAdjusted,
-    median,
-    p5,
-    p95,
-    confidenceEnvelope: engine.runMonteCarlo({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
-    histogram,
-    sensitivity: sens,
-    riskLabel: riskLabelFromWinProb(winProb),
-    needVotes,
-    turnoutAdjusted: turnoutAdjustedSummary,
-  };
-
-  return summary;
+function runMonteCarloSim({ scenario, scenarioState, res, weeks, needVotes, runs, seed }){
+  // Delegated to core Monte Carlo via facade (no loops in UI).
+  return engine.runMonteCarlo({ scenario: scenario || scenarioState || state, res, weeks, needVotes, runs, seed });
 }
 
 function buildBasicSpecs({ baseCr, basePr, baseRr, baseDph, baseCph, baseVol, volBoost = 0 }){
