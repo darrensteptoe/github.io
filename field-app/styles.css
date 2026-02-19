@@ -1470,3 +1470,120 @@ header.topbar{ overflow-x:hidden; }
 .section-header{margin:8px 0 10px 0; padding:10px 12px; border-radius:14px; background:transparent; border:2px solid var(--rule); box-shadow:none;}
 .section-header-title{font-weight:800; font-size:14px; letter-spacing:0.2px;}
 .section-header-sub{font-size:12px; opacity:0.75; margin-top:2px;}
+
+
+/* ===== Phase 16 UI Polish ===== */
+:root{
+  --space-0: 0px;
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 18px;
+  --space-5: 24px;
+
+  --radius-1: 10px;
+  --radius-2: 14px;
+
+  --lh-tight: 1.15;
+  --lh-base: 1.35;
+  --lh-loose: 1.5;
+
+  --text-muted: rgba(0,0,0,0.62);
+  --text-muted-2: rgba(0,0,0,0.52);
+
+  --control-h: 38px;
+  --control-pad-x: 12px;
+}
+
+html, body { max-width: 100%; }
+body { overflow-x: clip; }
+
+.card, .panel, .module-card {
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+}
+
+.card .card-header,
+.panel .card-header,
+.module-card .card-header {
+  margin-bottom: var(--space-3);
+}
+
+.card .card-body,
+.panel .card-body,
+.module-card .card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.column, .col, .left-col, .center-col, .right-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+body { line-height: var(--lh-base); }
+
+.small, .helper, .help-text, .note, .muted {
+  color: var(--text-muted);
+  line-height: var(--lh-loose);
+}
+
+table { border-collapse: collapse; }
+th, td { padding: 8px 10px; vertical-align: top; }
+th { font-weight: 700; }
+
+.table-scroll{
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-1);
+}
+
+.table-scroll table{
+  width: 100%;
+  min-width: 520px;
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea{
+  min-height: var(--control-h);
+  padding: 8px var(--control-pad-x);
+  line-height: 1.2;
+  border-radius: 10px;
+}
+
+button,
+.btn{
+  min-height: var(--control-h);
+  padding: 0 var(--control-pad-x);
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.toggle, .switch{
+  min-height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 900px){
+  .grid-3, .three-col, .layout-grid{
+    grid-template-columns: 1fr !important;
+  }
+
+  .topbar, .header-row, .controls-row,
+  .button-row, .actions, .toolbar{
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tactic-grid, .tactics-grid{
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3);
+  }
+}
