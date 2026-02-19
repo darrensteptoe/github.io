@@ -1,0 +1,12 @@
+---
+layout: site
+---
+<article class="paper">
+  <h2 class="h2">{{ page.title }}</h2>
+  {% if page.date %}<p class="muted"><small>{{ page.date | date: "%Y-%m-%d" }}</small></p>{% endif %}
+  {% if page.abstract %}<p>{{ page.abstract }}</p>{% endif %}
+  {% if page.pdf %}
+    <p><a href="{{ page.pdf | relative_url }}" target="_blank" rel="noopener">Open PDF</a></p>
+  {% endif %}
+  {{ content }}
+</article>

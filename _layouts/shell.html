@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  {% include head.html %}
+</head>
+<body class="{{ page.body_class | default: 'page-generic' }}">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <main class="wrap" id="main">
+    <header class="header">
+      <h1 class="title"><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+      <p class="sub">Strategy • Systems • Story</p>
+    </header>
+
+    {% include site_nav_panel.html %}
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    <section class="panel" aria-label="Site search">
+      <div class="searchRow">
+        <label class="srOnly" for="q">Search</label>
+        <input id="q" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="Search the site..." />
+        <button id="clear" type="button">Clear</button>
+      </div>
+
+      <div id="resultsMeta" class="resultsMeta hidden">
+        <strong><span id="count">0</span></strong> result(s)
+      </div>
+
+      <ul id="results" class="results hidden" aria-live="polite"></ul>
+    </section>
+
+    <hr class="sectionRule" aria-hidden="true">
+
+    {{ content }}
+
+    {% include site_footer.html %}
+  </main>
+
+  <script src="{{ '/assets/js/search.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}" defer></script>
+  <script src="{{ '/assets/js/script.js' | relative_url }}?v={{ site.github.build_revision | default: site.time | date: '%s' }}" defer></script>
+</body>
+</html>
