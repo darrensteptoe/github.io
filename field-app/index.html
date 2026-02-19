@@ -48,6 +48,13 @@
 <div class="banner warn" hidden="" id="importWarnBanner"></div>
 <main class="shell">
 <section class="left"><div class="section-header"><div class="section-header-title">Setup</div><div class="section-header-sub">Define the race &amp; your assumptions.</div></div>
+
+
+
+
+
+
+
 <div class="card card-section phase-setup">
 <div class="card-head">
 <h2>Scenario</h2>
@@ -94,8 +101,7 @@
 </div>
 </div>
 </div>
-</div>
-<div class="card card-section phase-universe">
+</div><div class="card card-section phase-universe">
 <div class="card-head">
 <h2>Universe (registration or expected voters)</h2>
 <div class="help-text">Define the size of the electorate you’re modeling (registration or expected voters). Be consistent with turnout assumptions.</div></div>
@@ -124,60 +130,103 @@
 <input class="input" id="sourceNote" placeholder="e.g., VAN export dated 2026-02-01 or Elections dept file" type="text"/>
 </div>
 </div>
-</div>
-<div class="card card-section phase16" id="universe16Card" style="padding:12px;">
-<div class="card-head" style="margin-bottom:8px;">
-<h2>Electorate structure &amp; support durability</h2>
-<div class="help-text">Optional realism layer: weight persuasion and turnout by coalition mix, and apply a support durability factor. OFF = baseline.</div></div>
-<details>
-<div class="note">Shares are auto-normalized to total 100% if slightly off.</div><summary class="muted" style="cursor:pointer;">Advanced (optional)</summary>
-<div style="margin-top:10px;">
-<div class="row" style="align-items:center; gap:10px; margin-bottom:10px;">
-<label class="switch">
-<input id="universe16Enabled" type="checkbox"/>
-<span class="slider"></span>
-<span class="switch-label">Enable electorate weighting</span>
-</label>
-<div class="muted">OFF by default (no drift).</div>
-</div>
-<div class="grid4">
-<div class="field">
-<label class="label" for="universe16DemPct">Dem share (%)</label>
-<input class="input num" id="universe16DemPct" max="100" min="0" step="0.1" type="number"/>
-</div>
-<div class="field">
-<label class="label" for="universe16RepPct">Rep share (%)</label>
-<input class="input num" id="universe16RepPct" max="100" min="0" step="0.1" type="number"/>
-</div>
-<div class="field">
-<label class="label" for="universe16NpaPct">Unaffiliated share (%)</label>
-<input class="input num" id="universe16NpaPct" max="100" min="0" step="0.1" type="number"/>
-</div>
-<div class="field">
-<label class="label" for="universe16OtherPct">Other share (%)</label>
-<input class="input num" id="universe16OtherPct" max="100" min="0" step="0.1" type="number"/>
-</div>
-</div>
-<div class="grid2" style="margin-top:10px;">
-<div class="field">
-<label class="label" for="retentionFactor">Support retention (0.60–0.95)</label>
-<input class="input num" id="retentionFactor" max="0.95" min="0.60" step="0.01" type="number"/>
-<div class="help" data-help="Aggregate durability of support IDs through the rest of the race (voter-ID + reinforcement).">
-<span class="help-title">Meaning</span>
-<span class="help-text">Higher = support sticks + turns out more reliably. Lower = more soft decay + more fragility.</span>
+</div><div class="card card-section phase-candidates">
+<div class="card-head">
+<h2>Ballot test (vote landscape)</h2>
+<div class="card-actions">
+<button class="btn btn-sm btn-ghost" id="btnAddCandidate" type="button">Add candidate</button>
 </div>
 </div>
 <div class="field">
-<label class="label">Derived (internal)</label>
-<div class="muted" id="universe16Derived" style="padding:10px; border:1px solid var(--line); border-radius:10px;">—</div>
+<label class="label" for="yourCandidate">You are</label>
+<select class="select" id="yourCandidate"></select>
+</div>
+<div class="table-wrap">
+<table aria-label="Candidate support table" class="table">
+<thead>
+<tr>
+<th>Name</th>
+<th class="num">Support %</th>
+<th></th>
+</tr>
+</thead>
+<tbody id="candTbody"></tbody>
+<tfoot>
+<tr>
+<td class="muted">Undecided</td>
+<td class="num"><input class="input input-sm num" id="undecidedPct" max="100" min="0" step="0.1" type="number"/></td>
+<td></td>
+</tr>
+<tr>
+<td class="muted"><strong>Total</strong></td>
+<td class="num"><strong id="supportTotal">—</strong></td>
+<td></td>
+</tr>
+</tfoot>
+</table>
+</div>
+<div class="grid2">
+<div class="field">
+<label class="label" for="undecidedMode">Undecided break</label>
+<select class="select" id="undecidedMode">
+<option selected="" value="proportional">Proportional</option>
+<option value="user_defined">User-defined split</option>
+<option value="against">Conservative against you</option>
+<option value="toward">Conservative toward you</option>
+</select>
+<div class="help" data-help="Undecided allocation is a primary source of volatility in multi-candidate races.">
+<span class="help-title">Best practice</span>
+<span class="help-text">Stress-test against you. Don’t rely on a friendly break.</span>
 </div>
 </div>
-<div class="banner warn" hidden="" id="universe16Warn" style="margin-top:10px;"></div>
+<div class="field" hidden="" id="userSplitWrap">
+<label class="label">User-defined undecided split %</label>
+<div class="user-split" id="userSplitList"></div>
+<div class="note">Must sum to 100% across candidates.</div>
 </div>
-</details>
-<div class="note">This layer weights persuasion and turnout reliability by party composition and applies a single retention factor. It is aggregate-only (not a CRM).</div>
 </div>
-<div class="card card-section phase-persuasion">
+<div class="banner warn" hidden="" id="candWarn"></div>
+</div><div class="card card-section phase-p3">
+<div class="card-head">
+<h2>Turnout baseline (recent comparable cycles)</h2>
+<div class="help-text">Use two recent comparable cycles to set a baseline and uncertainty band. This drives volatility in simulation.</div></div>
+<div class="grid3">
+<div class="field">
+<label class="label" for="turnoutA">Cycle A turnout %</label>
+<input class="input" id="turnoutA" max="100" min="0" placeholder="e.g., 39" step="0.1" type="number"/>
+<div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
+<span class="help-title">If unsure</span>
+<span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
+</div>
+</div>
+<div class="field">
+<label class="label" for="turnoutB">Cycle B turnout %</label>
+<input class="input" id="turnoutB" max="100" min="0" placeholder="e.g., 43" step="0.1" type="number"/>
+</div>
+<div class="field">
+<label class="label" for="bandWidth">Band width (±)</label>
+<input class="input" id="bandWidth" max="25" min="0" placeholder="e.g., 4" step="0.5" type="number"/>
+<div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
+<span class="help-title">Typical</span>
+<span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
+</div>
+</div>
+<div class="field span3 inline-metrics">
+<div class="metric">
+<div class="metric-k">Expected turnout %</div>
+<div class="metric-v" id="turnoutExpected">—</div>
+</div>
+<div class="metric">
+<div class="metric-k">Best / Worst turnout %</div>
+<div class="metric-v" id="turnoutBand">—</div>
+</div>
+<div class="metric">
+<div class="metric-k">Votes per 1% turnout</div>
+<div class="metric-v" id="votesPer1pct">—</div>
+</div>
+</div>
+</div>
+</div><div class="card card-section phase-persuasion">
 <div class="card-head">
 <h2>Persuadable universe (movable)</h2>
 </div>
@@ -199,8 +248,7 @@
 </div>
 </div>
 </div>
-</div>
-<div class="card card-section phase-phase2" id="conversionCard">
+</div><div class="card card-section phase-phase2" id="conversionCard">
 <div class="card-head">
 <h2>Persuasion &amp; contact math</h2>
 <div class="help-text">Field math: Attempts → Contacts (contact rate) → Support IDs (support rate). Used across cost, optimization, and simulation.</div></div>
@@ -259,106 +307,58 @@
 <div class="mini-s">Doors/hour × Hours/shift</div>
 </div>
 </div>
+</div><div class="card card-section phase16" id="universe16Card" style="padding:12px;">
+<div class="card-head" style="margin-bottom:8px;">
+<h2>Electorate structure &amp; support durability</h2>
+<div class="help-text">Optional realism layer: weight persuasion and turnout by coalition mix, and apply a support durability factor. OFF = baseline.</div></div>
+<details>
+<div class="note">Shares are auto-normalized to total 100% if slightly off.</div><summary class="muted" style="cursor:pointer;">Advanced (optional)</summary>
+<div style="margin-top:10px;">
+<div class="row" style="align-items:center; gap:10px; margin-bottom:10px;">
+<label class="switch">
+<input id="universe16Enabled" type="checkbox"/>
+<span class="slider"></span>
+<span class="switch-label">Enable electorate weighting</span>
+</label>
+<div class="muted">OFF by default (no drift).</div>
 </div>
-<div class="card card-section phase-candidates">
-<div class="card-head">
-<h2>Ballot test (vote landscape)</h2>
-<div class="card-actions">
-<button class="btn btn-sm btn-ghost" id="btnAddCandidate" type="button">Add candidate</button>
+<div class="grid4">
+<div class="field">
+<label class="label" for="universe16DemPct">Dem share (%)</label>
+<input class="input num" id="universe16DemPct" max="100" min="0" step="0.1" type="number"/>
+</div>
+<div class="field">
+<label class="label" for="universe16RepPct">Rep share (%)</label>
+<input class="input num" id="universe16RepPct" max="100" min="0" step="0.1" type="number"/>
+</div>
+<div class="field">
+<label class="label" for="universe16NpaPct">Unaffiliated share (%)</label>
+<input class="input num" id="universe16NpaPct" max="100" min="0" step="0.1" type="number"/>
+</div>
+<div class="field">
+<label class="label" for="universe16OtherPct">Other share (%)</label>
+<input class="input num" id="universe16OtherPct" max="100" min="0" step="0.1" type="number"/>
+</div>
+</div>
+<div class="grid2" style="margin-top:10px;">
+<div class="field">
+<label class="label" for="retentionFactor">Support retention (0.60–0.95)</label>
+<input class="input num" id="retentionFactor" max="0.95" min="0.60" step="0.01" type="number"/>
+<div class="help" data-help="Aggregate durability of support IDs through the rest of the race (voter-ID + reinforcement).">
+<span class="help-title">Meaning</span>
+<span class="help-text">Higher = support sticks + turns out more reliably. Lower = more soft decay + more fragility.</span>
 </div>
 </div>
 <div class="field">
-<label class="label" for="yourCandidate">You are</label>
-<select class="select" id="yourCandidate"></select>
-</div>
-<div class="table-wrap">
-<table aria-label="Candidate support table" class="table">
-<thead>
-<tr>
-<th>Name</th>
-<th class="num">Support %</th>
-<th></th>
-</tr>
-</thead>
-<tbody id="candTbody"></tbody>
-<tfoot>
-<tr>
-<td class="muted">Undecided</td>
-<td class="num"><input class="input input-sm num" id="undecidedPct" max="100" min="0" step="0.1" type="number"/></td>
-<td></td>
-</tr>
-<tr>
-<td class="muted"><strong>Total</strong></td>
-<td class="num"><strong id="supportTotal">—</strong></td>
-<td></td>
-</tr>
-</tfoot>
-</table>
-</div>
-<div class="grid2">
-<div class="field">
-<label class="label" for="undecidedMode">Undecided break</label>
-<select class="select" id="undecidedMode">
-<option selected="" value="proportional">Proportional</option>
-<option value="user_defined">User-defined split</option>
-<option value="against">Conservative against you</option>
-<option value="toward">Conservative toward you</option>
-</select>
-<div class="help" data-help="Undecided allocation is a primary source of volatility in multi-candidate races.">
-<span class="help-title">Best practice</span>
-<span class="help-text">Stress-test against you. Don’t rely on a friendly break.</span>
+<label class="label">Derived (internal)</label>
+<div class="muted" id="universe16Derived" style="padding:10px; border:1px solid var(--line); border-radius:10px;">—</div>
 </div>
 </div>
-<div class="field" hidden="" id="userSplitWrap">
-<label class="label">User-defined undecided split %</label>
-<div class="user-split" id="userSplitList"></div>
-<div class="note">Must sum to 100% across candidates.</div>
+<div class="banner warn" hidden="" id="universe16Warn" style="margin-top:10px;"></div>
 </div>
-</div>
-<div class="banner warn" hidden="" id="candWarn"></div>
-</div>
-<div class="card card-section phase-p3">
-<div class="card-head">
-<h2>Turnout baseline (recent comparable cycles)</h2>
-<div class="help-text">Use two recent comparable cycles to set a baseline and uncertainty band. This drives volatility in simulation.</div></div>
-<div class="grid3">
-<div class="field">
-<label class="label" for="turnoutA">Cycle A turnout %</label>
-<input class="input" id="turnoutA" max="100" min="0" placeholder="e.g., 39" step="0.1" type="number"/>
-<div class="help" data-help="Comparable cycle means similar election type (midterm vs presidential; primary vs general).">
-<span class="help-title">If unsure</span>
-<span class="help-text">Pick the closest two cycles by election type and district boundaries.</span>
-</div>
-</div>
-<div class="field">
-<label class="label" for="turnoutB">Cycle B turnout %</label>
-<input class="input" id="turnoutB" max="100" min="0" placeholder="e.g., 43" step="0.1" type="number"/>
-</div>
-<div class="field">
-<label class="label" for="bandWidth">Band width (±)</label>
-<input class="input" id="bandWidth" max="25" min="0" placeholder="e.g., 4" step="0.5" type="number"/>
-<div class="help" data-help="Creates Best/Expected/Worst turnout scenarios around your 2-cycle average.">
-<span class="help-title">Typical</span>
-<span class="help-text">±3 to ±5 is common. Keep it modest unless a unique cycle is expected.</span>
-</div>
-</div>
-<div class="field span3 inline-metrics">
-<div class="metric">
-<div class="metric-k">Expected turnout %</div>
-<div class="metric-v" id="turnoutExpected">—</div>
-</div>
-<div class="metric">
-<div class="metric-k">Best / Worst turnout %</div>
-<div class="metric-v" id="turnoutBand">—</div>
-</div>
-<div class="metric">
-<div class="metric-k">Votes per 1% turnout</div>
-<div class="metric-v" id="votesPer1pct">—</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+</details>
+<div class="note">This layer weights persuasion and turnout reliability by party composition and applies a single retention factor. It is aggregate-only (not a CRM).</div>
+</div></section>
 <section class="right"><div class="section-header"><div class="section-header-title">Plan</div><div class="section-header-sub">Build a feasible plan, then interpret risk &amp; sensitivity.</div></div>
 <nav aria-label="Output tabs" class="tabs">
 <button class="tab active" data-tab="win">Results</button>
