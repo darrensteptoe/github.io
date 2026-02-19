@@ -348,6 +348,17 @@ const els = {
   mcShock50: document.getElementById("mcShock50"),
   mcRiskLabel: document.getElementById("mcRiskLabel"),
   mcSensitivity: document.getElementById("mcSensitivity"),
+
+  // Lightweight visuals (SVG)
+  svgWinProb: document.getElementById("svgWinProb"),
+  svgWinProbMarker: document.getElementById("svgWinProbMarker"),
+  vizWinProbNote: document.getElementById("vizWinProbNote"),
+  svgMargin: document.getElementById("svgMargin"),
+  svgMarginBars: document.getElementById("svgMarginBars"),
+  svgMarginWinShade: document.getElementById("svgMarginWinShade"),
+  svgMarginZero: document.getElementById("svgMarginZero"),
+  svgMarginMin: document.getElementById("svgMarginMin"),
+  svgMarginMax: document.getElementById("svgMarginMax"),
     // Phase 4 — budget + ROI
     roiDoorsEnabled: document.getElementById("roiDoorsEnabled"),
     roiDoorsCpa: document.getElementById("roiDoorsCpa"),
@@ -3559,6 +3570,31 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
   const p5 = quantileSorted(sorted, 0.05);
   const p95 = quantileSorted(sorted, 0.95);
 
+  // Lightweight distribution for visualization (does not affect any calculations)
+  const buildHistogram = (sortedArr, bins = 44) => {
+    if (!sortedArr || !sortedArr.length) return null;
+    const lo = quantileSorted(sortedArr, 0.01);
+    const hi = quantileSorted(sortedArr, 0.99);
+    const min = isFinite(lo) ? lo : sortedArr[0];
+    const max = isFinite(hi) ? hi : sortedArr[sortedArr.length - 1];
+    const span = (max - min);
+    const safeSpan = (span === 0) ? 1 : span;
+    const b = Math.max(12, Math.min(80, Math.floor(bins)));
+    const counts = new Array(b).fill(0);
+    for (let i=0;i<sortedArr.length;i++){
+      const v = sortedArr[i];
+      if (!isFinite(v)) continue;
+      if (v < min || v > max) continue;
+      const t = (v - min) / safeSpan;
+      let idx = Math.floor(t * b);
+      if (idx < 0) idx = 0;
+      if (idx >= b) idx = b - 1;
+      counts[idx] += 1;
+    }
+    return { min, max, counts };
+  };
+  const histogram = buildHistogram(sorted, 44);
+
   let turnoutAdjustedSummary = null;
   if (turnoutEnabled){
     const vSorted = turnoutAdjustedVotesArr.slice().sort((a,b)=>a-b);
@@ -3580,6 +3616,7 @@ function runMonteCarloSim({ res, weeks, needVotes, runs, seed }){
     p5,
     p95,
     confidenceEnvelope: computeConfidenceEnvelope({ margins, sortedMargins: sorted, winProb, winRule: "gte0" }),
+    histogram,
     sensitivity: sens,
     riskLabel: riskLabelFromWinProb(winProb),
     needVotes,
@@ -3701,6 +3738,72 @@ function renderMcResults(summary){
       els.mcSensitivity.appendChild(tr);
     });
   }
+
+  // Lightweight visuals
+  renderMcVisuals(summary);
+}
+
+function renderMcVisuals(summary){
+  // Win probability bar
+  if (els.svgWinProbMarker && els.vizWinProbNote){
+    const p = clamp(summary?.winProb ?? 0, 0, 1);
+    const x = 300 * p;
+    els.svgWinProbMarker.setAttribute("cx", x.toFixed(2));
+    els.vizWinProbNote.textContent = `${(p * 100).toFixed(1)}% chance to win (model-based).`;
+  }
+
+  // Margin distribution histogram
+  if (!els.svgMarginBars || !els.svgMarginZero || !els.svgMarginMin || !els.svgMarginMax || !els.svgMarginWinShade) return;
+  const h = summary?.histogram;
+  els.svgMarginBars.innerHTML = "";
+  els.svgMarginWinShade.innerHTML = "";
+  if (!h || !h.counts || !h.counts.length || !isFinite(h.min) || !isFinite(h.max)){
+    els.svgMarginMin.textContent = "—";
+    els.svgMarginMax.textContent = "—";
+    els.svgMarginZero.setAttribute("x1", 150);
+    els.svgMarginZero.setAttribute("x2", 150);
+    return;
+  }
+
+  const W = 300;
+  const baseY = 76;
+  const topY = 12;
+  const H = (baseY - topY);
+  const counts = h.counts;
+  const maxC = Math.max(1, ...counts);
+  const n = counts.length;
+  const bw = W / n;
+
+  const span = (h.max - h.min) || 1;
+  const x0 = clamp(((0 - h.min) / span) * W, 0, W);
+  els.svgMarginZero.setAttribute("x1", x0.toFixed(2));
+  els.svgMarginZero.setAttribute("x2", x0.toFixed(2));
+
+  // Shade the win side (right of zero) when it falls inside the plotted range
+  if (x0 > 0 && x0 < W){
+    const shade = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    shade.setAttribute("x", x0.toFixed(2));
+    shade.setAttribute("y", topY);
+    shade.setAttribute("width", (W - x0).toFixed(2));
+    shade.setAttribute("height", H);
+    shade.setAttribute("class", "viz-winshade");
+    els.svgMarginWinShade.appendChild(shade);
+  }
+
+  for (let i=0;i<n;i++){
+    const c = counts[i];
+    const bh = (c / maxC) * H;
+    const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    r.setAttribute("x", (i * bw + 0.6).toFixed(2));
+    r.setAttribute("y", (baseY - bh).toFixed(2));
+    r.setAttribute("width", Math.max(0.5, bw - 1.2).toFixed(2));
+    r.setAttribute("height", bh.toFixed(2));
+    r.setAttribute("class", "viz-bar");
+    els.svgMarginBars.appendChild(r);
+  }
+
+  els.svgMarginMin.textContent = fmtSigned(h.min);
+  els.svgMarginMax.textContent = fmtSigned(h.max);
 }
 
 function riskLabelFromWinProb(p){
