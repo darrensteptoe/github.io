@@ -1542,6 +1542,20 @@ export function runSelfTests(engine){
     return true;
   });
 
+  test("Phase16 layer: retentionFactor=1.0 is strict identity", () => {
+    const out = computeUniverseAdjustedRates({
+      enabled: true,
+      universePercents: { demPct: 10, repPct: 30, npaPct: 50, otherPct: 10 },
+      retentionFactor: 1.0,
+      supportRate: 0.55,
+      turnoutReliability: 0.80,
+    });
+    assert(out && out.srAdj === 0.55, "sr should match baseline at rf=1.0");
+    assert(out && out.trAdj === 0.80, "tr should match baseline at rf=1.0");
+    assert(out && out.volatilityBoost === 0, "volatilityBoost should be 0 at rf=1.0");
+    return true;
+  });
+
 
 
 results.durationMs = Math.round(nowMs() - started);

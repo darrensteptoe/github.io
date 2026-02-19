@@ -89,7 +89,9 @@ export function computeUniverseAdjustedRates({
   const sr = clamp01(supportRate);
   const tr = clamp01(turnoutReliability);
 
-  const rf = clamp(retentionFactor, 0.60, 0.95);
+  // UI constrains to 0.60–0.95, but allowing 1.00 here lets the self-test
+  // assert the strict identity case (no drift) for exports / fixtures.
+  const rf = clamp(retentionFactor, 0.60, 1.00);
 
   if (!on){
     return {
@@ -102,6 +104,25 @@ export function computeUniverseAdjustedRates({
         persuasionMultiplier: 1,
         turnoutMultiplier: 1,
         turnoutBoostApplied: 0,
+      }
+    };
+  }
+
+  // Hard identity guard: retentionFactor=1.0 must match Phase 15 baseline.
+  // (This also keeps backwards-compat fixtures stable even if enabled.)
+  if (rf >= 0.999999){
+    return {
+      srAdj: sr,
+      trAdj: tr,
+      volatilityBoost: 0,
+      meta: {
+        enabled: true,
+        retentionFactor: 1,
+        persuasionMultiplier: 1,
+        turnoutMultiplier: 1,
+        turnoutBoostApplied: 0,
+        normalizedWarning: "",
+        normalizedPercents: null,
       }
     };
   }
