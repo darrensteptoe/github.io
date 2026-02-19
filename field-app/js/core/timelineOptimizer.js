@@ -65,7 +65,6 @@ export function computeMaxAttemptsByTactic(args){
     meta: { enabled:true, weeksRemaining, activeWeeks, totalHours, rampFactor }
   };
 }
-}
 
 function applyCapsToTactics(tactics, maxAttemptsByTactic){
   const caps = maxAttemptsByTactic || {};
