@@ -2543,7 +2543,7 @@ export function getSelfTestAccessors(){
     withPatchedState,
 
     // deterministic
-    engine.compute,
+    compute: engine.compute,
     deriveNeedVotes,
     derivedWeeksRemaining,
 
