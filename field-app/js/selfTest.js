@@ -21,7 +21,20 @@ import { readBackups, writeBackupEntry } from "./storage.js";
 import { checkStrictImportPolicy } from "./importPolicy.js";
 import { computeConfidenceEnvelope } from "./confidenceEnvelope.js";
 import { computeSensitivitySurface } from "./sensitivitySurface.js";
-import { computeUniverseAdjustedRates } from "./universeLayer.js";
+import { computeUniverseAdjustedRates, UNIVERSE_DEFAULTS } from "./universeLayer.js";
+
+function withUniverseDefaults(s){
+  // Phase 16 fields are now required for stable hashing/export roundtrips.
+  // Self-tests should construct scenarios in the canonical "complete" shape.
+  const out = structuredClone(s || {});
+  if (out.universeLayerEnabled == null) out.universeLayerEnabled = !!UNIVERSE_DEFAULTS.enabled;
+  if (out.universeDemPct == null) out.universeDemPct = UNIVERSE_DEFAULTS.demPct;
+  if (out.universeRepPct == null) out.universeRepPct = UNIVERSE_DEFAULTS.repPct;
+  if (out.universeNpaPct == null) out.universeNpaPct = UNIVERSE_DEFAULTS.npaPct;
+  if (out.universeOtherPct == null) out.universeOtherPct = UNIVERSE_DEFAULTS.otherPct;
+  if (out.retentionFactor == null) out.retentionFactor = UNIVERSE_DEFAULTS.retentionFactor;
+  return out;
+}
 
 
 function deepFreeze(obj){
@@ -983,7 +996,7 @@ export function runSelfTests(engine){
   });
 
   test("Phase 9A: Export → Import roundtrip preserves scenario", () => {
-    const scenario = { scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
+    const scenario = withUniverseDefaults({ scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
       universeBasis: "registered", universeSize: 1000, turnoutA: 40, turnoutB: 44, bandWidth: 4,
       candidates: [{id:"a",name:"A",supportPct:40},{id:"b",name:"B",supportPct:40}], undecidedPct: 20, yourCandidateId:"a",
       undecidedMode:"even", persuasionPct:30, earlyVoteExp:40,
@@ -991,7 +1004,7 @@ export function runSelfTests(engine){
       mcMode:"basic", mcVolatility:10, mcSeed:123,
       budget: { overheadAmount:0, includeOverhead:false, tactics:{}, optimize:{ mode:"budget", budgetAmount:0, capacityAttempts:"", step:25, useDecay:false, objective:"net" } },
       timelineEnabled:false, ui:{ training:false, dark:false }
-    };
+    });
     const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
     const v = validateScenarioExport(payload, MODEL_VERSION);
     assert(v.ok, "validateScenarioExport failed");
@@ -1038,7 +1051,7 @@ export function runSelfTests(engine){
   });
 
   test("Phase 10: Export → Import → Export roundtrip keeps schemaVersion stable and hash stable", () => {
-    const scenario = { scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
+    const scenario = withUniverseDefaults({ scenarioName: "X", raceType: "state_leg", electionDate: "2026-11-03", weeksRemaining: "", mode: "persuasion",
       universeBasis: "registered", universeSize: 1000, turnoutA: 40, turnoutB: 44, bandWidth: 4,
       candidates: [{id:"a",name:"A",supportPct:40},{id:"b",name:"B",supportPct:40}], undecidedPct: 20, yourCandidateId:"a",
       undecidedMode:"even", persuasionPct:30, earlyVoteExp:40,
@@ -1046,7 +1059,7 @@ export function runSelfTests(engine){
       mcMode:"basic", mcVolatility:10, mcSeed:123,
       budget: { overheadAmount:0, includeOverhead:false, tactics:{}, optimize:{ mode:"budget", budgetAmount:0, capacityAttempts:"", step:25, useDecay:false, objective:"net" } },
       timelineEnabled:false, ui:{ training:false, dark:false }
-    };
+    });
     const p1 = makeScenarioExport({ modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, appVersion: MODEL_VERSION, scenarioState: scenario });
     const mig = migrateSnapshot(p1);
     const v = validateScenarioExport(mig.snapshot, MODEL_VERSION);
@@ -1151,7 +1164,7 @@ export function runSelfTests(engine){
   });
 
   test("Phase 11: Restore backup payload preserves deterministic hash", () => {
-    const scenario = { scenarioName:"RestoreTest", universeSize: 1000, ui:{ training:false, dark:false } };
+    const scenario = withUniverseDefaults({ scenarioName:"RestoreTest", universeSize: 1000, ui:{ training:false, dark:false } });
     const snap = { modelVersion: MODEL_VERSION, schemaVersion: CURRENT_SCHEMA_VERSION, scenarioState: scenario };
     const hash0 = computeSnapshotHash(snap);
     const payload = makeScenarioExport({ modelVersion: MODEL_VERSION, scenarioState: scenario });
